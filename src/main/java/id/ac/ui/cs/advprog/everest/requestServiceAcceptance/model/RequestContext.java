@@ -22,9 +22,9 @@ public class RequestContext {
         return currentState.getStatus();
     }
 
-//    public TechnicianViewableRequest getRequest() {
-//        return request;
-//    }
+    public TechnicianViewableRequest getRequest() {
+        return request;
+    }
 
     public void logStatusChange(RequestStatus oldStatus, RequestStatus newStatus) {
         statusLogs.add(new StatusLog(request.getRequestId(), oldStatus,
