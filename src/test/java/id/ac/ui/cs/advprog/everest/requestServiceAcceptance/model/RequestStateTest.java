@@ -19,7 +19,7 @@ class RequestStateTest {
         RequestState state = new PendingState();
         UserRequest userRequest = new UserRequest(100L, "Fix washing machine");
         TechnicianViewableRequest request = IncomingRequest.from(userRequest, 200L);
-        RequestContext context = new RequestContext(request);
+        RequestContextTest context = new RequestContextTest(request);
 
         // Act
         RequestState newState = state.processAction("create_report", context);
@@ -35,7 +35,7 @@ class RequestStateTest {
         RequestState state = new PendingState();
         UserRequest userRequest = new UserRequest(100L, "Fix washing machine");
         TechnicianViewableRequest request = IncomingRequest.from(userRequest, 200L);
-        RequestContext context = new RequestContext(request);
+        RequestContextTest context = new RequestContextTest(request);
 
         // Act
         RequestState newState = state.processAction("invalid_action", context);
