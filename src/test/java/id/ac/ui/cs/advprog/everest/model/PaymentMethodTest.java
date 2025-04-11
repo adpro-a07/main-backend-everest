@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.model;
 
 
+import id.ac.ui.cs.advprog.everest.enums.PaymentType;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,7 +11,7 @@ public class PaymentMethodTest {
 
     @Test
     public void testBankTransferPaymentMethod() {
-        PaymentMethod bankTransfer = new PaymentMethodBuilder()
+        PaymentMethod bankTransfer = new PaymentMethod()
                 .withName("Transfer Bank")
                 .withType(PaymentType.BANK_TRANSFER)
                 .withProvider("Mandiri")
@@ -27,7 +28,7 @@ public class PaymentMethodTest {
 
     @Test
     public void testEWalletPaymentMethod() {
-        PaymentMethod eWallet = new PaymentMethodBuilder()
+        PaymentMethod eWallet = new PaymentMethod()
                 .withName("E-Wallet")
                 .withType(PaymentType.E_WALLET)
                 .withProvider("GoPay")

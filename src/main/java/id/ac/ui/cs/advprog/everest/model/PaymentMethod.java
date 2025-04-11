@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.everest.model;
 
+import id.ac.ui.cs.advprog.everest.enums.PaymentType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class PaymentMethod {
     private String name;
-    private PaymentType;
+    private PaymentType type;
     private String provider;
     private String accountNumber;
     private String accountName;
