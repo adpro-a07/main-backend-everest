@@ -30,11 +30,10 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
-
       - name: Run tests with coverage
         run: ./gradlew test jacocoTestReport
-          - name: Build and analyze
-            env:
-              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            run: ./gradlew sonar --info
+      - name: Build and analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --info
 
