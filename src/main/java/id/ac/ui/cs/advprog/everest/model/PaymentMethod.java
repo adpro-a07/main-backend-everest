@@ -4,15 +4,22 @@ import id.ac.ui.cs.advprog.everest.enums.PaymentType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
 
 @Getter
 @Setter
 public class PaymentMethod {
+    private UUID id;
     private String name;
     private PaymentType type;
     private String provider;
     private String accountNumber;
     private String accountName;
+
+    public PaymentMethod withId(UUID id) {
+        this.id = id;
+        return this;
+    }
 
     public PaymentMethod withName(String name) {
         this.name = name;
@@ -41,6 +48,7 @@ public class PaymentMethod {
 
     public PaymentMethod build() {
         PaymentMethod paymentMethod = new PaymentMethod();
+        paymentMethod.setId(id != null ? id : UUID.randomUUID());
         paymentMethod.setName(name);
         paymentMethod.setType(type);
         paymentMethod.setProvider(provider);
