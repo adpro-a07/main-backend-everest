@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class TechnicianReportTest {
     @Test
     void testCreateTechnicianReport() {
-        // Arrange
         Long reportId = 1L;
         Long requestId = 100L;
         Long technicianId = 200L;
@@ -17,13 +16,11 @@ class TechnicianReportTest {
         BigDecimal estimatedCost = new BigDecimal("150.00");
         Duration estimatedTime = Duration.ofHours(2);
 
-        // Act
         TechnicianReport report = new TechnicianReport(
                 reportId, requestId, technicianId, diagnosis, actionPlan,
                 estimatedCost, estimatedTime
         );
 
-        // Assert
         assertEquals(reportId, report.getReportId());
         assertEquals(requestId, report.getRequestId());
         assertEquals(technicianId, report.getTechnicianId());
@@ -35,7 +32,6 @@ class TechnicianReportTest {
 
     @Test
     void testTechnicianReportBuilder() {
-        // Arrange & Act
         TechnicianReport report = TechnicianReport.builder()
                 .reportId(1L)
                 .requestId(100L)
@@ -46,7 +42,6 @@ class TechnicianReportTest {
                 .estimatedTime(Duration.ofHours(2))
                 .build();
 
-        // Assert
         assertEquals(1L, report.getReportId());
         assertEquals(100L, report.getRequestId());
         assertEquals("Broken motor", report.getDiagnosis());

@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class RequestStatusTest {
     @Test
     void testRequestStatusValues() {
-        // Test enum values exist
         assertEquals("PENDING", RequestStatus.PENDING.name());
         assertEquals("REPORTED", RequestStatus.REPORTED.name());
         assertEquals("ESTIMATED", RequestStatus.ESTIMATED.name());
