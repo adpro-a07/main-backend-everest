@@ -1,10 +1,14 @@
 package id.ac.ui.cs.advprog.everest.service;
 
 import id.ac.ui.cs.advprog.everest.dto.CreateRatingRequest;
+import id.ac.ui.cs.advprog.everest.dto.UpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.model.Rating;
 import id.ac.ui.cs.advprog.everest.repository.RatingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class RatingServiceImpl implements RatingService {
@@ -26,5 +30,33 @@ public class RatingServiceImpl implements RatingService {
                 .build();
 
         return ratingRepository.save(rating);
+    }
+
+    @Override
+    public List<Rating> getAllRatings() {
+        return ratingRepository.findAll().stream()
+                .filter(r -> !r.isDeleted())
+                .toList();
+    }
+
+    @Override
+    public Rating getRatingById(UUID id) {
+        return ratingRepository.findById(id)
+                .filter(r -> !r.isDeleted())
+                .orElseThrow(() -> new RuntimeException("Rating tidak ditemukan"));
+    }
+
+    @Override
+    public Rating updateRating(UUID id, UpdateRatingRequest dto) {
+        Rating rating = ratingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rating tidak ditemukan"));
+
+        rating.update(dto.getComment(), dto.getRating());
+        return ratingRepository.save(rating);
+    }
+
+    @Override
+    public void deleteRating(UUID id) {
+        ratingRepository.deleteById(id);
     }
 }
