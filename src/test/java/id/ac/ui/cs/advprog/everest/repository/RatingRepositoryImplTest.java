@@ -66,4 +66,28 @@ class RatingRepositoryImplTest {
         assertTrue(ratings.contains(rating1));
         assertTrue(ratings.contains(rating2));
     }
+
+    @Test
+    void testDeleteByIdShouldMarkRatingAsDeleted() {
+        Rating rating = Rating.builder()
+                .userId("user-003")
+                .technicianId("tech-003")
+                .comment("Cukup bagus")
+                .rating(4)
+                .build();
+
+        ratingRepository.save(rating);
+        UUID ratingId = rating.getId();
+
+        // Pastikan awalnya belum dihapus
+        assertFalse(rating.isDeleted());
+
+        // Hapus rating
+        ratingRepository.deleteById(ratingId);
+
+        Optional<Rating> found = ratingRepository.findById(ratingId);
+        assertTrue(found.isPresent());
+        assertTrue(found.get().isDeleted(), "Rating seharusnya ditandai sebagai deleted");
+        assertTrue(found.get().getUpdatedAt().isAfter(found.get().getCreatedAt()), "updatedAt seharusnya diperbarui");
+    }
 }
