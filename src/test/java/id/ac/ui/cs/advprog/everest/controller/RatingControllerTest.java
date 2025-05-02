@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.everest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.everest.dto.CreateRatingRequest;
+import id.ac.ui.cs.advprog.everest.dto.UpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.model.Rating;
 import id.ac.ui.cs.advprog.everest.service.RatingService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class RatingControllerTest {
