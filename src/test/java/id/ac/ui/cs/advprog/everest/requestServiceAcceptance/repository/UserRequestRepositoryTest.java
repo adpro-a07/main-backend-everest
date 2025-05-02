@@ -29,12 +29,13 @@ class UserRequestRepositoryTest {
     }
 
     @Test
-    void testSaveNewRequestFailed() {
+    void testSaveNewRequestNull() {
         UserRequest request = new UserRequest(null, "Fix my laptop");
 
-        assertThrows(Exception.class, () -> {
-            repository.save(request);
-        });
+        UserRequest savedRequest = repository.save(request);
+
+        assertNotNull(savedRequest.getId());
+        assertEquals("Fix my laptop", savedRequest.getUserDescription());
     }
 
     @Test
