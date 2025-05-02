@@ -69,4 +69,51 @@ class RatingControllerTest {
                 .andExpect(jsonPath("$.comment").value("Great service!"))
                 .andExpect(jsonPath("$.rating").value(5));
     }
+
+    // Test for Update
+    @Test
+    void testUpdateRating_ReturnsUpdatedRating() throws Exception {
+        UUID ratingId = expectedRating.getId();
+
+        // DTO Update
+        var updateRequest = new UpdateRatingRequest();
+        updateRequest.setComment("Service improved!");
+        updateRequest.setRating(4);
+
+        Rating updatedRating = Rating.builder()
+                .id(ratingId)
+                .userId("user-1")
+                .technicianId("tech-1")
+                .comment("Service improved!")
+                .rating(4)
+                .createdAt(expectedRating.getCreatedAt())
+                .updatedAt(LocalDateTime.now())
+                .deleted(false)
+                .build();
+
+        Mockito.when(ratingService.updateRating(Mockito.eq(ratingId), Mockito.any(UpdateRatingRequest.class)))
+                .thenReturn(updatedRating);
+
+        mockMvc.perform(
+                        put("/api/ratings/{id}", ratingId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updateRequest))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.comment").value("Service improved!"))
+                .andExpect(jsonPath("$.rating").value(4));
+    }
+
+    // Test for Delete
+    @Test
+    void testDeleteRating_Success() throws Exception {
+        UUID ratingId = expectedRating.getId();
+
+        Mockito.doNothing().when(ratingService).deleteRating(ratingId);
+
+        mockMvc.perform(
+                        delete("/api/ratings/{id}", ratingId)
+                )
+                .andExpect(status().isNoContent());
+    }
 }
