@@ -2,23 +2,24 @@ package id.ac.ui.cs.advprog.everest;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:h2:mem:testdb",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+        "spring.liquibase.enabled=false",
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "jwt.secret=testsecretkeywhichmustbeatleast32characterslong",
+        "jwt.expiration=3600000",
+})
 class EverestApplicationTests {
 
     @Test
     void contextLoads() {
     }
 
-    @RestController
-    @RequestMapping("/")
-    public static class TestController {
-        @GetMapping("/health")
-        public String getHealth() {
-            return "Health is ok!";
-        }
-    }
 }
