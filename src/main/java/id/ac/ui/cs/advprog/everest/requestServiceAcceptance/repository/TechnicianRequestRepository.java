@@ -15,6 +15,16 @@ public class TechnicianRequestRepository {
     private final Map<Long, IncomingRequest> technicianRequests = new ConcurrentHashMap<>();
 
     public IncomingRequest save(IncomingRequest incomingRequest) {
+        if  (incomingRequest.getTechnicianId() == null){
+            incomingRequest = null;
+            throw new IllegalArgumentException("Technician Id is null");
+        }
+
+        IncomingRequest existing = technicianRequests.get(incomingRequest.getRequestId());
+        if (existing != null) {
+            throw new IllegalArgumentException("Request Id: " + incomingRequest.getRequestId() + "Already taken by technician " + existing.getTechnicianId());
+        }
+
         technicianRequests.put(incomingRequest.getRequestId(), incomingRequest);
         return incomingRequest;
     }

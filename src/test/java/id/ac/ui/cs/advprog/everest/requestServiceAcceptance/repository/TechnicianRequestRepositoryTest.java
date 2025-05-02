@@ -38,8 +38,6 @@ class TechnicianRequestRepositoryTest {
         UserRequest userRequest = new UserRequest(1L, "Fix my computer");
         IncomingRequest request = IncomingRequest.from(userRequest, null);
 
-        IncomingRequest savedRequest = repository.save(request);
-
         assertThrows(Exception.class, () -> {
             repository.save(request);
         });
