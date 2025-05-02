@@ -34,7 +34,7 @@ public class Rating {
         if (rating < 1 || rating > 5) {
             throw new IllegalArgumentException("Rating harus antara 1 dan 5.");
         }
-        if (userId == null || technicianId == null || comment == null) {
+        if (userId == null || technicianId == null || comment == null || comment.isBlank()) {
             throw new IllegalArgumentException("Semua field wajib diisi.");
         }
 
@@ -52,7 +52,7 @@ public class Rating {
         if (rating < 1 || rating > 5) {
             throw new IllegalArgumentException("Rating harus antara 1 dan 5.");
         }
-        if (comment == null) {
+        if (comment == null || comment.isBlank()) {
             throw new IllegalArgumentException("Komentar tidak boleh null.");
         }
 
