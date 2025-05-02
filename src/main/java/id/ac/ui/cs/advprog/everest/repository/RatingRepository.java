@@ -10,4 +10,5 @@ public interface RatingRepository {
     Rating save(Rating rating);
     Optional<Rating> findById(UUID id);
     List<Rating> findAll();
+    void deleteById(UUID id);
 }
