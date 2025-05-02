@@ -34,6 +34,18 @@ class TechnicianRequestRepositoryTest {
     }
 
     @Test
+    void testSaveTechnicianRequestNull() {
+        UserRequest userRequest = new UserRequest(1L, "Fix my computer");
+        IncomingRequest request = IncomingRequest.from(userRequest, null);
+
+        IncomingRequest savedRequest = repository.save(request);
+
+        assertThrows(Exception.class, () -> {
+            repository.save(request);
+        });
+    }
+
+    @Test
     void testFindTechnicianRequestByRequestId() {
         UserRequest userRequest = new UserRequest(1L, "Fix my computer");
         IncomingRequest request = IncomingRequest.from(userRequest, 101L);
@@ -103,11 +115,9 @@ class TechnicianRequestRepositoryTest {
         repository.save(IncomingRequest.from(userRequest, 101L));
 
         IncomingRequest duplicateAssignment = IncomingRequest.from(userRequest, 102L);
-        IncomingRequest savedRequest = repository.save(duplicateAssignment);
 
-        assertEquals(102L, savedRequest.getTechnicianId());
-        Optional<IncomingRequest> found = repository.findByRequestId(1L);
-        assertTrue(found.isPresent());
-        assertEquals(102L, found.get().getTechnicianId());
+        assertThrows(Exception.class, () -> {
+            repository.save(duplicateAssignment);
+        });
     }
 }
