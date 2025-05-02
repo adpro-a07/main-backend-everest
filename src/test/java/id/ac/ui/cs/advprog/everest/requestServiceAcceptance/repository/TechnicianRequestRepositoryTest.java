@@ -37,10 +37,13 @@ class TechnicianRequestRepositoryTest {
     void testSaveTechnicianRequestNull() {
         UserRequest userRequest = new UserRequest(1L, "Fix my computer");
         IncomingRequest request = IncomingRequest.from(userRequest, null);
+        IncomingRequest savedRequest = repository.save(request);
 
-        assertThrows(Exception.class, () -> {
-            repository.save(request);
-        });
+
+        assertEquals(1L, savedRequest.getRequestId());
+        assertNull(savedRequest.getTechnicianId());
+        assertEquals("Fix my computer", savedRequest.getDescription());
+        assertEquals(RequestStatus.PENDING, savedRequest.getStatus());
     }
 
     @Test
@@ -113,9 +116,11 @@ class TechnicianRequestRepositoryTest {
         repository.save(IncomingRequest.from(userRequest, 101L));
 
         IncomingRequest duplicateAssignment = IncomingRequest.from(userRequest, 102L);
+        IncomingRequest savedRequest = repository.save(duplicateAssignment);
 
-        assertThrows(Exception.class, () -> {
-            repository.save(duplicateAssignment);
-        });
+        assertEquals(1L, savedRequest.getRequestId());
+        assertEquals(102L, savedRequest.getTechnicianId());
+        assertEquals("Fix my computer", savedRequest.getDescription());
+        assertEquals(RequestStatus.PENDING, savedRequest.getStatus());
     }
 }

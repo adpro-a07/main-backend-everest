@@ -16,9 +16,15 @@ public class UserRequestRepository {
     private final AtomicLong idCounter = new AtomicLong(0);
 
     public UserRequest save(UserRequest userRequest) {
-        userRequests.put(userRequest.getId(), userRequest);
-        return userRequest;
-
+        if (userRequest.getId() == null) {
+            Long newId = idCounter.incrementAndGet();
+            UserRequest newRequest = new UserRequest(newId, userRequest.getUserDescription());
+            userRequests.put(newId, newRequest);
+            return newRequest;
+        } else {
+            userRequests.put(userRequest.getId(), userRequest);
+            return userRequest;
+        }
     }
 
     public Optional<UserRequest> findById(Long id) {
