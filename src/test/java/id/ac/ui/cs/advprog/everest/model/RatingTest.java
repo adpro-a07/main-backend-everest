@@ -100,4 +100,25 @@ class RatingTest {
                     .build();
         });
     }
+
+    @Test
+    void testUpdateCommentAndRatingShouldChangeFieldsAndUpdateTimestamp() throws InterruptedException {
+        Rating rating = Rating.builder()
+                .userId("user-005")
+                .technicianId("tech-005")
+                .comment("Awalnya biasa saja")
+                .rating(3)
+                .build();
+
+        LocalDateTime beforeUpdate = rating.getUpdatedAt();
+
+        Thread.sleep(1); // 1 ms delay
+
+        // Simulasikan update
+        rating.update("Setelah diperbaiki, jadi bagus", 5);
+
+        assertEquals("Setelah diperbaiki, jadi bagus", rating.getComment());
+        assertEquals(5, rating.getRating());
+        assertTrue(rating.getUpdatedAt().isAfter(beforeUpdate));
+    }
 }
