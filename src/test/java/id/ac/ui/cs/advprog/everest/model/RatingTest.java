@@ -121,4 +121,30 @@ class RatingTest {
         assertEquals(5, rating.getRating());
         assertTrue(rating.getUpdatedAt().isAfter(beforeUpdate));
     }
+
+    @Test
+    void testUpdateWithBlankCommentShouldThrowException() {
+        Rating rating = Rating.builder()
+                .userId("user-001")
+                .technicianId("tech-001")
+                .comment("Bagus")
+                .rating(4)
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            rating.update("   ", 4); // hanya spasi
+        });
+    }
+
+    @Test
+    void testBuildRatingWithBlankCommentShouldThrowException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Rating.builder()
+                    .userId("user-001")
+                    .technicianId("tech-001")
+                    .comment("   ") // hanya spasi
+                    .rating(4)
+                    .build();
+        });
+    }
 }
