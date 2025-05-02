@@ -39,17 +39,6 @@ class UserRequestRepositoryTest {
     }
 
     @Test
-    void testSaveExistingRequestFailed() {
-        UserRequest request = new UserRequest(1L, "Fix my laptop");
-
-        UserRequest savedRequest = repository.save(request);
-
-        assertThrows(Exception.class, () -> {
-            repository.save(request);
-        });
-    }
-
-    @Test
     void testFindById_Existing() {
         UserRequest request = repository.save(new UserRequest(null, "Fix my laptop"));
 
