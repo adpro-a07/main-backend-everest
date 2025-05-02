@@ -3,17 +3,36 @@ package id.ac.ui.cs.advprog.everest.model;
 import id.ac.ui.cs.advprog.everest.enums.PaymentType;
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+
 
 import java.util.UUID;
 
 @Getter
 @Setter
+@Entity
+@Table(name = "payment_methods")
 public class PaymentMethod {
+
+    @Id
+    @GeneratedValue
     private UUID id;
+
+    @NotNull(message = "Name must not be null")
     private String name;
+
+    @NotNull(message = "Type must not be null")
+    @Enumerated(EnumType.STRING)
     private PaymentType type;
+
+    @NotNull(message = "Provider must not be null")
     private String provider;
+
+    @NotNull(message = "Account number must not be null")
     private String accountNumber;
+
+    @NotNull(message = "Account name must not be null")
     private String accountName;
 
     public PaymentMethod withId(UUID id) {
