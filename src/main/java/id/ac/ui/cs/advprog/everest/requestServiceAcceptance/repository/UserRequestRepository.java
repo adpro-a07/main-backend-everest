@@ -16,18 +16,9 @@ public class UserRequestRepository {
     private final AtomicLong idCounter = new AtomicLong(0);
 
     public UserRequest save(UserRequest userRequest) {
-        if (userRequest.getId() == null) {
-            // Create new request with generated ID
-            Long newId = idCounter.incrementAndGet();
-            UserRequest newRequest = new UserRequest(newId, userRequest.getUserDescription());
-            userRequests.put(newId, newRequest);
-            return newRequest;
-        } else if (userRequests.containsKey(userRequest.getId())) {
-            throw new IllegalArgumentException("UserRequest with this ID already exists");
-        }else{
-            userRequests.put(userRequest.getId(), userRequest);
-            return userRequest;
-        }
+        userRequests.put(userRequest.getId(), userRequest);
+        return userRequest;
+
     }
 
     public Optional<UserRequest> findById(Long id) {
