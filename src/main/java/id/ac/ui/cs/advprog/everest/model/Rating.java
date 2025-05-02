@@ -47,4 +47,17 @@ public class Rating {
         this.updatedAt = (updatedAt == null) ? this.createdAt : updatedAt;
         this.deleted = (deleted == null) ? false : deleted;
     }
+
+    public void update(String comment, int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Rating harus antara 1 dan 5.");
+        }
+        if (comment == null) {
+            throw new IllegalArgumentException("Komentar tidak boleh null.");
+        }
+
+        this.comment = comment;
+        this.rating = rating;
+        this.updatedAt = LocalDateTime.now();
+    }
 }
