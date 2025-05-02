@@ -6,7 +6,7 @@ public class IncomingRequest implements TechnicianViewableRequest {
     private final String description;
     private final RequestStatus status;
 
-    private IncomingRequest(Long requestId, Long technicianId, String description, RequestStatus status) {
+    public IncomingRequest(Long requestId, Long technicianId, String description, RequestStatus status) {
         this.requestId = requestId;
         this.technicianId = technicianId;
         this.description = description;
