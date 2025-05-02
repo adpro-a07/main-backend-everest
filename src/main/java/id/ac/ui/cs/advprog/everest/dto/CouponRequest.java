@@ -39,4 +39,5 @@ public class CouponRequest {
             message = "Coupon code must be 6-12 alphanumeric characters in uppercase"
     )
     private String code;
+
 }
