@@ -31,7 +31,7 @@ public class PaymentMethodServiceTest {
         sampleMethod.setName("Transfer BCA");
         sampleMethod.setType(PaymentType.BANK_TRANSFER);
         sampleMethod.setProvider("BCA");
-        sampleMethod.setAccountNumber("123456789");
+        sampleMethod.setAccountNumber("1234567890");
         sampleMethod.setAccountName("PT Perbaikiin Aja");
     }
 
@@ -65,7 +65,7 @@ public class PaymentMethodServiceTest {
         newData.setName("Dana");
         newData.setType(PaymentType.E_WALLET);
         newData.setProvider("Dana");
-        newData.setAccountNumber("987654321");
+        newData.setAccountNumber("9876543210");
         newData.setAccountName("PT Perbaikiin Aja");
 
         when(repository.findById(id)).thenReturn(Optional.of(sampleMethod));
