@@ -6,4 +6,5 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
 
     <include file="db/changelog/2025/05/02-01-init-migrations-with-repair-orders.xml"/>
+    <include file="db/changelog/2025/05/06-01-update-repair-order-model-best-practices.xml"/>
 </databaseChangeLog>
