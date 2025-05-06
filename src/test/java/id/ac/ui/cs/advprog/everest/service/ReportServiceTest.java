@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.service;
 
 import id.ac.ui.cs.advprog.everest.model.Report;
+import id.ac.ui.cs.advprog.everest.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.repository.ReportRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class ReportServiceTest {
                 .technicianName("John Doe")
                 .repairDetails("Fixed broken screen")
                 .repairDate(LocalDate.now())
-                .status("Completed")
+                .status(ReportStatus.COMPLETED)
                 .build();
         sampleReport.setId(1);
     }
@@ -123,12 +124,12 @@ class ReportServiceTest {
         List<Report> reportList = new ArrayList<>();
         reportList.add(sampleReport);
 
-        when(reportRepository.findByStatusIgnoreCase("Completed"))
+        when(reportRepository.findByStatus(ReportStatus.COMPLETED))
                 .thenReturn(reportList);
 
-        List<Report> result = reportService.getReportsByStatus("Completed");
+        List<Report> result = reportService.getReportsByStatus(ReportStatus.COMPLETED);
         assertEquals(1, result.size());
-        verify(reportRepository, times(1)).findByStatusIgnoreCase("Completed");
+        verify(reportRepository, times(1)).findByStatus(ReportStatus.COMPLETED);
     }
 
     @Test
@@ -136,20 +137,32 @@ class ReportServiceTest {
         List<Report> reportList = new ArrayList<>();
         reportList.add(sampleReport);
 
-        when(reportRepository.findByStatusIgnoreCase("completed"))
+        when(reportRepository.findByStatus(ReportStatus.COMPLETED))
                 .thenReturn(reportList);
 
-        List<Report> result = reportService.getReportsByStatus("completed");
+        List<Report> result = reportService.getReportsByStatus(ReportStatus.COMPLETED);
         assertEquals(1, result.size());
     }
 
     @Test
-    void testGetReportsByStatus_InvalidStatus() {
-        when(reportRepository.findByStatusIgnoreCase("Invalid"))
+    void testGetReportsByStatus_NoReportsReturned() {
+        when(reportRepository.findByStatus(ReportStatus.REJECTED))
                 .thenReturn(Collections.emptyList());
 
-        List<Report> result = reportService.getReportsByStatus("Invalid");
-        assertTrue(result.isEmpty());
+        List<Report> result = reportService.getReportsByStatus(ReportStatus.REJECTED);
+
+        assertTrue(result.isEmpty(), "Expected no reports for status REJECTED");
+        verify(reportRepository, times(1)).findByStatus(ReportStatus.REJECTED);
+    }
+
+    @Test
+    void testGetReportsByStatus_NullStatus() {
+        when(reportRepository.findByStatus(null)).thenReturn(Collections.emptyList());
+
+        List<Report> result = reportService.getReportsByStatus(null);
+
+        assertTrue(result.isEmpty(), "Expected empty result when status is null");
+        verify(reportRepository, times(1)).findByStatus(null);
     }
 
     @Test
@@ -157,41 +170,41 @@ class ReportServiceTest {
         List<Report> reportList = new ArrayList<>();
         reportList.add(sampleReport);
 
-        when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase(
+        when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(
                 "John",
-                "Completed"))
+                ReportStatus.COMPLETED))
                 .thenReturn(reportList);
 
-        List<Report> result = reportService.getReportsByTechnicianAndStatus("John", "Completed");
+        List<Report> result = reportService.getReportsByTechnicianAndStatus("John", ReportStatus.COMPLETED);
         assertEquals(1, result.size());
         verify(reportRepository, times(1))
-                .findByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase("John", "Completed");
+                .findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.COMPLETED);
     }
 
     @Test
     void testGetReportsByTechnicianAndStatus_PartialMatch() {
         Report anotherReport = Report.builder()
                 .technicianName("Johnny Cash")
-                .status("Completed")
+                .status(ReportStatus.COMPLETED)
                 .build();
 
-        when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase(
+        when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(
                 "john",
-                "completed"))
+                ReportStatus.COMPLETED))
                 .thenReturn(List.of(sampleReport, anotherReport));
 
-        List<Report> result = reportService.getReportsByTechnicianAndStatus("john", "completed");
+        List<Report> result = reportService.getReportsByTechnicianAndStatus("john", ReportStatus.COMPLETED);
         assertEquals(2, result.size());
     }
 
     @Test
     void testGetReportsByTechnicianAndStatus_NoMatch() {
-        when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase(
+        when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(
                 "Alice",
-                "In Progress"))
+                ReportStatus.PENDING))
                 .thenReturn(Collections.emptyList());
 
-        List<Report> result = reportService.getReportsByTechnicianAndStatus("Alice", "In Progress");
+        List<Report> result = reportService.getReportsByTechnicianAndStatus("Alice", ReportStatus.PENDING);
         assertTrue(result.isEmpty());
     }
 
@@ -206,7 +219,7 @@ class ReportServiceTest {
     void testSpecialCharactersInTechnicianName() {
         Report weirdNameReport = Report.builder()
                 .technicianName("Jóhn Dôe")
-                .status("Completed")
+                .status(ReportStatus.COMPLETED)
                 .build();
 
         when(reportRepository.findByTechnicianNameContainingIgnoreCase("john"))

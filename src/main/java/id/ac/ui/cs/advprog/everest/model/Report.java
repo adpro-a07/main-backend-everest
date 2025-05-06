@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.everest.model;
 
 import java.time.LocalDate;
 
+import id.ac.ui.cs.advprog.everest.model.enums.ReportStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -31,10 +32,10 @@ public class Report {
     private LocalDate repairDate;
 
     @NonNull
-    private String status;
+    private ReportStatus status;
 
     @Builder
-    public Report(String technicianName, String repairDetails, LocalDate repairDate, String status) {
+    public Report(String technicianName, String repairDetails, LocalDate repairDate, ReportStatus status) {
         this.technicianName = technicianName;
         this.repairDetails = repairDetails;
         this.repairDate = repairDate;

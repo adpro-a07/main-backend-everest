@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.repository;
 
 import id.ac.ui.cs.advprog.everest.model.Report;
+import id.ac.ui.cs.advprog.everest.model.enums.ReportStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +24,7 @@ class ReportRepositoryTest {
                 .technicianName("John Doe")
                 .repairDetails("Fixed broken screen")
                 .repairDate(LocalDate.now())
-                .status("Completed")
+                .status(ReportStatus.COMPLETED)
                 .build();
     }
 
@@ -48,7 +49,7 @@ class ReportRepositoryTest {
                 .technicianName("Jane Smith")
                 .repairDetails("Fixed charging port")
                 .repairDate(LocalDate.now())
-                .status("Completed")
+                .status(ReportStatus.COMPLETED)
                 .build();
 
         Report savedSecondReport = reportRepository.save(secondReport);
@@ -79,12 +80,12 @@ class ReportRepositoryTest {
         Report savedReport = reportRepository.save(sampleReport);
 
         savedReport.setRepairDetails("Fixed broken screen and replaced battery");
-        savedReport.setStatus("Completed and Verified");
+        savedReport.setStatus(ReportStatus.COMPLETED);
 
         Report updatedReport = reportRepository.save(savedReport);
 
         assertEquals("Fixed broken screen and replaced battery", updatedReport.getRepairDetails());
-        assertEquals("Completed and Verified", updatedReport.getStatus());
+        assertEquals(ReportStatus.COMPLETED, updatedReport.getStatus());
 
         List<Report> allReports = reportRepository.findAll();
         assertEquals(1, allReports.size());
@@ -111,7 +112,7 @@ class ReportRepositoryTest {
                 .technicianName("Alice Johnson")
                 .repairDetails("Replaced motherboard")
                 .repairDate(LocalDate.now())
-                .status("In Progress")
+                .status(ReportStatus.PENDING)
                 .build();
         reportRepository.save(anotherReport);
 
@@ -133,14 +134,14 @@ class ReportRepositoryTest {
                 .technicianName("Alice Johnson")
                 .repairDetails("Replaced motherboard")
                 .repairDate(LocalDate.now())
-                .status("In Progress")
+                .status(ReportStatus.PENDING)
                 .build();
         reportRepository.save(anotherReport);
 
-        List<Report> completedReports = reportRepository.findByStatusIgnoreCase("completed");
+        List<Report> completedReports = reportRepository.findByStatus(ReportStatus.COMPLETED);
         assertEquals(1, completedReports.size());
 
-        List<Report> noReports = reportRepository.findByStatusIgnoreCase("Cancelled");
+        List<Report> noReports = reportRepository.findByStatus(ReportStatus.REJECTED);
         assertEquals(0, noReports.size());
     }
 
@@ -152,7 +153,7 @@ class ReportRepositoryTest {
                 .technicianName("John Doe")
                 .repairDetails("Repaired keyboard")
                 .repairDate(LocalDate.now())
-                .status("In Progress")
+                .status(ReportStatus.PENDING)
                 .build();
         reportRepository.save(report2);
 
@@ -160,20 +161,20 @@ class ReportRepositoryTest {
                 .technicianName("Jane Smith")
                 .repairDetails("Fixed display")
                 .repairDate(LocalDate.now())
-                .status("Completed")
+                .status(ReportStatus.COMPLETED)
                 .build();
         reportRepository.save(report3);
 
         List<Report> johnCompletedReports =
-                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase("John", "Completed");
+                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.COMPLETED);
         assertEquals(1, johnCompletedReports.size());
 
         List<Report> johnInProgressReports =
-                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase("John", "In Progress");
+                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.PENDING);
         assertEquals(1, johnInProgressReports.size());
 
         List<Report> noReports =
-                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase("Bob", "Cancelled");
+                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("Bob", ReportStatus.REJECTED);
         assertEquals(0, noReports.size());
     }
 
@@ -185,7 +186,7 @@ class ReportRepositoryTest {
                 .technicianName("Jane Smith")
                 .repairDetails("Fixed display")
                 .repairDate(LocalDate.now().minusDays(1))
-                .status("Completed")
+                .status(ReportStatus.COMPLETED)
                 .build();
         reportRepository.save(yesterdayReport);
 
@@ -208,7 +209,7 @@ class ReportRepositoryTest {
                 .technicianName("Jane Smith")
                 .repairDetails("Fixed display")
                 .repairDate(LocalDate.now().minusDays(1))
-                .status("Completed")
+                .status(ReportStatus.COMPLETED)
                 .build();
         reportRepository.save(yesterdayReport);
 
@@ -216,7 +217,7 @@ class ReportRepositoryTest {
                 .technicianName("Bob Brown")
                 .repairDetails("Replaced hard drive")
                 .repairDate(LocalDate.now().minusDays(7))
-                .status("Completed")
+                .status(ReportStatus.COMPLETED)
                 .build();
         reportRepository.save(lastWeekReport);
 

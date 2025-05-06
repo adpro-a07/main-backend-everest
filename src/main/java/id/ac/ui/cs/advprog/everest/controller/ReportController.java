@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.controller;
 
 import id.ac.ui.cs.advprog.everest.model.Report;
+import id.ac.ui.cs.advprog.everest.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,7 @@ public class ReportController {
     @GetMapping
     public String viewReports(
             @RequestParam(required = false) String technician,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) ReportStatus status,
             Model model) {
 
         List<Report> reports;

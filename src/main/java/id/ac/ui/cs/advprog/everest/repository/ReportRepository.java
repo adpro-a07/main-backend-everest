@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.repository;
 
 import id.ac.ui.cs.advprog.everest.model.Report;
+import id.ac.ui.cs.advprog.everest.model.enums.ReportStatus;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -56,30 +57,24 @@ public class ReportRepository {
                 .collect(Collectors.toList());
     }
 
-    public List<Report> findByStatusIgnoreCase(String status) {
+    public List<Report> findByStatus(ReportStatus status) {
         if (status == null) {
             return new ArrayList<>();
         }
-
-        String searchTerm = status.toLowerCase();
         return reportData.stream()
-                .filter(report -> report.getStatus().toLowerCase().equals(searchTerm))
+                .filter(report -> report.getStatus() == status)
                 .collect(Collectors.toList());
     }
 
-    public List<Report> findByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase(
-            String technicianName, String status) {
+    public List<Report> findByTechnicianNameContainingIgnoreCaseAndStatus(
+            String technicianName, ReportStatus status) {
         if (technicianName == null || status == null) {
             return new ArrayList<>();
         }
-
-        String nameSearchTerm = technicianName.toLowerCase();
-        String statusSearchTerm = status.toLowerCase();
-
+        String nameLower = technicianName.toLowerCase();
         return reportData.stream()
-                .filter(report ->
-                        report.getTechnicianName().toLowerCase().contains(nameSearchTerm) &&
-                                report.getStatus().toLowerCase().equals(statusSearchTerm))
+                .filter(report -> report.getTechnicianName().toLowerCase().contains(nameLower)
+                        && report.getStatus() == status)
                 .collect(Collectors.toList());
     }
 

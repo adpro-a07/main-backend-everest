@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.service;
 
 import id.ac.ui.cs.advprog.everest.model.Report;
+import id.ac.ui.cs.advprog.everest.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,12 +35,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<Report> getReportsByStatus(String status) {
-        return reportRepository.findByStatusIgnoreCase(status);
+    public List<Report> getReportsByStatus(ReportStatus status) {
+        return reportRepository.findByStatus(status);
     }
 
     @Override
-    public List<Report> getReportsByTechnicianAndStatus(String technicianName, String status) {
-        return reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase(technicianName, status);
+    public List<Report> getReportsByTechnicianAndStatus(String technicianName, ReportStatus status) {
+        return reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(technicianName, status);
     }
 }

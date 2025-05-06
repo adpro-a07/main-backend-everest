@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.controller;
 
 import id.ac.ui.cs.advprog.everest.model.Report;
+import id.ac.ui.cs.advprog.everest.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.service.ReportService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,7 +30,7 @@ class ReportControllerTest {
     @MockBean
     private ReportService reportService;
 
-    private Report createSampleReport(String technician, String status) {
+    private Report createSampleReport(String technician, ReportStatus status) {
         return Report.builder()
                 .technicianName(technician)
                 .repairDetails("Test details")
@@ -39,73 +41,43 @@ class ReportControllerTest {
 
     @Test
     void testGetAllReportsWithoutFilters() throws Exception {
-        // Setup
-        Report report1 = createSampleReport("John Doe", "Completed");
-        Report report2 = createSampleReport("Alice Smith", "In Progress");
+        Report report1 = createSampleReport("John Doe", ReportStatus.COMPLETED);
+        Report report2 = createSampleReport("Alice Smith", ReportStatus.PENDING);
 
         when(reportService.getAllReports()).thenReturn(Arrays.asList(report1, report2));
 
-        // Execute & Verify
         mockMvc.perform(get("/admin/reports"))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("reports", hasSize(2)))
                 .andExpect(model().attribute("currentTechnician", ""))
                 .andExpect(model().attribute("currentStatus", ""));
 
-        verify(reportService, times(1)).getAllReports(); // Tambahkan ini
-        verify(reportService, never()).getReportsByTechnician(any());
-        verify(reportService, never()).getReportsByStatus(any());
+        verify(reportService, times(1)).getAllReports();
+        verify(reportService, never()).getReportsByTechnician(anyString());
+        verify(reportService, never()).getReportsByStatus(any(ReportStatus.class));
+        verify(reportService, never()).getReportsByTechnicianAndStatus(anyString(), any(ReportStatus.class));
     }
 
     @Test
     void testGetAllReportsWithTechnicianFilter() throws Exception {
-        // Setup
-        Report report = createSampleReport("John Doe", "Completed");
+        Report report = createSampleReport("John Doe", ReportStatus.COMPLETED);
 
-        when(reportService.getReportsByTechnician("john"))
-                .thenReturn(Collections.singletonList(report));
+        when(reportService.getReportsByTechnician("john")).thenReturn(Collections.singletonList(report));
 
-        // Execute & Verify
-        mockMvc.perform(get("/admin/reports")
-                        .param("technician", "john"))
+        mockMvc.perform(get("/admin/reports").param("technician", "john"))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("reports", hasSize(1)))
-                .andExpect(model().attribute("currentTechnician", "john"));
+                .andExpect(model().attribute("currentTechnician", "john"))
+                .andExpect(model().attribute("currentStatus", ""));
 
         verify(reportService, times(1)).getReportsByTechnician("john");
-    }
-
-    @Test
-    void testGetAllReportsWithStatusFilter() throws Exception {
-        Report report = createSampleReport("John Doe", "Completed");
-
-        when(reportService.getReportsByStatus("Completed"))
-                .thenReturn(Collections.singletonList(report));
-
-        mockMvc.perform(get("/admin/reports")
-                        .param("status", "Completed"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("reports", Collections.singletonList(report)))
-                .andExpect(model().attribute("currentStatus", "Completed"));
-    }
-
-    @Test
-    void testGetAllReportsWithTechnicianAndStatusFilters() throws Exception {
-        Report report = createSampleReport("John Doe", "Completed");
-
-        when(reportService.getReportsByTechnicianAndStatus("john", "Completed"))
-                .thenReturn(Collections.singletonList(report));
-
-        mockMvc.perform(get("/admin/reports")
-                        .param("technician", "john")
-                        .param("status", "Completed"))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("reports", Collections.singletonList(report)));
+        verify(reportService, never()).getReportsByStatus(any(ReportStatus.class));
+        verify(reportService, never()).getReportsByTechnicianAndStatus(anyString(), any(ReportStatus.class));
     }
 
     @Test
     void testViewReportDetail() throws Exception {
-        Report report = createSampleReport( "John Doe", "Completed");
+        Report report = createSampleReport("John Doe", ReportStatus.COMPLETED);
 
         when(reportService.getReportById(1)).thenReturn(report);
 
@@ -113,6 +85,8 @@ class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("report/detail"))
                 .andExpect(model().attribute("report", report));
+
+        verify(reportService, times(1)).getReportById(1);
     }
 
     @Test
@@ -122,30 +96,35 @@ class ReportControllerTest {
 
         mockMvc.perform(get("/admin/reports/999"))
                 .andExpect(status().isNotFound());
+
+        verify(reportService, times(1)).getReportById(999);
     }
 
     @Test
     void testSpecialCharacterSearch() throws Exception {
-        Report report = createSampleReport( "Jöhn Dœ", "Completed");
+        Report report = createSampleReport("Jöhn Dœ", ReportStatus.COMPLETED);
 
         when(reportService.getReportsByTechnician("öhn"))
                 .thenReturn(Collections.singletonList(report));
 
-        mockMvc.perform(get("/admin/reports")
-                        .param("technician", "öhn"))
+        mockMvc.perform(get("/admin/reports").param("technician", "öhn"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("reports"));
+
+        verify(reportService, times(1)).getReportsByTechnician("öhn");
     }
 
     @Test
     void testEmptySearchResults() throws Exception {
-        when(reportService.getReportsByTechnicianAndStatus("unknown", "Invalid"))
+        when(reportService.getReportsByTechnicianAndStatus("unknown", ReportStatus.PENDING))
                 .thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/admin/reports")
                         .param("technician", "unknown")
-                        .param("status", "Invalid"))
+                        .param("status", ReportStatus.PENDING.name()))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("reports", Collections.emptyList()));
+
+        verify(reportService, times(1)).getReportsByTechnicianAndStatus("unknown", ReportStatus.PENDING);
     }
 }
