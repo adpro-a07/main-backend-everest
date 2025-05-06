@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface ReportService {
     List<Report> getAllReports();
-    Report getReportById(Long id);
+    Report getReportById(int id);
     List<Report> getReportsByTechnician(String technicianName);
     List<Report> getReportsByStatus(String status);
     List<Report> getReportsByTechnicianAndStatus(String technicianName, String status);

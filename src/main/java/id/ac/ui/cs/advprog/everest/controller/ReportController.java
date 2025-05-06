@@ -53,7 +53,7 @@ public class ReportController {
     }
 
     @GetMapping("/{id}")
-    public String viewReportDetail(@PathVariable Long id, Model model) {
+    public String viewReportDetail(@PathVariable int id, Model model) {
         try {
             Report report = reportService.getReportById(id);
             model.addAttribute("report", report);

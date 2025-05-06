@@ -12,26 +12,26 @@ import java.util.stream.Collectors;
 @Repository
 public class ReportRepository {
     private final List<Report> reportData = new ArrayList<>();
-    private Long nextId = 1L;
+    private int nextId = 1;
 
     public List<Report> findAll() {
         return new ArrayList<>(reportData);
     }
 
-    public Optional<Report> findById(Long id) {
+    public Optional<Report> findById(int id) {
         return reportData.stream()
-                .filter(report -> report.getId().equals(id))
+                .filter(report -> report.getId() == id)
                 .findFirst();
     }
 
     public Report save(Report report) {
-        if (report.getId() == null) {
-            report.setId(nextId++);
+        if (report.getId() == 0) {
+            report.setId(Math.toIntExact(nextId++));
             reportData.add(report);
         } else {
             // Update existing report
             for (int i = 0; i < reportData.size(); i++) {
-                if (reportData.get(i).getId().equals(report.getId())) {
+                if (reportData.get(i).getId() == report.getId()) {
                     reportData.set(i, report);
                     break;
                 }
@@ -40,8 +40,8 @@ public class ReportRepository {
         return report;
     }
 
-    public void deleteById(Long id) {
-        reportData.removeIf(report -> report.getId().equals(id));
+    public void deleteById(int id) {
+        reportData.removeIf(report -> report.getId() == id);
     }
 
     public List<Report> findByTechnicianNameContainingIgnoreCase(String technicianName) {

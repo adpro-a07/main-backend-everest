@@ -38,7 +38,7 @@ class ReportServiceTest {
                 .repairDate(LocalDate.now())
                 .status("Completed")
                 .build();
-        sampleReport.setId(1L);
+        sampleReport.setId(1);
     }
 
     @Test
@@ -57,27 +57,27 @@ class ReportServiceTest {
 
     @Test
     void testGetReportById() {
-        when(reportRepository.findById(1L)).thenReturn(Optional.of(sampleReport));
+        when(reportRepository.findById(1)).thenReturn(Optional.of(sampleReport));
 
         // Execute
-        Report result = reportService.getReportById(1L);
+        Report result = reportService.getReportById(1);
 
         // Verify
         assertNotNull(result);
         assertEquals(sampleReport.getTechnicianName(), result.getTechnicianName());
         assertEquals(sampleReport.getRepairDetails(), result.getRepairDetails());
-        verify(reportRepository, times(1)).findById(1L);
+        verify(reportRepository, times(1)).findById(1);
     }
 
     @Test
     void testGetReportByIdNotFound() {
-        when(reportRepository.findById(999L)).thenReturn(Optional.empty());
+        when(reportRepository.findById(999)).thenReturn(Optional.empty());
 
         // Execute & Verify
         assertThrows(RuntimeException.class, () -> {
-            reportService.getReportById(999L);
+            reportService.getReportById(999);
         });
-        verify(reportRepository, times(1)).findById(999L);
+        verify(reportRepository, times(1)).findById(999);
     }
 
     @Test

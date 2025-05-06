@@ -69,7 +69,7 @@ class ReportRepositoryTest {
 
     @Test
     void testFindByIdWithNonExistentId() {
-        Optional<Report> foundReport = reportRepository.findById(999L);
+        Optional<Report> foundReport = reportRepository.findById(999);
 
         assertFalse(foundReport.isPresent());
     }

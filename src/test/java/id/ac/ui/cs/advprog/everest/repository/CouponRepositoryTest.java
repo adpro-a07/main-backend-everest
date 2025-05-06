@@ -25,7 +25,7 @@ class CouponRepositoryTest {
         couponId = UUID.randomUUID();
         sampleCoupon = Coupon.builder()
                 .code("TEST50")
-                .discountAmount(50000L)
+                .discountAmount(50000)
                 .maxUsage(100)
                 .usageCount(0)
                 .validUntil(LocalDate.now().plusDays(30))
@@ -68,12 +68,12 @@ class CouponRepositoryTest {
         couponRepository.save(sampleCoupon);
 
         // Update the coupon
-        sampleCoupon.setDiscountAmount(75000L);
+        sampleCoupon.setDiscountAmount(75000);
         sampleCoupon.setMaxUsage(200);
 
         Coupon updatedCoupon = couponRepository.save(sampleCoupon);
 
-        assertEquals(75000L, updatedCoupon.getDiscountAmount());
+        assertEquals(75000, updatedCoupon.getDiscountAmount());
         assertEquals(200, updatedCoupon.getMaxUsage());
 
         // Verify only one coupon exists (update, not create new)
@@ -102,7 +102,7 @@ class CouponRepositoryTest {
         // Save an expired coupon
         Coupon expiredCoupon = Coupon.builder()
                 .code("EXPIRED")
-                .discountAmount(20000L)
+                .discountAmount(20000)
                 .maxUsage(50)
                 .usageCount(0)
                 .validUntil(LocalDate.now().minusDays(1))
@@ -124,7 +124,7 @@ class CouponRepositoryTest {
         // Save a fully used coupon
         Coupon usedCoupon = Coupon.builder()
                 .code("USED")
-                .discountAmount(30000L)
+                .discountAmount(30000)
                 .maxUsage(50)
                 .usageCount(50)  // Max usage reached
                 .validUntil(LocalDate.now().plusDays(30))

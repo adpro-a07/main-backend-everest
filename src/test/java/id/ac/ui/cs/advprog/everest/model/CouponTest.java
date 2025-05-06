@@ -15,7 +15,7 @@ public class CouponTest {
     public void testCouponBuilder_Success() {
         Coupon coupon = Coupon.builder()
                 .code("TEST2025")
-                .discountAmount(50000L)
+                .discountAmount(50000)
                 .maxUsage(5)
                 .usageCount(0)
                 .validUntil(LocalDate.now().plusDays(10))
@@ -27,7 +27,7 @@ public class CouponTest {
         assertTrue(isValidUUID(coupon.getId()), "ID harus berupa UUID yang valid");
 
         assertEquals("TEST2025", coupon.getCode(), "Kode coupon harus TEST2025");
-        assertEquals(50000L, coupon.getDiscountAmount(), "Besaran diskon harus 5000");
+        assertEquals(50000, coupon.getDiscountAmount(), "Besaran diskon harus 5000");
         assertEquals(5, coupon.getMaxUsage(), "Jumlah penggunaan maksimal harus 5");
         assertEquals(0, coupon.getUsageCount(), "Jumlah pemakaian awal harus 0");
         assertEquals(LocalDate.now().plusDays(10), coupon.getValidUntil(), "Tanggal valid until tidak sesuai");
@@ -37,7 +37,7 @@ public class CouponTest {
     public void testCouponBuilder_InvalidDiscount() {
         Coupon coupon = Coupon.builder()
                 .code("INVALID2025")
-                .discountAmount(-1000L)
+                .discountAmount(-1000)
                 .maxUsage(5)
                 .usageCount(0)
                 .validUntil(LocalDate.now().plusDays(5))
@@ -52,7 +52,7 @@ public class CouponTest {
         assertThrows(NullPointerException.class, () -> {
             Coupon.builder()
                   .code(null)
-                  .discountAmount(5000L)
+                  .discountAmount(5000)
                   .maxUsage(5)
                   .usageCount(0)
                   .validUntil(LocalDate.now().plusDays(10))
@@ -64,7 +64,7 @@ public class CouponTest {
     public void testCouponFieldValueEquality() {
         Coupon coupon1 = Coupon.builder()
                 .code("EQUAL2025")
-                .discountAmount(2500L)
+                .discountAmount(2500)
                 .maxUsage(3)
                 .usageCount(1)
                 .validUntil(LocalDate.of(2025, 12, 31))
@@ -72,7 +72,7 @@ public class CouponTest {
 
         Coupon coupon2 = Coupon.builder()
                 .code("EQUAL2025")
-                .discountAmount(2500L)
+                .discountAmount(2500)
                 .maxUsage(3)
                 .usageCount(1)
                 .validUntil(LocalDate.of(2025, 12, 31))

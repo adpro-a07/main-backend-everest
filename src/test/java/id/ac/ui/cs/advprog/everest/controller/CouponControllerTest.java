@@ -33,7 +33,7 @@ class CouponControllerTest {
     void testGetAllCoupons() throws Exception {
         Coupon coupon = Coupon.builder()
                 .code("PROMO1212")
-                .discountAmount(10000L)
+                .discountAmount(10000)
                 .maxUsage(10)
                 .validUntil(LocalDate.now().plusDays(30))
                 .build();
@@ -64,7 +64,7 @@ class CouponControllerTest {
         verify(couponService, times(1)).createCoupon(couponCaptor.capture());
 
         Coupon capturedCoupon = couponCaptor.getValue();
-        assertEquals(15000L, capturedCoupon.getDiscountAmount());
+        assertEquals(15000, capturedCoupon.getDiscountAmount());
         assertEquals(5, capturedCoupon.getMaxUsage());
         assertEquals(LocalDate.of(2024, 12, 31), capturedCoupon.getValidUntil());
     }
@@ -74,7 +74,7 @@ class CouponControllerTest {
         UUID couponId = UUID.randomUUID();
         Coupon coupon = Coupon.builder()
                 .code("PROMO22")
-                .discountAmount(20000L)
+                .discountAmount(20000)
                 .maxUsage(3)
                 .validUntil(LocalDate.now().plusDays(30))
                 .build();
@@ -108,7 +108,7 @@ class CouponControllerTest {
         Coupon capturedCoupon = couponCaptor.getValue();
         assertEquals(couponId, capturedCoupon.getId());
         assertEquals("UPDATED123", capturedCoupon.getCode());
-        assertEquals(25000L, capturedCoupon.getDiscountAmount());
+        assertEquals(25000, capturedCoupon.getDiscountAmount());
         assertEquals(7, capturedCoupon.getMaxUsage());
         assertEquals(LocalDate.of(2025, 1, 1), capturedCoupon.getValidUntil());
     }

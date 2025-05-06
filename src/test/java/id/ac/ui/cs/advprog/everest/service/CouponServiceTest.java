@@ -39,7 +39,7 @@ class CouponServiceTest {
         // Set up a valid coupon
         validCoupon = Coupon.builder()
                 .code("TEST50")
-                .discountAmount(50000L)
+                .discountAmount(50000)
                 .maxUsage(100)
                 .usageCount(0)
                 .validUntil(LocalDate.now().plusDays(30))
@@ -49,7 +49,7 @@ class CouponServiceTest {
         // Set up an invalid coupon (negative discount)
         invalidCoupon = Coupon.builder()
                 .code("INVALID")
-                .discountAmount(-1000L)
+                .discountAmount(-1000)
                 .maxUsage(0)
                 .usageCount(0)
                 .validUntil(LocalDate.now().minusDays(1))
@@ -131,7 +131,7 @@ class CouponServiceTest {
         // Setup
         Coupon couponWithoutCode = Coupon.builder()
                 .code("SUPER50")
-                .discountAmount(50000L)
+                .discountAmount(50000)
                 .maxUsage(100)
                 .usageCount(null)
                 .validUntil(LocalDate.now().plusDays(30))
@@ -242,7 +242,7 @@ class CouponServiceTest {
         // Setup
         Coupon coupon = Coupon.builder()
                 .code("TEST50")
-                .discountAmount(-1000L)  // Negative discount
+                .discountAmount(-1000)  // Negative discount
                 .maxUsage(100)
                 .usageCount(0)
                 .validUntil(LocalDate.now().plusDays(30))
@@ -260,7 +260,7 @@ class CouponServiceTest {
         // Setup
         Coupon coupon = Coupon.builder()
                 .code("TEST50")
-                .discountAmount(50000L)
+                .discountAmount(50000)
                 .maxUsage(0)  // Zero max usage
                 .usageCount(0)
                 .validUntil(LocalDate.now().plusDays(30))
@@ -278,7 +278,7 @@ class CouponServiceTest {
         // Setup
         Coupon coupon = Coupon.builder()
                 .code("TEST50")
-                .discountAmount(50000L)
+                .discountAmount(50000)
                 .maxUsage(100)
                 .usageCount(0)
                 .validUntil(LocalDate.now().minusDays(1))

@@ -23,7 +23,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public Report getReportById(Long id) {
+    public Report getReportById(int id) {
         return reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Report not found with id: " + id));
     }

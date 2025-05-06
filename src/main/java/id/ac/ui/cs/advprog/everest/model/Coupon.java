@@ -18,13 +18,13 @@ public class Coupon {
     @NonNull
     private String code;
 
-    private Long discountAmount;
+    private Integer discountAmount;
     private Integer maxUsage;
     private Integer usageCount;
     private LocalDate validUntil;
 
     @Builder
-    public Coupon(@NonNull String code, Long discountAmount, Integer maxUsage, Integer usageCount, LocalDate validUntil) {
+    public Coupon(@NonNull String code, Integer discountAmount, Integer maxUsage, Integer usageCount, LocalDate validUntil) {
         this.id = (id == null) ? UUID.randomUUID() : id;
         this.code = code;
         this.discountAmount = discountAmount;

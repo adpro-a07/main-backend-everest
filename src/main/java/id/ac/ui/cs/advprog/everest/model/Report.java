@@ -19,7 +19,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class Report {
     @NonNull
-    private Long id;
+    private int id;
 
     @NonNull
     private String technicianName;

@@ -107,7 +107,7 @@ class ReportControllerTest {
     void testViewReportDetail() throws Exception {
         Report report = createSampleReport( "John Doe", "Completed");
 
-        when(reportService.getReportById(1L)).thenReturn(report);
+        when(reportService.getReportById(1)).thenReturn(report);
 
         mockMvc.perform(get("/admin/reports/1"))
                 .andExpect(status().isOk())
@@ -117,7 +117,7 @@ class ReportControllerTest {
 
     @Test
     void testViewReportDetailNotFound() throws Exception {
-        when(reportService.getReportById(999L))
+        when(reportService.getReportById(999))
                 .thenThrow(new RuntimeException("Report not found"));
 
         mockMvc.perform(get("/admin/reports/999"))
