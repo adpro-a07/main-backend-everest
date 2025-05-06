@@ -22,4 +22,15 @@ class TimestampUtilTest {
         assertThat(instant.getEpochSecond()).isEqualTo(1680000000L);
         assertThat(instant.getNano()).isEqualTo(123456789);
     }
+
+    @Test
+    void testToProtoConvertsCorrectly() {
+        Instant instant = Instant.ofEpochSecond(1680000000L, 123456789);
+
+        Timestamp timestamp = TimestampUtil.toProto(instant);
+
+        assertThat(timestamp).isNotNull();
+        assertThat(timestamp.getSeconds()).isEqualTo(1680000000L);
+        assertThat(timestamp.getNanos()).isEqualTo(123456789);
+    }
 }
