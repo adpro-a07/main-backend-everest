@@ -34,8 +34,8 @@ class ReportServiceTest {
         // Set up a sample report
         sampleReport = Report.builder()
                 .technicianName("John Doe")
-                .detailPengerjaan("Fixed broken screen")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Fixed broken screen")
+                .repairDate(LocalDate.now())
                 .status("Completed")
                 .build();
         sampleReport.setId(1L);
@@ -65,7 +65,7 @@ class ReportServiceTest {
         // Verify
         assertNotNull(result);
         assertEquals(sampleReport.getTechnicianName(), result.getTechnicianName());
-        assertEquals(sampleReport.getDetailPengerjaan(), result.getDetailPengerjaan());
+        assertEquals(sampleReport.getRepairDetails(), result.getRepairDetails());
         verify(reportRepository, times(1)).findById(1L);
     }
 

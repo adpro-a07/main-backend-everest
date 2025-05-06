@@ -83,17 +83,17 @@ public class ReportRepository {
                 .collect(Collectors.toList());
     }
 
-    public List<Report> findByTanggalPengerjaan(LocalDate date) {
+    public List<Report> findByRepairDate(LocalDate date) {
         return reportData.stream()
-                .filter(report -> report.getTanggalPengerjaan().equals(date))
+                .filter(report -> report.getRepairDate().equals(date))
                 .collect(Collectors.toList());
     }
 
-    public List<Report> findByTanggalPengerjaanBetween(LocalDate startDate, LocalDate endDate) {
+    public List<Report> findByRepairDateBetween(LocalDate startDate, LocalDate endDate) {
         return reportData.stream()
                 .filter(report ->
-                        !report.getTanggalPengerjaan().isBefore(startDate) &&
-                                !report.getTanggalPengerjaan().isAfter(endDate))
+                        !report.getRepairDate().isBefore(startDate) &&
+                                !report.getRepairDate().isAfter(endDate))
                 .collect(Collectors.toList());
     }
 }

@@ -13,15 +13,15 @@ public class ReportTest {
     public void testReportBuilder_Success() {
         Report laporan = Report.builder()
                 .technicianName("Budi")
-                .detailPengerjaan("Penggantian motherboard dan pembersihan kipas")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Penggantian motherboard dan pembersihan kipas")
+                .repairDate(LocalDate.now())
                 .status("COMPLETED")
                 .build();
 
         assertNotNull(laporan, "Report seharusnya tidak null setelah dibangun");
         assertEquals("Budi", laporan.getTechnicianName(), "Nama teknisi harus Budi");
-        assertEquals("Penggantian motherboard dan pembersihan kipas", laporan.getDetailPengerjaan(), "Detail pengerjaan tidak sesuai");
-        assertEquals(LocalDate.now(), laporan.getTanggalPengerjaan(), "Tanggal pengerjaan tidak sesuai");
+        assertEquals("Penggantian motherboard dan pembersihan kipas", laporan.getRepairDetails(), "Detail pengerjaan tidak sesuai");
+        assertEquals(LocalDate.now(), laporan.getRepairDate(), "Tanggal pengerjaan tidak sesuai");
         assertEquals("COMPLETED", laporan.getStatus(), "Status laporan harus COMPLETED");
     }
 
@@ -29,15 +29,15 @@ public class ReportTest {
     public void testReportEquality() {
         Report laporan1 = Report.builder()
                 .technicianName("Budi")
-                .detailPengerjaan("Penggantian hard drive")
-                .tanggalPengerjaan(LocalDate.of(2025, 1, 15))
+                .repairDetails("Penggantian hard drive")
+                .repairDate(LocalDate.of(2025, 1, 15))
                 .status("PENDING")
                 .build();
 
         Report laporan2 = Report.builder()
                 .technicianName("Budi")
-                .detailPengerjaan("Penggantian hard drive")
-                .tanggalPengerjaan(LocalDate.of(2025, 1, 15))
+                .repairDetails("Penggantian hard drive")
+                .repairDate(LocalDate.of(2025, 1, 15))
                 .status("PENDING")
                 .build();
 
@@ -49,8 +49,8 @@ public class ReportTest {
     public void testReport_InvalidStatus() {
         Report laporan = Report.builder()
                 .technicianName("Budi")
-                .detailPengerjaan("Perbaikan layar")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Perbaikan layar")
+                .repairDate(LocalDate.now())
                 .status("")  // Status kosong
                 .build();
         assertTrue(laporan.getStatus().isEmpty(), "Status seharusnya kosong dan dianggap tidak valid oleh logika bisnis");

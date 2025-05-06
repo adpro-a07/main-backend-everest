@@ -31,8 +31,8 @@ class ReportControllerTest {
     private Report createSampleReport(String technician, String status) {
         return Report.builder()
                 .technicianName(technician)
-                .detailPengerjaan("Test details")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Test details")
+                .repairDate(LocalDate.now())
                 .status(status)
                 .build();
     }

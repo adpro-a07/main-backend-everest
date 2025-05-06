@@ -25,19 +25,19 @@ public class Report {
     private String technicianName;
 
     @NonNull
-    private String detailPengerjaan;
+    private String repairDetails;
 
     @NonNull
-    private LocalDate tanggalPengerjaan;
+    private LocalDate repairDate;
 
     @NonNull
     private String status;
 
     @Builder
-    public Report(String technicianName, String detailPengerjaan, LocalDate tanggalPengerjaan, String status) {
+    public Report(String technicianName, String repairDetails, LocalDate repairDate, String status) {
         this.technicianName = technicianName;
-        this.detailPengerjaan = detailPengerjaan;
-        this.tanggalPengerjaan = tanggalPengerjaan;
+        this.repairDetails = repairDetails;
+        this.repairDate = repairDate;
         this.status = status;
     }
 }

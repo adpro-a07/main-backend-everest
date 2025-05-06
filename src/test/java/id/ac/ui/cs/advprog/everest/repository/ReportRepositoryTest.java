@@ -21,8 +21,8 @@ class ReportRepositoryTest {
 
         sampleReport = Report.builder()
                 .technicianName("John Doe")
-                .detailPengerjaan("Fixed broken screen")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Fixed broken screen")
+                .repairDate(LocalDate.now())
                 .status("Completed")
                 .build();
     }
@@ -46,8 +46,8 @@ class ReportRepositoryTest {
 
         Report secondReport = Report.builder()
                 .technicianName("Jane Smith")
-                .detailPengerjaan("Fixed charging port")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Fixed charging port")
+                .repairDate(LocalDate.now())
                 .status("Completed")
                 .build();
 
@@ -78,12 +78,12 @@ class ReportRepositoryTest {
     void testUpdateExistingReport() {
         Report savedReport = reportRepository.save(sampleReport);
 
-        savedReport.setDetailPengerjaan("Fixed broken screen and replaced battery");
+        savedReport.setRepairDetails("Fixed broken screen and replaced battery");
         savedReport.setStatus("Completed and Verified");
 
         Report updatedReport = reportRepository.save(savedReport);
 
-        assertEquals("Fixed broken screen and replaced battery", updatedReport.getDetailPengerjaan());
+        assertEquals("Fixed broken screen and replaced battery", updatedReport.getRepairDetails());
         assertEquals("Completed and Verified", updatedReport.getStatus());
 
         List<Report> allReports = reportRepository.findAll();
@@ -109,8 +109,8 @@ class ReportRepositoryTest {
 
         Report anotherReport = Report.builder()
                 .technicianName("Alice Johnson")
-                .detailPengerjaan("Replaced motherboard")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Replaced motherboard")
+                .repairDate(LocalDate.now())
                 .status("In Progress")
                 .build();
         reportRepository.save(anotherReport);
@@ -131,8 +131,8 @@ class ReportRepositoryTest {
 
         Report anotherReport = Report.builder()
                 .technicianName("Alice Johnson")
-                .detailPengerjaan("Replaced motherboard")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Replaced motherboard")
+                .repairDate(LocalDate.now())
                 .status("In Progress")
                 .build();
         reportRepository.save(anotherReport);
@@ -150,16 +150,16 @@ class ReportRepositoryTest {
 
         Report report2 = Report.builder()
                 .technicianName("John Doe")
-                .detailPengerjaan("Repaired keyboard")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Repaired keyboard")
+                .repairDate(LocalDate.now())
                 .status("In Progress")
                 .build();
         reportRepository.save(report2);
 
         Report report3 = Report.builder()
                 .technicianName("Jane Smith")
-                .detailPengerjaan("Fixed display")
-                .tanggalPengerjaan(LocalDate.now())
+                .repairDetails("Fixed display")
+                .repairDate(LocalDate.now())
                 .status("Completed")
                 .build();
         reportRepository.save(report3);
@@ -178,57 +178,57 @@ class ReportRepositoryTest {
     }
 
     @Test
-    void testFindByTanggalPengerjaan() {
+    void testFindByRepairDate() {
         reportRepository.save(sampleReport);
 
         Report yesterdayReport = Report.builder()
                 .technicianName("Jane Smith")
-                .detailPengerjaan("Fixed display")
-                .tanggalPengerjaan(LocalDate.now().minusDays(1))
+                .repairDetails("Fixed display")
+                .repairDate(LocalDate.now().minusDays(1))
                 .status("Completed")
                 .build();
         reportRepository.save(yesterdayReport);
 
-        List<Report> todayReports = reportRepository.findByTanggalPengerjaan(LocalDate.now());
+        List<Report> todayReports = reportRepository.findByRepairDate(LocalDate.now());
         assertEquals(1, todayReports.size());
 
-        List<Report> yesterdayReports = reportRepository.findByTanggalPengerjaan(LocalDate.now().minusDays(1));
+        List<Report> yesterdayReports = reportRepository.findByRepairDate(LocalDate.now().minusDays(1));
         assertEquals(1, yesterdayReports.size());
 
-        List<Report> noReports = reportRepository.findByTanggalPengerjaan(LocalDate.now().minusDays(2));
+        List<Report> noReports = reportRepository.findByRepairDate(LocalDate.now().minusDays(2));
         assertEquals(0, noReports.size());
     }
 
     @Test
-    void testFindByTanggalPengerjaanBetween() {
+    void testFindByRepairDateBetween() {
         Report todayReport = sampleReport;
         reportRepository.save(todayReport);
 
         Report yesterdayReport = Report.builder()
                 .technicianName("Jane Smith")
-                .detailPengerjaan("Fixed display")
-                .tanggalPengerjaan(LocalDate.now().minusDays(1))
+                .repairDetails("Fixed display")
+                .repairDate(LocalDate.now().minusDays(1))
                 .status("Completed")
                 .build();
         reportRepository.save(yesterdayReport);
 
         Report lastWeekReport = Report.builder()
                 .technicianName("Bob Brown")
-                .detailPengerjaan("Replaced hard drive")
-                .tanggalPengerjaan(LocalDate.now().minusDays(7))
+                .repairDetails("Replaced hard drive")
+                .repairDate(LocalDate.now().minusDays(7))
                 .status("Completed")
                 .build();
         reportRepository.save(lastWeekReport);
 
-        List<Report> recentReports = reportRepository.findByTanggalPengerjaanBetween(
+        List<Report> recentReports = reportRepository.findByRepairDateBetween(
                 LocalDate.now().minusDays(1), LocalDate.now());
         assertEquals(2, recentReports.size());
 
-        List<Report> weekReports = reportRepository.findByTanggalPengerjaanBetween(
+        List<Report> weekReports = reportRepository.findByRepairDateBetween(
                 LocalDate.now().minusDays(7), LocalDate.now());
         assertEquals(3, weekReports.size());
 
-        List<Report> noReports = reportRepository.findByTanggalPengerjaanBetween(
+        List<Report> noReports = reportRepository.findByRepairDateBetween(
                 LocalDate.now().minusDays(14), LocalDate.now().minusDays(8));
         assertEquals(0, noReports.size());
     }
