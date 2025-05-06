@@ -8,5 +8,15 @@ public class TimestampUtil {
     public static Instant toInstant(Timestamp timestamp) {
         return timestamp == null ? null : Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
+
+    public static Timestamp toProto(Instant instant) {
+        if (instant == null) {
+            return null;
+        }
+        return Timestamp.newBuilder()
+                .setSeconds(instant.getEpochSecond())
+                .setNanos(instant.getNano())
+                .build();
+    }
 }
 
