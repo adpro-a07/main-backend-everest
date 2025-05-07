@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.authentication.exception.AuthServiceException;
 import id.ac.ui.cs.advprog.everest.authentication.exception.InvalidTokenException;
-import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
 import id.ac.ui.cs.advprog.everest.common.utils.RequestMetadataUtil;
 import id.ac.ui.cs.advprog.everest.common.utils.TimestampUtil;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.*;
