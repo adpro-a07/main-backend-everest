@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/")
 public class TestController {
+
     @GetMapping("/health")
     public String getHealth() {
         return "Health is ok!";
