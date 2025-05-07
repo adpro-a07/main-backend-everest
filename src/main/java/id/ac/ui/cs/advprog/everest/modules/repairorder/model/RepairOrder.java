@@ -1,6 +1,5 @@
-package id.ac.ui.cs.advprog.everest.model;
+package id.ac.ui.cs.advprog.everest.modules.repairorder.model;
 
-import id.ac.ui.cs.advprog.everest.model.enums.RepairOrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;

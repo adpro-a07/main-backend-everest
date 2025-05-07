@@ -2,7 +2,7 @@ package id.ac.ui.cs.advprog.everest.authentication;
 
 import id.ac.ui.cs.advprog.everest.authentication.exception.AuthServiceException;
 import id.ac.ui.cs.advprog.everest.authentication.exception.InvalidTokenException;
-import id.ac.ui.cs.advprog.everest.service.AuthServiceGrpcClient;
+import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

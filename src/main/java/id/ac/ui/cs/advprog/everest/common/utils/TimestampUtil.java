@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.util;
+package id.ac.ui.cs.advprog.everest.common.utils;
 
 import com.google.protobuf.Timestamp;
 
