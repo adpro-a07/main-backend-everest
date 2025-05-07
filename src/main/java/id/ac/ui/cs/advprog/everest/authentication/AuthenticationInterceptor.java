@@ -5,6 +5,8 @@ import id.ac.ui.cs.advprog.everest.authentication.exception.InvalidTokenExceptio
 import id.ac.ui.cs.advprog.everest.service.AuthServiceGrpcClient;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,7 +27,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(@NonNull HttpServletRequest request,
+                             @NonNull HttpServletResponse response,
+                             @NonNull Object handler) throws Exception {
         if (!(handler instanceof HandlerMethod handlerMethod)) {
             // Not a controller method, skip authentication
             return true;
@@ -75,7 +79,10 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+    public void afterCompletion(@NonNull HttpServletRequest request,
+                                @NonNull HttpServletResponse response,
+                                @NonNull Object handler,
+                                @Nullable Exception ex) {
         // Clean up after handling the request
         UserContext.clear();
     }
