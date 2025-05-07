@@ -12,14 +12,11 @@ import org.springframework.test.context.TestPropertySource;
         "spring.datasource.driver-class-name=org.h2.Driver",
         "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
         "spring.liquibase.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "jwt.secret=testsecretkeywhichmustbeatleast32characterslong",
-        "jwt.expiration=3600000",
+        "spring.jpa.hibernate.ddl-auto=create-drop"
 })
 class EverestApplicationTests {
 
     @Test
     void contextLoads() {
     }
-
 }
