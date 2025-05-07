@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.report.controller;
 
+import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
 import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
 import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.service.ReportService;
@@ -29,6 +30,9 @@ class ReportControllerTest {
 
     @MockBean
     private ReportService reportService;
+
+    @MockBean
+    private AuthServiceGrpcClient authServiceGrpcClient;
 
     private Report createSampleReport(String technician, ReportStatus status) {
         return Report.builder()
