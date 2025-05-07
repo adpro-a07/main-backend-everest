@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1746538411167-9" author="ryuun1corn">
+        <dropColumn columnName="use_coupon" tableName="repair_orders"/>
+    </changeSet>
+    <changeSet id="1746538411167-1" author="ryuun1corn">
+        <addNotNullConstraint columnDataType="DATETIME" columnName="created_at" tableName="repair_orders"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1746538411167-2" author="ryuun1corn">
+        <modifyDataType columnName="issue_description" newDataType="VARCHAR(500)" tableName="repair_orders"/>
+    </changeSet>
+    <changeSet id="1746538411167-3" author="ryuun1corn">
+        <modifyDataType columnName="item_condition" newDataType="VARCHAR(100)" tableName="repair_orders"/>
+    </changeSet>
+    <changeSet id="1746538411167-4" author="ryuun1corn">
+        <addNotNullConstraint columnDataType="VARCHAR(100)" columnName="item_condition" tableName="repair_orders"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1746538411167-5" author="ryuun1corn">
+        <modifyDataType columnName="item_name" newDataType="VARCHAR(100)" tableName="repair_orders"/>
+    </changeSet>
+    <changeSet id="1746538411167-6" author="ryuun1corn">
+        <addNotNullConstraint columnDataType="VARCHAR(100)" columnName="item_name" tableName="repair_orders"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1746538411167-7" author="ryuun1corn">
+        <addNotNullConstraint columnDataType="UUID" columnName="technician_id" tableName="repair_orders"
+                              validate="true"/>
+    </changeSet>
+    <changeSet id="1746538411167-8" author="ryuun1corn">
+        <addNotNullConstraint columnDataType="DATETIME" columnName="updated_at" tableName="repair_orders"
+                              validate="true"/>
+    </changeSet>
+
+</databaseChangeLog>

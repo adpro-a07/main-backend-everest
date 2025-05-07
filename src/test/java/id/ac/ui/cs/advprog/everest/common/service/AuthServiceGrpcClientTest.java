@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.service;
+package id.ac.ui.cs.advprog.everest.common.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -6,8 +6,8 @@ import static org.mockito.Mockito.*;
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.authentication.exception.AuthServiceException;
 import id.ac.ui.cs.advprog.everest.authentication.exception.InvalidTokenException;
-import id.ac.ui.cs.advprog.everest.util.RequestMetadataUtil;
-import id.ac.ui.cs.advprog.everest.util.TimestampUtil;
+import id.ac.ui.cs.advprog.everest.common.utils.RequestMetadataUtil;
+import id.ac.ui.cs.advprog.everest.common.utils.TimestampUtil;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.*;
 import io.grpc.StatusRuntimeException;
 import org.junit.jupiter.api.BeforeEach;

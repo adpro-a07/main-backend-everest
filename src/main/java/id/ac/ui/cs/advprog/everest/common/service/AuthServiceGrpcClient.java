@@ -1,10 +1,10 @@
-package id.ac.ui.cs.advprog.everest.service;
+package id.ac.ui.cs.advprog.everest.common.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.authentication.exception.AuthServiceException;
 import id.ac.ui.cs.advprog.everest.authentication.exception.InvalidTokenException;
-import id.ac.ui.cs.advprog.everest.util.RequestMetadataUtil;
-import id.ac.ui.cs.advprog.everest.util.TimestampUtil;
+import id.ac.ui.cs.advprog.everest.common.utils.RequestMetadataUtil;
+import id.ac.ui.cs.advprog.everest.common.utils.TimestampUtil;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.AuthServiceGrpc;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.BatchUserLookupRequest;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.BatchUserLookupResponse;

@@ -1,7 +1,7 @@
 package id.ac.ui.cs.advprog.everest.config;
 
-import id.ac.ui.cs.advprog.everest.service.AuthServiceGrpcClient;
-import id.ac.ui.cs.advprog.everest.util.RequestMetadataUtil;
+import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
+import id.ac.ui.cs.advprog.everest.common.utils.RequestMetadataUtil;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.AuthServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
