@@ -1,13 +1,19 @@
 package id.ac.ui.cs.advprog.everest.modules.coupon.controller;
 
+import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
+import id.ac.ui.cs.advprog.everest.config.SecurityConfig;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.service.CouponService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -21,6 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(CouponController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(SecurityConfig.class)
+@ExtendWith(MockitoExtension.class)
 class CouponControllerTest {
 
     @Autowired
@@ -29,7 +37,11 @@ class CouponControllerTest {
     @MockBean
     private CouponService couponService;
 
+    @MockBean
+    private AuthServiceGrpcClient authServiceGrpcClient;
+
     @Test
+    @WithMockUser(roles = "ADMIN")
     void testGetAllCoupons() throws Exception {
         Coupon coupon = Coupon.builder()
                 .code("PROMO1212")
