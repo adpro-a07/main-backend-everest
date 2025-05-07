@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.modules.repairorder.model;
+package id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums;
 
 public enum RepairOrderStatus {
     PENDING_CONFIRMATION,

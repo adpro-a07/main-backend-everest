@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.repairorder.model;
 
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
