@@ -1,7 +1,5 @@
 package id.ac.ui.cs.advprog.everest.modules.rating.controller;
 
-import id.ac.ui.cs.advprog.everest.modules.rating.dto.CreateRatingRequest;
-import id.ac.ui.cs.advprog.everest.modules.rating.dto.UpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.modules.rating.model.Rating;
 import id.ac.ui.cs.advprog.everest.modules.rating.service.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
