@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.dto;
+package id.ac.ui.cs.advprog.everest.modules.rating.dto;
 
 import lombok.Getter;
 import lombok.Setter;

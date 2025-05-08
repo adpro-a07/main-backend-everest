@@ -1,8 +1,8 @@
-package id.ac.ui.cs.advprog.everest.common.service;
+package id.ac.ui.cs.advprog.everest.modules.rating.service;
 
-import id.ac.ui.cs.advprog.everest.dto.CreateRatingRequest;
-import id.ac.ui.cs.advprog.everest.dto.UpdateRatingRequest;
-import id.ac.ui.cs.advprog.everest.model.Rating;
+import id.ac.ui.cs.advprog.everest.modules.rating.dto.CreateRatingRequest;
+import id.ac.ui.cs.advprog.everest.modules.rating.dto.UpdateRatingRequest;
+import id.ac.ui.cs.advprog.everest.modules.rating.model.Rating;
 
 import java.util.List;
 import java.util.UUID;

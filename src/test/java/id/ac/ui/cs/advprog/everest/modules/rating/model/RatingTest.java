@@ -1,7 +1,6 @@
-package id.ac.ui.cs.advprog.everest.model;
+package id.ac.ui.cs.advprog.everest.modules.rating.model;
 
 import org.junit.jupiter.api.Test;
-import id.ac.ui.cs.advprog.everest.model.Rating;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -41,7 +40,7 @@ class RatingTest {
 
     @Test
     void testDefaultValuesWhenOptionalFieldsAreNull() {
-        id.ac.ui.cs.advprog.everest.model.Rating rating = Rating.builder()
+        Rating rating = Rating.builder()
                 .userId("user-002")
                 .technicianId("tech-002")
                 .comment("Mantap")

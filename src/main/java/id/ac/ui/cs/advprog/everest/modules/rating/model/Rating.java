@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.model;
+package id.ac.ui.cs.advprog.everest.modules.rating.model;
 
 import lombok.Builder;
 import lombok.Getter;
