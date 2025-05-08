@@ -113,7 +113,7 @@ class ReportRepositoryTest {
                 .technicianName("Alice Johnson")
                 .repairDetails("Replaced motherboard")
                 .repairDate(LocalDate.now())
-                .status(ReportStatus.PENDING)
+                .status(ReportStatus.PENDING_CONFIRMATION)
                 .build();
         reportRepository.save(anotherReport);
 
@@ -135,14 +135,14 @@ class ReportRepositoryTest {
                 .technicianName("Alice Johnson")
                 .repairDetails("Replaced motherboard")
                 .repairDate(LocalDate.now())
-                .status(ReportStatus.PENDING)
+                .status(ReportStatus.PENDING_CONFIRMATION)
                 .build();
         reportRepository.save(anotherReport);
 
         List<Report> completedReports = reportRepository.findByStatus(ReportStatus.COMPLETED);
         assertEquals(1, completedReports.size());
 
-        List<Report> noReports = reportRepository.findByStatus(ReportStatus.REJECTED);
+        List<Report> noReports = reportRepository.findByStatus(ReportStatus.CANCELLED);
         assertEquals(0, noReports.size());
     }
 
@@ -154,7 +154,7 @@ class ReportRepositoryTest {
                 .technicianName("John Doe")
                 .repairDetails("Repaired keyboard")
                 .repairDate(LocalDate.now())
-                .status(ReportStatus.PENDING)
+                .status(ReportStatus.PENDING_CONFIRMATION)
                 .build();
         reportRepository.save(report2);
 
@@ -171,11 +171,11 @@ class ReportRepositoryTest {
         assertEquals(1, johnCompletedReports.size());
 
         List<Report> johnInProgressReports =
-                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.PENDING);
+                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.PENDING_CONFIRMATION);
         assertEquals(1, johnInProgressReports.size());
 
         List<Report> noReports =
-                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("Bob", ReportStatus.REJECTED);
+                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("Bob", ReportStatus.CANCELLED);
         assertEquals(0, noReports.size());
     }
 

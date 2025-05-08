@@ -52,7 +52,7 @@ class ReportRequestTest {
                 .technicianName("Alice Smith")
                 .repairDetails("Repair details")
                 .repairDate(null)
-                .status(ReportStatus.PENDING)
+                .status(ReportStatus.PENDING_CONFIRMATION)
                 .build();
 
         var violations = validator.validate(request);

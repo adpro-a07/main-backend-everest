@@ -148,13 +148,13 @@ class ReportServiceTest {
 
     @Test
     void testGetReportsByStatus_NoReportsReturned() {
-        when(reportRepository.findByStatus(ReportStatus.REJECTED))
+        when(reportRepository.findByStatus(ReportStatus.CANCELLED))
                 .thenReturn(Collections.emptyList());
 
-        List<Report> result = reportService.getReportsByStatus(ReportStatus.REJECTED);
+        List<Report> result = reportService.getReportsByStatus(ReportStatus.CANCELLED);
 
-        assertTrue(result.isEmpty(), "Expected no reports for status REJECTED");
-        verify(reportRepository, times(1)).findByStatus(ReportStatus.REJECTED);
+        assertTrue(result.isEmpty(), "Expected no reports for status CANCELLED");
+        verify(reportRepository, times(1)).findByStatus(ReportStatus.CANCELLED);
     }
 
     @Test
@@ -203,10 +203,10 @@ class ReportServiceTest {
     void testGetReportsByTechnicianAndStatus_NoMatch() {
         when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(
                 "Alice",
-                ReportStatus.PENDING))
+                ReportStatus.PENDING_CONFIRMATION))
                 .thenReturn(Collections.emptyList());
 
-        List<Report> result = reportService.getReportsByTechnicianAndStatus("Alice", ReportStatus.PENDING);
+        List<Report> result = reportService.getReportsByTechnicianAndStatus("Alice", ReportStatus.PENDING_CONFIRMATION);
         assertTrue(result.isEmpty());
     }
 

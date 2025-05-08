@@ -49,7 +49,7 @@ class ReportControllerTest {
     @Test
     void testGetAllReportsWithoutFilters() throws Exception {
         Report report1 = createSampleReport("John Doe", ReportStatus.COMPLETED);
-        Report report2 = createSampleReport("Alice Smith", ReportStatus.PENDING);
+        Report report2 = createSampleReport("Alice Smith", ReportStatus.PENDING_CONFIRMATION);
 
         when(reportService.getAllReports()).thenReturn(Arrays.asList(report1, report2));
 
