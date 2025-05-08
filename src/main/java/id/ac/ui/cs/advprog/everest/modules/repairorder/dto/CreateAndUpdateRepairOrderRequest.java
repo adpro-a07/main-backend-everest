@@ -11,7 +11,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class CreateRepairOrderRequest {
+public class CreateAndUpdateRepairOrderRequest {
     @NotBlank
     @Size(max = 100)
     private String itemName;
