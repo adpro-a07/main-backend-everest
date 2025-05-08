@@ -2,9 +2,25 @@ package id.ac.ui.cs.advprog.everest.modules.repairorder.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-import id.ac.ui.cs.advprog.everest.modules.repairorder.dto.CreateRepairOrderRequest;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.dto.CreateAndUpdateRepairOrderRequest;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.dto.ViewRepairOrderResponse;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface RepairOrderService {
-    GenericResponse<Void> createRepairOrder(CreateRepairOrderRequest createRepairOrderRequest,
-                                            AuthenticatedUser customer);
+    GenericResponse<ViewRepairOrderResponse> createRepairOrder(
+            CreateAndUpdateRepairOrderRequest createAndUpdateRepairOrderRequest,
+            AuthenticatedUser customer
+    );
+
+    GenericResponse<List<ViewRepairOrderResponse>> getRepairOrders(AuthenticatedUser customer);
+
+    GenericResponse<ViewRepairOrderResponse> updateRepairOrder(
+            String repairOrderId,
+            CreateAndUpdateRepairOrderRequest createAndUpdateRepairOrderRequest,
+            AuthenticatedUser customer
+    );
+
+    GenericResponse<Void> deleteRepairOrder(String repairOrderId, AuthenticatedUser customer);
 }
