@@ -6,7 +6,6 @@ import id.ac.ui.cs.advprog.everest.modules.repairorder.dto.CreateAndUpdateRepair
 import id.ac.ui.cs.advprog.everest.modules.repairorder.dto.ViewRepairOrderResponse;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface RepairOrderService {
     GenericResponse<ViewRepairOrderResponse> createRepairOrder(
