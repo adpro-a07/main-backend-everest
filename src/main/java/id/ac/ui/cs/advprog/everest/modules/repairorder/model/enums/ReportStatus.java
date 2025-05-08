@@ -4,7 +4,8 @@ public enum ReportStatus {
     PENDING,
     VERIFIED,
     REJECTED,
-    COMPLETED;
+    COMPLETED,
+    IN_PROGRESS;
 
     public boolean isEmpty() {
         return this == REJECTED || this == COMPLETED;
