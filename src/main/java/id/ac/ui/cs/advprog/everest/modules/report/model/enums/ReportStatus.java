@@ -6,8 +6,4 @@ public enum ReportStatus {
     REJECTED,
     COMPLETED,
     IN_PROGRESS;
-
-    public boolean isEmpty() {
-        return this == REJECTED || this == COMPLETED;
-    }
 }
