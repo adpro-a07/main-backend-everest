@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.util;
+package id.ac.ui.cs.advprog.everest.common.utils;
 
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.RequestMetadata;
 import org.springframework.beans.factory.annotation.Value;
