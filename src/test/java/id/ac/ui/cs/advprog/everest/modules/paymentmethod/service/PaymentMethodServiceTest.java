@@ -1,8 +1,8 @@
 package id.ac.ui.cs.advprog.everest.service;
 
-import id.ac.ui.cs.advprog.everest.enums.PaymentType;
-import id.ac.ui.cs.advprog.everest.model.PaymentMethod;
-import id.ac.ui.cs.advprog.everest.repository.PaymentMethodRepository;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.enums.PaymentType;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.PaymentMethod;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.repository.PaymentMethodRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;

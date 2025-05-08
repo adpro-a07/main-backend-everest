@@ -1,7 +1,8 @@
 package id.ac.ui.cs.advprog.everest.model;
 
 
-import id.ac.ui.cs.advprog.everest.enums.PaymentType;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.enums.PaymentType;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.PaymentMethod;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
