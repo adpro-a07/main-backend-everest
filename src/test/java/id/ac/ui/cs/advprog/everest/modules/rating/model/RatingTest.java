@@ -147,4 +147,17 @@ class RatingTest {
                     .build();
         });
     }
+
+    @Test
+    void testUpdateWithInvalidRatingShouldThrowException() {
+        Rating rating = Rating.builder()
+                .userId("user-001")
+                .technicianId("tech-001")
+                .comment("Bagus")
+                .rating(4)
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> rating.update("Masih bagus", 0));
+        assertThrows(IllegalArgumentException.class, () -> rating.update("Masih bagus", 6));
+    }
 }
