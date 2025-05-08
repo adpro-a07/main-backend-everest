@@ -2,12 +2,12 @@ package id.ac.ui.cs.advprog.everest.modules.rating.model;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class RatingTest {
+
     @Test
     void testBuildRatingWithAllFields() {
         UUID id = UUID.randomUUID();
@@ -15,7 +15,6 @@ class RatingTest {
         String technicianId = "tech-001";
         String comment = "Pelayanan sangat memuaskan.";
         int ratingValue = 4;
-        LocalDateTime now = LocalDateTime.now();
 
         Rating rating = Rating.builder()
                 .id(id)
@@ -23,8 +22,6 @@ class RatingTest {
                 .technicianId(technicianId)
                 .comment(comment)
                 .rating(ratingValue)
-                .createdAt(now)
-                .updatedAt(now)
                 .deleted(false)
                 .build();
 
@@ -33,9 +30,9 @@ class RatingTest {
         assertEquals(comment, rating.getComment());
         assertEquals(ratingValue, rating.getRating());
         assertEquals(id, rating.getId());
-        assertEquals(now, rating.getCreatedAt());
-        assertEquals(now, rating.getUpdatedAt());
         assertFalse(rating.isDeleted());
+        assertNull(rating.getCreatedAt());
+        assertNull(rating.getUpdatedAt());
     }
 
     @Test
@@ -48,9 +45,9 @@ class RatingTest {
                 .build();
 
         assertNotNull(rating.getId());
-        assertNotNull(rating.getCreatedAt());
-        assertNotNull(rating.getUpdatedAt());
         assertFalse(rating.isDeleted());
+        assertNull(rating.getCreatedAt());
+        assertNull(rating.getUpdatedAt());
     }
 
     @Test
@@ -102,7 +99,7 @@ class RatingTest {
     }
 
     @Test
-    void testUpdateCommentAndRatingShouldChangeFieldsAndUpdateTimestamp() throws InterruptedException {
+    void testUpdateCommentAndRatingShouldChangeFields() {
         Rating rating = Rating.builder()
                 .userId("user-005")
                 .technicianId("tech-005")
@@ -110,16 +107,11 @@ class RatingTest {
                 .rating(3)
                 .build();
 
-        LocalDateTime beforeUpdate = rating.getUpdatedAt();
-
-        Thread.sleep(1); // 1 ms delay
-
-        // Simulasikan update
         rating.update("Setelah diperbaiki, jadi bagus", 5);
 
         assertEquals("Setelah diperbaiki, jadi bagus", rating.getComment());
         assertEquals(5, rating.getRating());
-        assertTrue(rating.getUpdatedAt().isAfter(beforeUpdate));
+        // updatedAt akan diisi setelah persist dan flush oleh JPA
     }
 
     @Test

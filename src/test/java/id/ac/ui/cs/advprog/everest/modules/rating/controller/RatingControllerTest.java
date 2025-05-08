@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -52,8 +51,6 @@ class RatingControllerTest {
                 .technicianId("tech-1")
                 .comment("Great service!")
                 .rating(5)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .deleted(false)
                 .build();
     }
@@ -89,8 +86,6 @@ class RatingControllerTest {
                 .technicianId("tech-1")
                 .comment("Service improved!")
                 .rating(4)
-                .createdAt(expectedRating.getCreatedAt())
-                .updatedAt(LocalDateTime.now())
                 .deleted(false)
                 .build();
 

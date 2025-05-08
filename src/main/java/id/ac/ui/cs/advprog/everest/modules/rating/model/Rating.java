@@ -1,9 +1,13 @@
 package id.ac.ui.cs.advprog.everest.modules.rating.model;
 
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -11,15 +15,42 @@ import java.util.UUID;
 @Getter
 @Setter
 @ToString
+@Entity
+@Table(name = "ratings")
+@EntityListeners(AuditingEntityListener.class)
 public class Rating {
-    UUID id;
-    String userId;
-    String technicianId;
-    String comment;
-    int rating;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
-    boolean deleted;
+
+    @Id
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
+
+    @Column(nullable = false)
+    private String userId;
+
+    @Column(nullable = false)
+    private String technicianId;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String comment;
+
+    @Column(nullable = false)
+    private int rating;
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private boolean deleted;
+
+    public Rating() {
+        // default constructor for JPA
+    }
 
     @Builder
     public Rating(UUID id,
@@ -27,8 +58,6 @@ public class Rating {
                   String technicianId,
                   String comment,
                   int rating,
-                  LocalDateTime createdAt,
-                  LocalDateTime updatedAt,
                   Boolean deleted) {
 
         if (rating < 1 || rating > 5) {
@@ -43,8 +72,6 @@ public class Rating {
         this.technicianId = technicianId;
         this.comment = comment;
         this.rating = rating;
-        this.createdAt = (createdAt == null) ? LocalDateTime.now() : createdAt;
-        this.updatedAt = (updatedAt == null) ? this.createdAt : updatedAt;
         this.deleted = (deleted == null) ? false : deleted;
     }
 
@@ -58,6 +85,5 @@ public class Rating {
 
         this.comment = comment;
         this.rating = rating;
-        this.updatedAt = LocalDateTime.now();
     }
 }
