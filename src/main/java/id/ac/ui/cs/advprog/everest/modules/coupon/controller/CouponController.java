@@ -2,54 +2,59 @@ package id.ac.ui.cs.advprog.everest.modules.coupon.controller;
 
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.service.CouponService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-@Controller
-@RequestMapping("/admin/coupon")
+@RestController
+@RequestMapping("/api/v1/coupons")
 public class CouponController {
-
     private final CouponService couponService;
 
-    @Autowired
     public CouponController(CouponService couponService) {
         this.couponService = couponService;
     }
 
-    @GetMapping("")
-    public String getAllCoupons(Model model) {
-        List<Coupon> coupons = couponService.getAllCoupons();
-        model.addAttribute("coupons", coupons);
-        return "coupon/list";
+    @GetMapping
+    public ResponseEntity<List<Coupon>> getAllCoupons() {
+        return ResponseEntity.ok(couponService.getAllCoupons());
     }
 
-    @PostMapping("/create")
-    public String createCoupon(@ModelAttribute Coupon coupon) {
-        couponService.createCoupon(coupon);
-        return "redirect:/admin/coupon";
+    @GetMapping("/{id}")
+    public ResponseEntity<Coupon> getCouponById(@PathVariable UUID id) {
+        try {
+            Coupon coupon = couponService.getCouponById(id);
+            return ResponseEntity.ok(coupon);
+        } catch (RuntimeException ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage(), ex);
+        }
     }
 
-    @GetMapping("/edit/{id}")
-    public String editCouponForm(@PathVariable UUID id, Model model) {
-        Coupon coupon = couponService.getCouponById(id);
-        model.addAttribute("coupon", coupon);
-        return "coupon/edit";
+    @PostMapping
+    public ResponseEntity<Coupon> createCoupon(@RequestBody Coupon coupon) {
+        Coupon created = couponService.createCoupon(coupon);
+        return ResponseEntity
+                .created(URI.create("/api/v1/coupons/" + created.getId()))
+                .body(created);
     }
 
-    @PostMapping("/update/{id}")
-    public String updateCoupon(@PathVariable UUID id, @ModelAttribute Coupon coupon) {
+    @PutMapping("/{id}")
+    public ResponseEntity<Coupon> updateCoupon(
+            @PathVariable UUID id,
+            @RequestBody Coupon coupon) {
         coupon.setId(id);
-        couponService.updateCoupon(coupon);
-        return "redirect:/admin/coupon";
+        Coupon updated = couponService.updateCoupon(coupon);
+        return ResponseEntity.ok(updated);
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteCoupon(@PathVariable UUID id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCoupon(@PathVariable UUID id) {
         couponService.deleteCoupon(id);
-        return "redirect:/admin/coupon";
+        return ResponseEntity.noContent().build();
     }
 }
