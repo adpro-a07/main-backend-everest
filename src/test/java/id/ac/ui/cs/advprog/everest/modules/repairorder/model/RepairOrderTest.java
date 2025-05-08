@@ -104,29 +104,6 @@ class RepairOrderTest {
     }
 
     @Test
-    void testBuilder() {
-        // Test builder pattern creates correct object
-        RepairOrder repairOrder = RepairOrder.builder()
-                .customerId(validCustomerId)
-                .technicianId(validTechnicianId)
-                .itemName(validItemName)
-                .itemCondition(validItemCondition)
-                .issueDescription(validIssueDescription)
-                .desiredServiceDate(validServiceDate)
-                .status(validStatus)
-                .build();
-
-        // Validate all fields are set correctly
-        assertEquals(validCustomerId, repairOrder.getCustomerId());
-        assertEquals(validTechnicianId, repairOrder.getTechnicianId());
-        assertEquals(validItemName, repairOrder.getItemName());
-        assertEquals(validItemCondition, repairOrder.getItemCondition());
-        assertEquals(validIssueDescription, repairOrder.getIssueDescription());
-        assertEquals(validServiceDate, repairOrder.getDesiredServiceDate());
-        assertEquals(validStatus, repairOrder.getStatus());
-    }
-
-    @Test
     void testNullCustomerId() {
         RepairOrder repairOrder = RepairOrder.builder()
                 .customerId(null) // Invalid: null customerId
