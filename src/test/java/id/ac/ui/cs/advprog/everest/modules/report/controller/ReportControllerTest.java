@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -50,16 +53,13 @@ class ReportControllerTest {
 
         when(reportService.getAllReports()).thenReturn(Arrays.asList(report1, report2));
 
-        mockMvc.perform(get("/admin/reports"))
+        mockMvc.perform(get("/api/v1/reports"))
                 .andExpect(status().isOk())
-                .andExpect(model().attribute("reports", hasSize(2)))
-                .andExpect(model().attribute("currentTechnician", ""))
-                .andExpect(model().attribute("currentStatus", ""));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].technicianName").value("John Doe"))
+                .andExpect(jsonPath("$[1].technicianName").value("Alice Smith"));
 
         verify(reportService, times(1)).getAllReports();
-        verify(reportService, never()).getReportsByTechnician(anyString());
-        verify(reportService, never()).getReportsByStatus(any(ReportStatus.class));
-        verify(reportService, never()).getReportsByTechnicianAndStatus(anyString(), any(ReportStatus.class));
     }
 
     @Test
@@ -68,67 +68,70 @@ class ReportControllerTest {
 
         when(reportService.getReportsByTechnician("john")).thenReturn(Collections.singletonList(report));
 
-        mockMvc.perform(get("/admin/reports").param("technician", "john"))
+        mockMvc.perform(get("/api/v1/reports")
+                        .param("technician", "john"))
                 .andExpect(status().isOk())
-                .andExpect(model().attribute("reports", hasSize(1)))
-                .andExpect(model().attribute("currentTechnician", "john"))
-                .andExpect(model().attribute("currentStatus", ""));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].status").value("COMPLETED"));
 
         verify(reportService, times(1)).getReportsByTechnician("john");
-        verify(reportService, never()).getReportsByStatus(any(ReportStatus.class));
-        verify(reportService, never()).getReportsByTechnicianAndStatus(anyString(), any(ReportStatus.class));
     }
 
     @Test
-    void testViewReportDetail() throws Exception {
+    void testGetReportById() throws Exception {
         Report report = createSampleReport("John Doe", ReportStatus.COMPLETED);
+        report.setId(1);
 
         when(reportService.getReportById(1)).thenReturn(report);
 
-        mockMvc.perform(get("/admin/reports/1"))
+        mockMvc.perform(get("/api/v1/reports/1"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("report/detail"))
-                .andExpect(model().attribute("report", report));
-
-        verify(reportService, times(1)).getReportById(1);
+                .andExpect(jsonPath("$.id").value(1L)) // Gunakan 1L untuk Long
+                .andExpect(jsonPath("$.technicianName").value("John Doe"));
     }
 
     @Test
-    void testViewReportDetailNotFound() throws Exception {
+    void testGetReportByIdNotFound() throws Exception {
         when(reportService.getReportById(999))
-                .thenThrow(new RuntimeException("Report not found"));
+                .thenThrow(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Report not found with id: 999"
+                ));
 
-        mockMvc.perform(get("/admin/reports/999"))
-                .andExpect(status().isNotFound());
-
-        verify(reportService, times(1)).getReportById(999);
+        mockMvc.perform(
+                        get("/api/v1/reports/999")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Report not found with id: 999"));
     }
 
     @Test
-    void testSpecialCharacterSearch() throws Exception {
+    void testSearchWithSpecialCharacters() throws Exception {
         Report report = createSampleReport("Jöhn Dœ", ReportStatus.COMPLETED);
 
-        when(reportService.getReportsByTechnician("öhn"))
-                .thenReturn(Collections.singletonList(report));
+        when(reportService.getReportsByTechnician("öhn")).thenReturn(Collections.singletonList(report));
 
-        mockMvc.perform(get("/admin/reports").param("technician", "öhn"))
+        mockMvc.perform(get("/api/v1/reports")
+                        .param("technician", "öhn"))
                 .andExpect(status().isOk())
-                .andExpect(model().attributeExists("reports"));
-
-        verify(reportService, times(1)).getReportsByTechnician("öhn");
+                .andExpect(jsonPath("$[0].technicianName").value("Jöhn Dœ"));
     }
 
     @Test
-    void testEmptySearchResults() throws Exception {
-        when(reportService.getReportsByTechnicianAndStatus("unknown", ReportStatus.PENDING))
-                .thenReturn(Collections.emptyList());
+    void testCombinedSearchFilters() throws Exception {
+        Report report = createSampleReport("John Doe", ReportStatus.COMPLETED);
 
-        mockMvc.perform(get("/admin/reports")
-                        .param("technician", "unknown")
-                        .param("status", ReportStatus.PENDING.name()))
+        when(reportService.getReportsByTechnicianAndStatus("john", ReportStatus.COMPLETED))
+                .thenReturn(Collections.singletonList(report));
+
+        mockMvc.perform(get("/api/v1/reports")
+                        .param("technician", "john")
+                        .param("status", "COMPLETED"))
                 .andExpect(status().isOk())
-                .andExpect(model().attribute("reports", Collections.emptyList()));
-
-        verify(reportService, times(1)).getReportsByTechnicianAndStatus("unknown", ReportStatus.PENDING);
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].status").value("COMPLETED"));
     }
 }
