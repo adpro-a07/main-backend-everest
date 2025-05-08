@@ -3,7 +3,7 @@ package id.ac.ui.cs.advprog.everest.controller;
 import id.ac.ui.cs.advprog.everest.dto.CreateRatingRequest;
 import id.ac.ui.cs.advprog.everest.dto.UpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.model.Rating;
-import id.ac.ui.cs.advprog.everest.service.RatingService;
+import id.ac.ui.cs.advprog.everest.common.service.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

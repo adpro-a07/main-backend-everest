@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.everest.dto.CreateRatingRequest;
 import id.ac.ui.cs.advprog.everest.dto.UpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.model.Rating;
-import id.ac.ui.cs.advprog.everest.service.RatingService;
+import id.ac.ui.cs.advprog.everest.common.service.RatingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
