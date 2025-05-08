@@ -29,9 +29,8 @@ public class RatingController {
 
             // TODO Sementara
             @AuthenticationPrincipal String userId,
-//            @RequestParam("technicianId") String technicianId,
+            @RequestParam("technicianId") String technicianId,
             @RequestBody @Valid CreateAndUpdateRatingRequest dto) {
-        String technicianId = "tech-hardcoded-001";
         Rating createdRating = ratingService.createRating(userId, technicianId, dto);
         return ResponseEntity.ok(createdRating);
     }
