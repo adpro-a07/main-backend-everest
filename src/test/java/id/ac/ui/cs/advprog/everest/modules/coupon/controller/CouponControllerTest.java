@@ -1,25 +1,26 @@
-package id.ac.ui.cs.advprog.everest.modules.coupon.controller;
+package id.ac.ui.cs.advprog.everest.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
-import id.ac.ui.cs.advprog.everest.config.SecurityConfig;
+import id.ac.ui.cs.advprog.everest.modules.coupon.controller.CouponController;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.service.CouponService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -27,8 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(CouponController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(SecurityConfig.class)
-@ExtendWith(MockitoExtension.class)
 class CouponControllerTest {
 
     @Autowired
@@ -37,102 +36,117 @@ class CouponControllerTest {
     @MockBean
     private CouponService couponService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private AuthServiceGrpcClient authServiceGrpcClient;
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     void testGetAllCoupons() throws Exception {
-        Coupon coupon = Coupon.builder()
+        Coupon c = Coupon.builder()
                 .code("PROMO1212")
                 .discountAmount(10000)
                 .maxUsage(10)
+                .usageCount(0)
                 .validUntil(LocalDate.now().plusDays(30))
                 .build();
+        c.setId(UUID.randomUUID());
 
-        when(couponService.getAllCoupons()).thenReturn(List.of(coupon));
+        when(couponService.getAllCoupons()).thenReturn(List.of(c));
 
-        mockMvc.perform(get("/admin/coupon"))
+        mockMvc.perform(get("/api/v1/coupons"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("coupon/list"))
-                .andExpect(model().attributeExists("coupons"))
-                .andExpect(model().attribute("coupons", List.of(coupon)));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(c.getId().toString())))
+                .andExpect(jsonPath("$[0].code", is("PROMO1212")));
 
-        verify(couponService, times(1)).getAllCoupons();
+        verify(couponService).getAllCoupons();
     }
 
     @Test
     void testCreateCoupon() throws Exception {
-        ArgumentCaptor<Coupon> couponCaptor = ArgumentCaptor.forClass(Coupon.class);
+        Coupon input = Coupon.builder()
+                .code("XMAS")
+                .discountAmount(15000)
+                .maxUsage(5)
+                .usageCount(0)
+                .validUntil(LocalDate.of(2024,12,31))
+                .build();
 
-        mockMvc.perform(post("/admin/coupon/create")
-                        .param("code", "")
-                        .param("discountAmount", "15000")
-                        .param("maxUsage", "5")
-                        .param("validUntil", "2024-12-31"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/coupon"));
+        Coupon saved = Coupon.builder()
+                .code("XMAS")
+                .discountAmount(15000)
+                .maxUsage(5)
+                .usageCount(0)
+                .validUntil(LocalDate.of(2024,12,31))
+                .build();
+        saved.setId(UUID.randomUUID());
 
-        verify(couponService, times(1)).createCoupon(couponCaptor.capture());
+        when(couponService.createCoupon(any())).thenReturn(saved);
 
-        Coupon capturedCoupon = couponCaptor.getValue();
-        assertEquals(15000, capturedCoupon.getDiscountAmount());
-        assertEquals(5, capturedCoupon.getMaxUsage());
-        assertEquals(LocalDate.of(2024, 12, 31), capturedCoupon.getValidUntil());
+        mockMvc.perform(post("/api/v1/coupons")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", containsString("/api/v1/coupons/" + saved.getId())))
+                .andExpect(jsonPath("$.id", is(saved.getId().toString())))
+                .andExpect(jsonPath("$.code", is("XMAS")));
+
+        ArgumentCaptor<Coupon> captor = ArgumentCaptor.forClass(Coupon.class);
+        verify(couponService).createCoupon(captor.capture());
+        assertEquals(15000, captor.getValue().getDiscountAmount());
     }
 
     @Test
-    void testEditCouponForm() throws Exception {
-        UUID couponId = UUID.randomUUID();
-        Coupon coupon = Coupon.builder()
-                .code("PROMO22")
-                .discountAmount(20000)
-                .maxUsage(3)
-                .validUntil(LocalDate.now().plusDays(30))
-                .build();
+    void testGetById_NotFound() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(couponService.getCouponById(id)).thenThrow(new RuntimeException("not found"));
 
-        when(couponService.getCouponById(couponId)).thenReturn(coupon);
-
-        mockMvc.perform(get("/admin/coupon/edit/" + couponId))
-                .andExpect(status().isOk())
-                .andExpect(view().name("coupon/edit"))
-                .andExpect(model().attributeExists("coupon"))
-                .andExpect(model().attribute("coupon", coupon));
-
-        verify(couponService, times(1)).getCouponById(couponId);
+        mockMvc.perform(get("/api/v1/coupons/" + id))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void testUpdateCoupon() throws Exception {
-        UUID couponId = UUID.randomUUID();
-        ArgumentCaptor<Coupon> couponCaptor = ArgumentCaptor.forClass(Coupon.class);
+        UUID id = UUID.randomUUID();
+        Coupon input = Coupon.builder()
+                .code("UPDATE")
+                .discountAmount(20000)
+                .maxUsage(3)
+                .usageCount(0)
+                .validUntil(LocalDate.of(2025,1,1))
+                .build();
+        Coupon updated = Coupon.builder()
+                .code("UPDATE")
+                .discountAmount(20000)
+                .maxUsage(3)
+                .usageCount(0)
+                .validUntil(LocalDate.of(2025,1,1))
+                .build();
+        updated.setId(id);
 
-        mockMvc.perform(post("/admin/coupon/update/" + couponId)
-                        .param("code", "UPDATED123")
-                        .param("discountAmount", "25000")
-                        .param("maxUsage", "7")
-                        .param("validUntil", "2025-01-01"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/coupon"));
+        when(couponService.updateCoupon(any())).thenReturn(updated);
 
-        verify(couponService, times(1)).updateCoupon(couponCaptor.capture());
+        mockMvc.perform(put("/api/v1/coupons/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(id.toString())))
+                .andExpect(jsonPath("$.code", is("UPDATE")));
 
-        Coupon capturedCoupon = couponCaptor.getValue();
-        assertEquals(couponId, capturedCoupon.getId());
-        assertEquals("UPDATED123", capturedCoupon.getCode());
-        assertEquals(25000, capturedCoupon.getDiscountAmount());
-        assertEquals(7, capturedCoupon.getMaxUsage());
-        assertEquals(LocalDate.of(2025, 1, 1), capturedCoupon.getValidUntil());
+        verify(couponService).updateCoupon(any(Coupon.class));
     }
 
     @Test
     void testDeleteCoupon() throws Exception {
-        UUID couponId = UUID.randomUUID();
+        UUID id = UUID.randomUUID();
+        doNothing().when(couponService).deleteCoupon(id);
 
-        mockMvc.perform(get("/admin/coupon/delete/" + couponId))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/coupon"));
+        mockMvc.perform(delete("/api/v1/coupons/" + id))
+                .andExpect(status().isNoContent());
 
-        verify(couponService, times(1)).deleteCoupon(couponId);
+        verify(couponService).deleteCoupon(id);
     }
 }
