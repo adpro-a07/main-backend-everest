@@ -1,43 +1,30 @@
 package id.ac.ui.cs.advprog.everest.modules.report.controller;
 
-//import id.ac.ui.cs.advprog.everest.model.Report;
-//import id.ac.ui.cs.advprog.everest.model.enums.ReportStatus;
-import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
+import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.service.ReportService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-@Controller
-@RequestMapping("/admin/reports")
+@RestController
+@RequestMapping("/api/v1/reports")
 public class ReportController {
 
     private final ReportService reportService;
-
-    @Autowired
     public ReportController(ReportService reportService) {
         this.reportService = reportService;
     }
 
     @GetMapping
-    public String viewReports(
+    public ResponseEntity<List<Report>> getReportList(
             @RequestParam(required = false) String technician,
-            @RequestParam(required = false) ReportStatus status,
-            Model model) {
+            @RequestParam(required = false) ReportStatus status) {
 
         List<Report> reports;
-
-        // Handle null parameters
-        technician = (technician != null && !technician.isEmpty()) ? technician : null;
-        status = (status != null && !status.isEmpty()) ? status : null;
-
         if (technician != null && status != null) {
             reports = reportService.getReportsByTechnicianAndStatus(technician, status);
         } else if (technician != null) {
@@ -47,22 +34,20 @@ public class ReportController {
         } else {
             reports = reportService.getAllReports();
         }
-
-        model.addAttribute("reports", reports);
-        model.addAttribute("currentTechnician", technician != null ? technician : "");
-        model.addAttribute("currentStatus", status != null ? status : "");
-
-        return "report/list";
+        return ResponseEntity.ok(reports);
     }
 
     @GetMapping("/{id}")
-    public String viewReportDetail(@PathVariable int id, Model model) {
+    public ResponseEntity<Report> getReportDetailById(@PathVariable int id) {
         try {
-            Report report = reportService.getReportById(id);
-            model.addAttribute("report", report);
-            return "report/detail";
+            Report rpt = reportService.getReportById(id);
+            return ResponseEntity.ok(rpt);
         } catch (RuntimeException ex) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage(), ex);
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Report not found with id: " + id,
+                    ex
+            );
         }
     }
 
