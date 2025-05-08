@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.service;
+package id.ac.ui.cs.advprog.everest.common.service;
 
 import id.ac.ui.cs.advprog.everest.dto.CreateRatingRequest;
 import id.ac.ui.cs.advprog.everest.dto.UpdateRatingRequest;
