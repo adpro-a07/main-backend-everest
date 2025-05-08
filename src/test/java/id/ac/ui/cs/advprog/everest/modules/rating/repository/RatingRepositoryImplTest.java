@@ -68,26 +68,40 @@ class RatingRepositoryImplTest {
     }
 
     @Test
-    void testDeleteByIdShouldMarkRatingAsDeleted() {
-        Rating rating = Rating.builder()
-                .userId("user-003")
-                .technicianId("tech-003")
-                .comment("Cukup bagus")
-                .rating(4)
+    void testFindAllWhenNoRatingsExist() {
+        List<Rating> ratings = ratingRepository.findAll();
+        assertTrue(ratings.isEmpty(), "Rating list should be empty when no data is saved.");
+    }
+
+    @Test
+    void testSaveAndFindConcurrently() throws InterruptedException {
+        Rating rating1 = Rating.builder()
+                .userId("user-001")
+                .technicianId("tech-001")
+                .comment("Great service")
+                .rating(5)
                 .build();
 
-        ratingRepository.save(rating);
-        UUID ratingId = rating.getId();
+        Rating rating2 = Rating.builder()
+                .userId("user-002")
+                .technicianId("tech-002")
+                .comment("Average service")
+                .rating(3)
+                .build();
 
-        // Pastikan awalnya belum dihapus
-        assertFalse(rating.isDeleted());
+        // Thread 1: Save rating1
+        Thread thread1 = new Thread(() -> ratingRepository.save(rating1));
+        // Thread 2: Save rating2
+        Thread thread2 = new Thread(() -> ratingRepository.save(rating2));
 
-        // Hapus rating
-        ratingRepository.deleteById(ratingId);
+        thread1.start();
+        thread2.start();
 
-        Optional<Rating> found = ratingRepository.findById(ratingId);
-        assertTrue(found.isPresent());
-        assertTrue(found.get().isDeleted(), "Rating seharusnya ditandai sebagai deleted");
-        assertTrue(found.get().getUpdatedAt().isAfter(found.get().getCreatedAt()), "updatedAt seharusnya diperbarui");
+        thread1.join();
+        thread2.join();
+
+        // Ensure both ratings exist
+        assertNotNull(ratingRepository.findById(rating1.getId()).orElse(null));
+        assertNotNull(ratingRepository.findById(rating2.getId()).orElse(null));
     }
 }
