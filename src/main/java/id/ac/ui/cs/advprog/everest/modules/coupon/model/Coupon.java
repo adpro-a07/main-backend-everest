@@ -25,7 +25,7 @@ public class Coupon {
 
     @Builder
     public Coupon(@NonNull String code, Integer discountAmount, Integer maxUsage, Integer usageCount, LocalDate validUntil) {
-        this.id = (id == null) ? UUID.randomUUID() : id;
+        this.id = UUID.randomUUID();
         this.code = code;
         this.discountAmount = discountAmount;
         this.maxUsage = maxUsage;
