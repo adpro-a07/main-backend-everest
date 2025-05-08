@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -16,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -209,6 +211,22 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response.getBody(), "Response body should not be null");
         assertFalse(response.getBody().isSuccess());
         assertEquals(customMessage, response.getBody().getMessage());
+        assertNull(response.getBody().getData());
+    }
+
+    @Test
+    void handleNoResourceFound_ShouldReturnNotFoundStatus() {
+        // Arrange
+        NoResourceFoundException exception = new NoResourceFoundException(HttpMethod.GET, "/nonexistent");
+
+        // Act
+        ResponseEntity<GenericResponse<Void>> response = globalExceptionHandler.handleNoResourceFound(exception);
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody(), "Response body should not be null");
+        assertFalse(response.getBody().isSuccess());
+        assertEquals("Resource not found", response.getBody().getMessage());
         assertNull(response.getBody().getData());
     }
 }
