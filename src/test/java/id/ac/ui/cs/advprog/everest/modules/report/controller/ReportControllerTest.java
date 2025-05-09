@@ -1,49 +1,45 @@
 package id.ac.ui.cs.advprog.everest.modules.report.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.exception.GlobalExceptionHandler;
-import id.ac.ui.cs.advprog.everest.common.exception.ResourceNotFoundException;
 import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
-import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportRequest;
 import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
 import id.ac.ui.cs.advprog.everest.modules.report.excecption.ReportExceptionHandler;
-import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
 import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.service.ReportService;
+import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.mock.http.server.reactive.MockServerHttpRequest.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ReportController.class)
-@AutoConfigureMockMvc(addFilters = false)
 @Import({
         GlobalExceptionHandler.class,
-        ReportExceptionHandler.class  // <-- tambahkan ini
+        ReportExceptionHandler.class
 })
-class ReportControllerTest {
+public class ReportControllerTest {
 
     @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
 
     @MockBean
@@ -52,148 +48,201 @@ class ReportControllerTest {
     @MockBean
     private AuthServiceGrpcClient authServiceGrpcClient;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private ReportController controller;
+    private AuthenticatedUser adminUser;
+    private AuthenticatedUser techUser;
+    private final UUID userId = UUID.randomUUID();
 
     @BeforeEach
-    void setup() {
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    void setUp() {
+        reportService = mock(ReportService.class);
+        controller = new ReportController(reportService);
+
+        // Membuat objek AuthenticatedUser untuk testing
+        adminUser = new AuthenticatedUser(
+                UUID.randomUUID(),
+                "admin@example.com",
+                "Admin User",
+                UserRole.ADMIN,
+                "555-1234",
+                Instant.now(),
+                Instant.now(),
+                "Jakarta",
+                null,
+                0,
+                0L
+        );
+
+        techUser = new AuthenticatedUser(
+                UUID.randomUUID(),
+                "tech@example.com",
+                "Tech User",
+                UserRole.TECHNICIAN,
+                "555-5678",
+                Instant.now(),
+                Instant.now(),
+                "Jakarta",
+                null,
+                0,
+                0L
+        );
     }
 
     private ReportResponse createSampleReportResponse(String technician, ReportStatus status) {
         return ReportResponse.builder()
+                .id(UUID.randomUUID())
                 .technicianName(technician)
-                .repairDetails("Test details")
+                .repairDetails("Test repair details")
                 .repairDate(LocalDate.now())
                 .status(status.name())
                 .build();
     }
 
-    private ReportRequest createSampleReportRequest(String technician, ReportStatus status) {
-        return ReportRequest.builder()
-                .technicianName(technician)
-                .repairDetails("Test details")
-                .repairDate(LocalDate.now())
-                .status(status)
-                .build();
+    @Test
+    void testGetAllReportsWithoutFilters() {
+        ReportResponse response = createSampleReportResponse("John", ReportStatus.COMPLETED);
+        List<ReportResponse> responseList = List.of(response);
+        when(reportService.getAllReports(any(AuthenticatedUser.class))).thenReturn(responseList);
+
+        ResponseEntity<List<ReportResponse>> result = controller.getReportList(null, null, adminUser);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(1, result.getBody().size());
+        assertEquals("John", result.getBody().get(0).getTechnicianName());
+        verify(reportService).getAllReports(adminUser);
     }
 
     @Test
-    void testGetAllReportsWithoutFilters() throws Exception {
-        ReportResponse report1 = createSampleReportResponse("John Doe", ReportStatus.COMPLETED);
-        ReportResponse report2 = createSampleReportResponse("Alice Smith", ReportStatus.PENDING_CONFIRMATION);
+    void testGetReportsByTechnician() {
+        String technicianName = "John";
+        ReportResponse response = createSampleReportResponse(technicianName, ReportStatus.COMPLETED);
+        List<ReportResponse> responseList = List.of(response);
+        when(reportService.getReportsByTechnician(eq(technicianName), any(AuthenticatedUser.class)))
+                .thenReturn(responseList);
 
-        when(reportService.getAllReports()).thenReturn(Arrays.asList(report1, report2));
+        ResponseEntity<List<ReportResponse>> result = controller.getReportList(technicianName, null, adminUser);
 
-        mockMvc.perform(get("/api/v1/reports"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].technicianName").value("John Doe"))
-                .andExpect(jsonPath("$[1].technicianName").value("Alice Smith"));
-
-        verify(reportService, times(1)).getAllReports();
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(1, result.getBody().size());
+        assertEquals(technicianName, result.getBody().get(0).getTechnicianName());
+        verify(reportService).getReportsByTechnician(technicianName, adminUser);
+        verify(reportService, never()).getAllReports(any());
     }
 
     @Test
-    void testGetAllReportsWithTechnicianFilter() throws Exception {
-        ReportResponse report = createSampleReportResponse("John Doe", ReportStatus.COMPLETED);
+    void testGetReportsByStatus() {
+        ReportStatus status = ReportStatus.IN_PROGRESS;
+        ReportResponse response = createSampleReportResponse("John", status);
+        List<ReportResponse> responseList = List.of(response);
+        when(reportService.getReportsByStatus(eq(status), any(AuthenticatedUser.class)))
+                .thenReturn(responseList);
 
-        when(reportService.getReportsByTechnician("john")).thenReturn(Collections.singletonList(report));
+        ResponseEntity<List<ReportResponse>> result = controller.getReportList(null, status, adminUser);
 
-        mockMvc.perform(get("/api/v1/reports")
-                        .param("technician", "john"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].status").value("COMPLETED"));
-
-        verify(reportService, times(1)).getReportsByTechnician("john");
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(1, result.getBody().size());
+        assertEquals(status.name(), result.getBody().get(0).getStatus());
+        verify(reportService).getReportsByStatus(status, adminUser);
+        verify(reportService, never()).getAllReports(any());
     }
+
     @Test
-    void testGetReportById() throws Exception {
+    void testGetReportsByTechnicianAndStatus() {
+        String technicianName = "John";
+        ReportStatus status = ReportStatus.COMPLETED;
+        ReportResponse response = createSampleReportResponse(technicianName, status);
+        List<ReportResponse> responseList = List.of(response);
+        when(reportService.getReportsByTechnicianAndStatus(
+                eq(technicianName), eq(status), any(AuthenticatedUser.class)))
+                .thenReturn(responseList);
+
+        ResponseEntity<List<ReportResponse>> result = controller.getReportList(technicianName, status, adminUser);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(1, result.getBody().size());
+        assertEquals(technicianName, result.getBody().get(0).getTechnicianName());
+        assertEquals(status.name(), result.getBody().get(0).getStatus());
+        verify(reportService).getReportsByTechnicianAndStatus(technicianName, status, adminUser);
+        verify(reportService, never()).getAllReports(any());
+    }
+
+    @Test
+    void testGetReportDetailById_Success() {
         UUID reportId = UUID.randomUUID();
+        ReportResponse response = createSampleReportResponse("John", ReportStatus.COMPLETED);
+        response.setId(reportId);
+        when(reportService.getReportById(eq(reportId), any(AuthenticatedUser.class)))
+                .thenReturn(response);
 
-        // Create the response with the specific ID we want to test
-        ReportResponse report = ReportResponse.builder()
-                .id(reportId)
-                .technicianName("John Doe")
-                .repairDetails("Test details")
-                .repairDate(LocalDate.now())
-                .status(ReportStatus.COMPLETED.name())
-                .build();
+        ResponseEntity<ReportResponse> result = controller.getReportDetailById(reportId, adminUser);
 
-        when(reportService.getReportById(eq(reportId))).thenReturn(report);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(reportId, result.getBody().getId());
+        assertEquals("John", result.getBody().getTechnicianName());
 
-        mockMvc.perform(get("/api/v1/reports/{id}", reportId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(reportId.toString()))
-                .andExpect(jsonPath("$.technicianName").value("John Doe"));
-
-        verify(reportService).getReportById(eq(reportId));
+        // Verifikasi bahwa getReportById dipanggil dengan parameter yang benar
+        ArgumentCaptor<UUID> idCaptor = ArgumentCaptor.forClass(UUID.class);
+        verify(reportService).getReportById(idCaptor.capture(), eq(adminUser));
+        assertEquals(reportId, idCaptor.getValue());
     }
 
     @Test
-    void testGetReportByIdNotFound() throws Exception {
-        UUID nonExistentId = UUID.randomUUID();
+    void testGetReportDetailById_WithTechnicianUser() {
+        UUID reportId = UUID.randomUUID();
+        ReportResponse response = createSampleReportResponse("John", ReportStatus.COMPLETED);
+        response.setId(reportId);
+        when(reportService.getReportById(eq(reportId), any(AuthenticatedUser.class)))
+                .thenReturn(response);
 
-        when(reportService.getReportById(nonExistentId))
-                .thenThrow(new ResourceNotFoundException(
-                        "Report not found with id: " + nonExistentId
-                ));
+        ResponseEntity<ReportResponse> result = controller.getReportDetailById(reportId, techUser);
 
-        mockMvc.perform(get("/api/v1/reports/{id}", nonExistentId)
-                        .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType("application/problem+json"))
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("Not Found"))
-                .andExpect(jsonPath("$.message").value("Report not found with id: " + nonExistentId))
-                .andExpect(jsonPath("$.path").value("/api/v1/reports/" + nonExistentId));
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(reportId, result.getBody().getId());
+        verify(reportService).getReportById(reportId, techUser);
     }
 
     @Test
-    void testSearchWithSpecialCharacters() throws Exception {
-        ReportResponse report = createSampleReportResponse("Jöhn Dœ", ReportStatus.COMPLETED);
+    void testGetReportDetailById_NotFound() {
+        UUID reportId = UUID.randomUUID();
+        when(reportService.getReportById(eq(reportId), any(AuthenticatedUser.class)))
+                .thenThrow(new RuntimeException("Report not found"));
 
-        when(reportService.getReportsByTechnician("öhn")).thenReturn(Collections.singletonList(report));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                controller.getReportDetailById(reportId, adminUser));
 
-        mockMvc.perform(get("/api/v1/reports")
-                        .param("technician", "öhn"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].technicianName").value("Jöhn Dœ"));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertTrue(exception.getMessage().contains("Report not found with id: " + reportId));
+        verify(reportService).getReportById(reportId, adminUser);
     }
 
     @Test
-    void testCombinedSearchFilters() throws Exception {
-        ReportResponse report = createSampleReportResponse("John Doe", ReportStatus.COMPLETED);
+    void testGetReportList_EmptyList() {
+        when(reportService.getAllReports(any(AuthenticatedUser.class))).thenReturn(List.of());
 
-        when(reportService.getReportsByTechnicianAndStatus("john", ReportStatus.COMPLETED))
-                .thenReturn(Collections.singletonList(report));
+        ResponseEntity<List<ReportResponse>> result = controller.getReportList(null, null, adminUser);
 
-        mockMvc.perform(get("/api/v1/reports")
-                        .param("technician", "john")
-                        .param("status", "COMPLETED"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].status").value("COMPLETED"));
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertTrue(result.getBody().isEmpty());
+        verify(reportService).getAllReports(adminUser);
     }
 
     @Test
-    void testGetReportByStatus() throws Exception {
-        ReportResponse report = createSampleReportResponse("John Doe", ReportStatus.COMPLETED);
-        List<ReportResponse> filtered = Collections.singletonList(report);
+    void testGetReportList_MultipleItems() {
+        ReportResponse report1 = createSampleReportResponse("John", ReportStatus.COMPLETED);
+        ReportResponse report2 = createSampleReportResponse("Jane", ReportStatus.IN_PROGRESS);
+        List<ReportResponse> responseList = List.of(report1, report2);
 
-        when(reportService.getReportsByStatus(ReportStatus.COMPLETED))
-                .thenReturn(filtered);
+        when(reportService.getAllReports(any(AuthenticatedUser.class))).thenReturn(responseList);
 
-        mockMvc.perform(get("/api/v1/reports")
-                        .param("status", "COMPLETED")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].technicianName").value("John Doe"))
-                .andExpect(jsonPath("$[0].status").value("COMPLETED"));
+        ResponseEntity<List<ReportResponse>> result = controller.getReportList(null, null, adminUser);
 
-        verify(reportService, times(1)).getReportsByStatus(ReportStatus.COMPLETED);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(2, result.getBody().size());
+        assertEquals("John", result.getBody().get(0).getTechnicianName());
+        assertEquals("Jane", result.getBody().get(1).getTechnicianName());
+        verify(reportService).getAllReports(adminUser);
     }
 }

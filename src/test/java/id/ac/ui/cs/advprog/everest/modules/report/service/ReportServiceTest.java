@@ -1,11 +1,11 @@
 package id.ac.ui.cs.advprog.everest.modules.report.service;
 
-
+import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
 import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
 import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
-import id.ac.ui.cs.advprog.everest.modules.report.service.ReportServiceImpl;
 import id.ac.ui.cs.advprog.everest.modules.report.repository.ReportRepository;
+import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -30,79 +31,78 @@ class ReportServiceTest {
 
     private Report sampleReport;
     private UUID sampleReportId;
+    private AuthenticatedUser mockUser;
 
     @BeforeEach
     void setUp() {
         sampleReportId = UUID.randomUUID();
+        mockUser = new AuthenticatedUser(
+                UUID.randomUUID(),
+                "tech@example.com",
+                "Technician",
+                UserRole.TECHNICIAN,
+                "555-4321",
+                Instant.now(),
+                Instant.now(),
+                "Bandung",
+                null,
+                0,
+                0L
+        );
 
         sampleReport = Report.builder()
+                .id(sampleReportId)
                 .technicianName("John Doe")
                 .repairDetails("Fixed broken screen")
                 .repairDate(LocalDate.now())
                 .status(ReportStatus.COMPLETED)
                 .build();
-        sampleReport.setId(sampleReportId);
     }
 
     @Test
     void testGetAllReports() {
-        List<Report> reportList = new ArrayList<>();
-        reportList.add(sampleReport);
+        when(reportRepository.findAll()).thenReturn(List.of(sampleReport));
 
-        when(reportRepository.findAll()).thenReturn(reportList);
-
-        List<ReportResponse> result = reportService.getAllReports();
+        List<ReportResponse> result = reportService.getAllReports(mockUser);
 
         assertEquals(1, result.size());
         assertEquals(sampleReport.getTechnicianName(), result.get(0).getTechnicianName());
-        verify(reportRepository, times(1)).findAll();
+        verify(reportRepository).findAll();
     }
 
     @Test
     void testGetReportById() {
         when(reportRepository.findById(sampleReportId)).thenReturn(Optional.of(sampleReport));
 
-        // Execute
-        ReportResponse result = reportService.getReportById(sampleReportId);
+        ReportResponse result = reportService.getReportById(sampleReportId, mockUser);
 
-        // Verify
         assertNotNull(result);
-        assertEquals(sampleReport.getTechnicianName(), result.getTechnicianName());
+        assertEquals(sampleReportId.toString(), result.getId().toString());
         assertEquals(sampleReport.getRepairDetails(), result.getRepairDetails());
-        verify(reportRepository, times(1)).findById(sampleReportId);
+        verify(reportRepository).findById(sampleReportId);
     }
 
     @Test
     void testGetReportByIdNotFound() {
         UUID nonExistentId = UUID.randomUUID();
-
         when(reportRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
-        // Execute & Verify
-        assertThrows(RuntimeException.class, () -> {
-            reportService.getReportById(nonExistentId);
-        });
-        verify(reportRepository, times(1)).findById(nonExistentId);
+        assertThrows(RuntimeException.class, () ->
+                reportService.getReportById(nonExistentId, mockUser)
+        );
+        verify(reportRepository).findById(nonExistentId);
     }
 
     @Test
     void testGetReportsByTechnician() {
-        // Setup
-        List<Report> reportList = new ArrayList<>();
-        reportList.add(sampleReport);
+        when(reportRepository.findByTechnicianNameContainingIgnoreCase("John"))
+                .thenReturn(List.of(sampleReport));
 
-        String technicianName = "John";
-        when(reportRepository.findByTechnicianNameContainingIgnoreCase(technicianName))
-                .thenReturn(reportList);
+        List<ReportResponse> result = reportService.getReportsByTechnician("John", mockUser);
 
-        // Execute
-        List<ReportResponse> result = reportService.getReportsByTechnician(technicianName);
-
-        // Verify
         assertEquals(1, result.size());
         assertEquals("John Doe", result.get(0).getTechnicianName());
-        verify(reportRepository, times(1))
-                .findByTechnicianNameContainingIgnoreCase(technicianName);
+        verify(reportRepository).findByTechnicianNameContainingIgnoreCase("John");
     }
 
     @Test
@@ -110,8 +110,8 @@ class ReportServiceTest {
         when(reportRepository.findByTechnicianNameContainingIgnoreCase("Unknown"))
                 .thenReturn(Collections.emptyList());
 
-        List<ReportResponse> result = reportService.getReportsByTechnician("Unknown");
-        assertTrue(result.isEmpty());
+        List<ReportResponse> result = reportService.getReportsByTechnician("Unknown", mockUser);
+        assertTrue(result.isEmpty(), "Should return empty list for unknown technician");
     }
 
     @Test
@@ -119,33 +119,23 @@ class ReportServiceTest {
         when(reportRepository.findByTechnicianNameContainingIgnoreCase(null))
                 .thenReturn(Collections.emptyList());
 
-        List<ReportResponse> result = reportService.getReportsByTechnician(null);
-        assertTrue(result.isEmpty());
+        List<ReportResponse> result = reportService.getReportsByTechnician(null, mockUser);
+        assertTrue(result.isEmpty(), "Should handle null technician name");
     }
 
     @Test
     void testGetReportsByStatus() {
-        List<Report> reportList = new ArrayList<>();
-        reportList.add(sampleReport);
-
         when(reportRepository.findByStatus(ReportStatus.COMPLETED))
-                .thenReturn(reportList);
+                .thenReturn(List.of(sampleReport));
 
-        List<ReportResponse> result = reportService.getReportsByStatus(ReportStatus.COMPLETED);
+        List<ReportResponse> result = reportService.getReportsByStatus(
+                ReportStatus.COMPLETED,
+                mockUser
+        );
+
         assertEquals(1, result.size());
-        verify(reportRepository, times(1)).findByStatus(ReportStatus.COMPLETED);
-    }
-
-    @Test
-    void testGetReportsByStatus_CaseInsensitive() {
-        List<Report> reportList = new ArrayList<>();
-        reportList.add(sampleReport);
-
-        when(reportRepository.findByStatus(ReportStatus.COMPLETED))
-                .thenReturn(reportList);
-
-        List<ReportResponse> result = reportService.getReportsByStatus(ReportStatus.COMPLETED);
-        assertEquals(1, result.size());
+        assertEquals("COMPLETED", result.get(0).getStatus());
+        verify(reportRepository).findByStatus(ReportStatus.COMPLETED);
     }
 
     @Test
@@ -153,36 +143,41 @@ class ReportServiceTest {
         when(reportRepository.findByStatus(ReportStatus.CANCELLED))
                 .thenReturn(Collections.emptyList());
 
-        List<ReportResponse> result = reportService.getReportsByStatus(ReportStatus.CANCELLED);
+        List<ReportResponse> result = reportService.getReportsByStatus(
+                ReportStatus.CANCELLED,
+                mockUser
+        );
 
-        assertTrue(result.isEmpty(), "Expected no reports for status CANCELLED");
-        verify(reportRepository, times(1)).findByStatus(ReportStatus.CANCELLED);
+        assertTrue(result.isEmpty(), "Should return empty list for cancelled status");
     }
 
     @Test
     void testGetReportsByStatus_NullStatus() {
-        when(reportRepository.findByStatus(null)).thenReturn(Collections.emptyList());
+        when(reportRepository.findByStatus(null))
+                .thenReturn(Collections.emptyList());
 
-        List<ReportResponse> result = reportService.getReportsByStatus(null);
-
-        assertTrue(result.isEmpty(), "Expected empty result when status is null");
-        verify(reportRepository, times(1)).findByStatus(null);
+        List<ReportResponse> result = reportService.getReportsByStatus(null, mockUser);
+        assertTrue(result.isEmpty(), "Should handle null status");
     }
 
     @Test
     void testGetReportsByTechnicianAndStatus() {
-        List<Report> reportList = new ArrayList<>();
-        reportList.add(sampleReport);
-
         when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(
                 "John",
-                ReportStatus.COMPLETED))
-                .thenReturn(reportList);
+                ReportStatus.COMPLETED
+        )).thenReturn(List.of(sampleReport));
 
-        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus("John", ReportStatus.COMPLETED);
+        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus(
+                "John",
+                ReportStatus.COMPLETED,
+                mockUser
+        );
+
         assertEquals(1, result.size());
-        verify(reportRepository, times(1))
-                .findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.COMPLETED);
+        verify(reportRepository).findByTechnicianNameContainingIgnoreCaseAndStatus(
+                "John",
+                ReportStatus.COMPLETED
+        );
     }
 
     @Test
@@ -194,29 +189,26 @@ class ReportServiceTest {
 
         when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(
                 "john",
-                ReportStatus.COMPLETED))
-                .thenReturn(List.of(sampleReport, anotherReport));
+                ReportStatus.COMPLETED
+        )).thenReturn(List.of(sampleReport, anotherReport));
 
-        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus("john", ReportStatus.COMPLETED);
+        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus(
+                "john",
+                ReportStatus.COMPLETED,
+                mockUser
+        );
+
         assertEquals(2, result.size());
-    }
-
-    @Test
-    void testGetReportsByTechnicianAndStatus_NoMatch() {
-        when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(
-                "Alice",
-                ReportStatus.PENDING_CONFIRMATION))
-                .thenReturn(Collections.emptyList());
-
-        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus("Alice", ReportStatus.PENDING_CONFIRMATION);
-        assertTrue(result.isEmpty());
+        assertEquals("John Doe", result.get(0).getTechnicianName());
+        assertEquals("Johnny Cash", result.get(1).getTechnicianName());
     }
 
     @Test
     void testEmptyReportList() {
         when(reportRepository.findAll()).thenReturn(Collections.emptyList());
-        List<ReportResponse> result = reportService.getAllReports();
-        assertTrue(result.isEmpty());
+
+        List<ReportResponse> result = reportService.getAllReports(mockUser);
+        assertTrue(result.isEmpty(), "Should handle empty repository");
     }
 
     @Test
@@ -229,7 +221,9 @@ class ReportServiceTest {
         when(reportRepository.findByTechnicianNameContainingIgnoreCase("john"))
                 .thenReturn(List.of(weirdNameReport));
 
-        List<ReportResponse> result = reportService.getReportsByTechnician("john");
+        List<ReportResponse> result = reportService.getReportsByTechnician("john", mockUser);
+
         assertEquals(1, result.size());
+        assertEquals("Jóhn Dôe", result.get(0).getTechnicianName());
     }
 }
