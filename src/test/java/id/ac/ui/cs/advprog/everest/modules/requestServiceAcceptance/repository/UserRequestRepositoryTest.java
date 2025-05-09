@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.repository;
 
-import id.ac.ui.cs.advprog.everest.requestServiceAcceptance.models.UserRequest;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models.UserRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
