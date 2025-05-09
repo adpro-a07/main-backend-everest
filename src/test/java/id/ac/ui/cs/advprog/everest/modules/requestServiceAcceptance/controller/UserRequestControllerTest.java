@@ -1,226 +1,141 @@
 package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.controller;
 
-import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
-import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequestDto;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestDto;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.service.UserRequestService;
-import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.repository.UserRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional // Ensures DB is rolled back after each test
 public class UserRequestControllerTest {
 
-    private UserRequestService userRequestService;
-    private UserRequestController controller;
-    private AuthenticatedUser user;
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRequestRepository userRequestRepository;
+
+    private CreateAndUpdateUserRequestDto createDto;
 
     @BeforeEach
-    void setUp() {
-        userRequestService = mock(UserRequestService.class);
-        controller = new UserRequestController(userRequestService);
-        user = new AuthenticatedUser(
-                UUID.randomUUID(),
-                "customer@example.com",
-                "Customer",
-                UserRole.CUSTOMER,
-                "12301894239",
-                Instant.now(),
-                Instant.now(),
-                "Depok",
-                null,
-                0,
-                0L
-        );
+    public void setup() {
+        createDto = new CreateAndUpdateUserRequestDto();
+        createDto.setUserDescription("My laptop won't turn on");
     }
 
     @Test
-    void whenCreateUserRequest_withValidRequest_shouldReturn201Created() {
-        CreateAndUpdateUserRequestDto request = new CreateAndUpdateUserRequestDto();
-        request.setUserDescription("My device is not working");
-
-        ViewUserRequestDto viewResponse = ViewUserRequestDto.builder()
-                .id(1L)
-                .userDescription("My device is not working")
-                .build();
-
-        GenericResponse<ViewUserRequestDto> expectedResponse = new GenericResponse<>(
-                true,
-                "User request created successfully",
-                viewResponse
-        );
-
-        when(userRequestService.createUserRequest(request, user)).thenReturn(expectedResponse);
-
-        ResponseEntity<?> response = controller.createUserRequest(request, user);
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(expectedResponse, response.getBody());
-        verify(userRequestService).createUserRequest(request, user);
+    public void testCreateUserRequest() throws Exception {
+        mockMvc.perform(post("/api/user-requests")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.userDescription", is("My laptop won't turn on")));
     }
 
     @Test
-    void whenCreateUserRequest_withServiceThrowsException_shouldThrow() {
-        CreateAndUpdateUserRequestDto request = new CreateAndUpdateUserRequestDto();
-        when(userRequestService.createUserRequest(request, user))
-                .thenThrow(new RuntimeException("Service failure"));
+    public void testGetAllUserRequests() throws Exception {
+        // Create two entries
+        CreateAndUpdateUserRequestDto dto1 = new CreateAndUpdateUserRequestDto();
+        dto1.setUserDescription("First issue");
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> controller.createUserRequest(request, user));
-        assertEquals("Service failure", ex.getMessage());
-        verify(userRequestService).createUserRequest(request, user);
+        CreateAndUpdateUserRequestDto dto2 = new CreateAndUpdateUserRequestDto();
+        dto2.setUserDescription("Second issue");
+
+        mockMvc.perform(post("/api/user-requests")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto1)));
+
+        mockMvc.perform(post("/api/user-requests")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto2)));
+
+        mockMvc.perform(get("/api/user-requests"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
     }
 
     @Test
-    void whenGetUserRequests_shouldReturnList() {
-        List<ViewUserRequestDto> requestList = new ArrayList<>();
-        requestList.add(ViewUserRequestDto.builder().id(1L).userDescription("Request 1").build());
-        requestList.add(ViewUserRequestDto.builder().id(2L).userDescription("Request 2").build());
+    public void testGetUserRequestById() throws Exception {
+        String response = mockMvc.perform(post("/api/user-requests")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andReturn().getResponse().getContentAsString();
 
-        GenericResponse<List<ViewUserRequestDto>> expectedResponse = new GenericResponse<>(
-                true,
-                "User requests retrieved successfully",
-                requestList
-        );
+        Long id = objectMapper.readTree(response).get("id").asLong();
 
-        when(userRequestService.getUserRequests(user)).thenReturn(expectedResponse);
-
-        ResponseEntity<?> response = controller.getUserRequests(user);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedResponse, response.getBody());
-        verify(userRequestService).getUserRequests(user);
+        mockMvc.perform(get("/api/user-requests/" + id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userDescription", is("My laptop won't turn on")));
     }
 
     @Test
-    void whenGetUserRequestById_withValidId_shouldReturnUserRequest() {
-        Long requestId = 1L;
-        ViewUserRequestDto dto = ViewUserRequestDto.builder()
-                .id(requestId)
-                .userDescription("Test request")
-                .build();
+    public void testUpdateUserRequest() throws Exception {
+        String response = mockMvc.perform(post("/api/user-requests")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andReturn().getResponse().getContentAsString();
 
-        GenericResponse<ViewUserRequestDto> expectedResponse = new GenericResponse<>(
-                true,
-                "User request retrieved successfully",
-                dto
-        );
+        Long id = objectMapper.readTree(response).get("id").asLong();
 
-        when(userRequestService.getUserRequestById(requestId.toString(), user)).thenReturn(expectedResponse);
+        CreateAndUpdateUserRequestDto updateDto = new CreateAndUpdateUserRequestDto();
+        updateDto.setUserDescription("Updated description");
 
-        ResponseEntity<?> response = controller.getUserRequestById(requestId.toString(), user);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedResponse, response.getBody());
-        verify(userRequestService).getUserRequestById(requestId.toString(), user);
+        mockMvc.perform(put("/api/user-requests/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userDescription", is("Updated description")));
     }
 
     @Test
-    void whenGetUserRequestById_notFound_shouldThrow() {
-        String requestId = "999";
-        when(userRequestService.getUserRequestById(requestId, user))
-                .thenThrow(new IllegalArgumentException("User request not found"));
+    public void testDeleteUserRequest() throws Exception {
+        String response = mockMvc.perform(post("/api/user-requests")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andReturn().getResponse().getContentAsString();
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> controller.getUserRequestById(requestId, user));
-        assertEquals("User request not found", ex.getMessage());
-        verify(userRequestService).getUserRequestById(requestId, user);
+        Long id = objectMapper.readTree(response).get("id").asLong();
+
+        mockMvc.perform(delete("/api/user-requests/" + id))
+                .andExpect(status().isNoContent());
     }
 
     @Test
-    void whenUpdateUserRequest_shouldReturnUpdatedRequest() {
-        // Arrange
-        String requestId = "1";
-        CreateAndUpdateUserRequestDto request = new CreateAndUpdateUserRequestDto();
-        request.setUserDescription("Updated description");
-
-        ViewUserRequestDto dto = ViewUserRequestDto.builder()
-                .id(1L)
-                .userDescription("Updated description")
-                .build();
-
-        GenericResponse<ViewUserRequestDto> expectedResponse = new GenericResponse<>(
-                true,
-                "User request updated successfully",
-                dto
-        );
-
-        when(userRequestService.updateUserRequest(requestId, request, user)).thenReturn(expectedResponse);
-
-        ResponseEntity<?> response = controller.updateUserRequest(requestId, request, user);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedResponse, response.getBody());
-        verify(userRequestService).updateUserRequest(requestId, request, user);
+    public void testGetUserRequestByIdNotFound() throws Exception {
+        mockMvc.perform(get("/api/user-requests/9999"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void whenUpdateUserRequest_notFound_shouldThrow() {
-        String requestId = "999";
-        CreateAndUpdateUserRequestDto request = new CreateAndUpdateUserRequestDto();
+    public void testUpdateUserRequestNotFound() throws Exception {
+        CreateAndUpdateUserRequestDto updateDto = new CreateAndUpdateUserRequestDto();
+        updateDto.setUserDescription("Updated");
 
-        when(userRequestService.updateUserRequest(requestId, request, user))
-                .thenThrow(new IllegalArgumentException("User request not found"));
-
-        Exception ex = assertThrows(IllegalArgumentException.class,
-                () -> controller.updateUserRequest(requestId, request, user));
-        assertEquals("User request not found", ex.getMessage());
-        verify(userRequestService).updateUserRequest(requestId, request, user);
+        mockMvc.perform(put("/api/user-requests/9999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void whenDeleteUserRequest_shouldReturnSuccess() {
-        String requestId = "1";
-        GenericResponse<Void> expectedResponse = new GenericResponse<>(
-                true,
-                "User request deleted successfully",
-                null
-        );
-
-        when(userRequestService.deleteUserRequest(requestId, user)).thenReturn(expectedResponse);
-
-        ResponseEntity<?> response = controller.deleteUserRequest(requestId, user);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedResponse, response.getBody());
-        verify(userRequestService).deleteUserRequest(requestId, user);
-    }
-
-    @Test
-    void whenDeleteUserRequest_notFound_shouldThrow() {
-        String requestId = "999";
-
-        when(userRequestService.deleteUserRequest(requestId, user))
-                .thenThrow(new IllegalArgumentException("User request not found"));
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> controller.deleteUserRequest(requestId, user));
-        assertEquals("User request not found", ex.getMessage());
-        verify(userRequestService).deleteUserRequest(requestId, user);
-    }
-
-    @Test
-    void whenDeleteUserRequest_unauthorized_shouldThrowAccessDenied() {
-        String requestId = "1";
-
-        when(userRequestService.deleteUserRequest(requestId, user))
-                .thenThrow(new AccessDeniedException("Not allowed"));
-
-        AccessDeniedException ex = assertThrows(AccessDeniedException.class,
-                () -> controller.deleteUserRequest(requestId, user));
-        assertEquals("Not allowed", ex.getMessage());
-        verify(userRequestService).deleteUserRequest(requestId, user);
+    public void testDeleteUserRequestNotFound() throws Exception {
+        mockMvc.perform(delete("/api/user-requests/9999"))
+                .andExpect(status().isNotFound());
     }
 }
