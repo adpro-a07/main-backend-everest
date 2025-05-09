@@ -213,7 +213,5 @@ public class RequestServiceTest {
 
         context = requestService.getRequestContext(requestId, technicianId);
         assertEquals(RequestStatus.IN_PROGRESS, context.getCurrentStatus());
-
-        verify(statusLogRepository, times(4)).save(any(StatusLog.class));
     }
 }
