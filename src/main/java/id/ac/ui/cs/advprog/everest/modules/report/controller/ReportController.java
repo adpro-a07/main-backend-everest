@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/reports")
@@ -38,7 +39,7 @@ public class ReportController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Report> getReportDetailById(@PathVariable int id) {
+    public ResponseEntity<Report> getReportDetailById(@PathVariable UUID id) {
         try {
             Report rpt = reportService.getReportById(id);
             return ResponseEntity.ok(rpt);
@@ -48,15 +49,6 @@ public class ReportController {
                     "Report not found with id: " + id,
                     ex
             );
-        }
-    }
-
-    @ControllerAdvice
-    public class ControllerExceptionHandler {
-
-        @ExceptionHandler(RuntimeException.class)
-        public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 }

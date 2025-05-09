@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.everest.modules.report.excecption;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +13,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Map;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class ReportExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String,Object>> handleRSE(ResponseStatusException ex,
                                                         HttpServletRequest req) {

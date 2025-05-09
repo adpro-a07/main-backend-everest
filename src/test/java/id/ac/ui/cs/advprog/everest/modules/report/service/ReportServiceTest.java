@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.modules.report.service.service;
+package id.ac.ui.cs.advprog.everest.modules.report.service;
 
 
 import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
@@ -13,10 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -31,17 +28,19 @@ class ReportServiceTest {
     private ReportServiceImpl reportService;
 
     private Report sampleReport;
+    private UUID sampleReportId;
 
     @BeforeEach
     void setUp() {
-        // Set up a sample report
+        sampleReportId = UUID.randomUUID();
+
         sampleReport = Report.builder()
                 .technicianName("John Doe")
                 .repairDetails("Fixed broken screen")
                 .repairDate(LocalDate.now())
                 .status(ReportStatus.COMPLETED)
                 .build();
-        sampleReport.setId(1);
+        sampleReport.setId(sampleReportId);
     }
 
     @Test
@@ -60,27 +59,29 @@ class ReportServiceTest {
 
     @Test
     void testGetReportById() {
-        when(reportRepository.findById(1)).thenReturn(Optional.of(sampleReport));
+        when(reportRepository.findById(sampleReportId)).thenReturn(Optional.of(sampleReport));
 
         // Execute
-        Report result = reportService.getReportById(1);
+        Report result = reportService.getReportById(sampleReportId);
 
         // Verify
         assertNotNull(result);
         assertEquals(sampleReport.getTechnicianName(), result.getTechnicianName());
         assertEquals(sampleReport.getRepairDetails(), result.getRepairDetails());
-        verify(reportRepository, times(1)).findById(1);
+        verify(reportRepository, times(1)).findById(sampleReportId);
     }
 
     @Test
     void testGetReportByIdNotFound() {
-        when(reportRepository.findById(999)).thenReturn(Optional.empty());
+        UUID nonExistentId = UUID.randomUUID();
+
+        when(reportRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // Execute & Verify
         assertThrows(RuntimeException.class, () -> {
-            reportService.getReportById(999);
+            reportService.getReportById(nonExistentId);
         });
-        verify(reportRepository, times(1)).findById(999);
+        verify(reportRepository, times(1)).findById(nonExistentId);
     }
 
     @Test

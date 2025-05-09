@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -25,7 +26,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public Report getReportById(int id) {
+    public Report getReportById(UUID id) {
         return reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Report not found with id: " + id));
     }

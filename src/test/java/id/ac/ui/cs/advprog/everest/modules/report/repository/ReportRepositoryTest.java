@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,10 +17,12 @@ class ReportRepositoryTest {
 
     private ReportRepository reportRepository;
     private Report sampleReport;
+    private UUID sampleReportId;
 
     @BeforeEach
     void setUp() {
         reportRepository = new ReportRepository();
+        sampleReportId = UUID.randomUUID();
 
         sampleReport = Report.builder()
                 .technicianName("John Doe")
@@ -35,7 +38,6 @@ class ReportRepositoryTest {
 
         assertNotNull(savedReport);
         assertNotNull(savedReport.getId());
-        assertEquals(1L, savedReport.getId());
         assertEquals(sampleReport.getTechnicianName(), savedReport.getTechnicianName());
 
         List<Report> allReports = reportRepository.findAll();
@@ -43,36 +45,21 @@ class ReportRepositoryTest {
     }
 
     @Test
-    void testAutoIncrementId() {
-        Report firstReport = reportRepository.save(sampleReport);
-
-        Report secondReport = Report.builder()
-                .technicianName("Jane Smith")
-                .repairDetails("Fixed charging port")
-                .repairDate(LocalDate.now())
-                .status(ReportStatus.COMPLETED)
-                .build();
-
-        Report savedSecondReport = reportRepository.save(secondReport);
-
-        assertEquals(1L, firstReport.getId());
-        assertEquals(2L, savedSecondReport.getId());
-    }
-
-    @Test
     void testFindById() {
         Report savedReport = reportRepository.save(sampleReport);
+        UUID reportId = savedReport.getId();
 
-        Optional<Report> foundReport = reportRepository.findById(savedReport.getId());
+        Optional<Report> foundReport = reportRepository.findById(reportId);
 
         assertTrue(foundReport.isPresent());
+        assertEquals(reportId, foundReport.get().getId());
         assertEquals(sampleReport.getTechnicianName(), foundReport.get().getTechnicianName());
     }
 
     @Test
     void testFindByIdWithNonExistentId() {
-        Optional<Report> foundReport = reportRepository.findById(999);
-
+        UUID nonExistentId = UUID.randomUUID();
+        Optional<Report> foundReport = reportRepository.findById(nonExistentId);
         assertFalse(foundReport.isPresent());
     }
 
@@ -90,19 +77,6 @@ class ReportRepositoryTest {
 
         List<Report> allReports = reportRepository.findAll();
         assertEquals(1, allReports.size());
-    }
-
-    @Test
-    void testDeleteById() {
-        Report savedReport = reportRepository.save(sampleReport);
-
-        reportRepository.deleteById(savedReport.getId());
-
-        List<Report> allReports = reportRepository.findAll();
-        assertEquals(0, allReports.size());
-
-        Optional<Report> foundReport = reportRepository.findById(savedReport.getId());
-        assertFalse(foundReport.isPresent());
     }
 
     @Test

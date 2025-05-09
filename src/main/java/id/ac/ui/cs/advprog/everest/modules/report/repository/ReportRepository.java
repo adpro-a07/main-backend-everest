@@ -9,41 +9,37 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
 public class ReportRepository {
     private final List<Report> reportData = new ArrayList<>();
-    private int nextId = 1;
 
     public List<Report> findAll() {
         return new ArrayList<>(reportData);
     }
 
-    public Optional<Report> findById(int id) {
+    public Optional<Report> findById(UUID id) {
         return reportData.stream()
-                .filter(report -> report.getId() == id)
+                .filter(report -> report.getId().equals(id))
                 .findFirst();
     }
 
     public Report save(Report report) {
-        if (report.getId() == 0) {
-            report.setId(Math.toIntExact(nextId++));
+        if (report.getId() == null) {
+            report.setId(UUID.randomUUID());
             reportData.add(report);
         } else {
             // Update existing report
             for (int i = 0; i < reportData.size(); i++) {
-                if (reportData.get(i).getId() == report.getId()) {
+                if (reportData.get(i).getId().equals(report.getId())) {
                     reportData.set(i, report);
                     break;
                 }
             }
         }
         return report;
-    }
-
-    public void deleteById(int id) {
-        reportData.removeIf(report -> report.getId() == id);
     }
 
     public List<Report> findByTechnicianNameContainingIgnoreCase(String technicianName) {

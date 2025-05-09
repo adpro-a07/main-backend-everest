@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.modules.report.model;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class Report {
     @NonNull
-    private int id;
+    private UUID id;
 
     @NonNull
     private String technicianName;
