@@ -1,91 +1,41 @@
 package id.ac.ui.cs.advprog.everest.modules.report.repository;
 
-
 import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
 import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 @Repository
-public class ReportRepository {
-    private final List<Report> reportData = new ArrayList<>();
+public interface ReportRepository extends JpaRepository<Report, UUID> {
 
-    public List<Report> findAll() {
-        return new ArrayList<>(reportData);
-    }
+    List<Report> findByTechnicianNameContainingIgnoreCase(String technicianName);
 
-    public Optional<Report> findById(UUID id) {
-        return reportData.stream()
-                .filter(report -> report.getId().equals(id))
-                .findFirst();
-    }
+    List<Report> findByStatus(ReportStatus status);
 
-    public Report save(Report report) {
-        if (report.getId() == null) {
-            report.setId(UUID.randomUUID());
-            reportData.add(report);
-        } else {
-            // Update existing report
-            for (int i = 0; i < reportData.size(); i++) {
-                if (reportData.get(i).getId().equals(report.getId())) {
-                    reportData.set(i, report);
-                    break;
-                }
-            }
-        }
-        return report;
-    }
+    List<Report> findByTechnicianNameContainingIgnoreCaseAndStatus(
+            String technicianName,
+            ReportStatus status
+    );
 
-    public List<Report> findByTechnicianNameContainingIgnoreCase(String technicianName) {
-        if (technicianName == null) {
-            return new ArrayList<>();
-        }
+    @Query("SELECT r FROM Report r WHERE LOWER(r.technicianName) LIKE LOWER(CONCAT('%',:technicianName,'%')) " +
+            "AND r.status = :status")
+    List<Report> searchByTechnicianAndStatus(
+            @Param("technicianName") String technicianName,
+            @Param("status") ReportStatus status
+    );
 
-        String searchTerm = technicianName.toLowerCase();
-        return reportData.stream()
-                .filter(report ->
-                        report.getTechnicianName().toLowerCase().contains(searchTerm))
-                .collect(Collectors.toList());
-    }
+    @Query("SELECT r FROM Report r WHERE r.repairDate = :date")
+    List<Report> findByRepairDate(@Param("date") LocalDate date);
 
-    public List<Report> findByStatus(ReportStatus status) {
-        if (status == null) {
-            return new ArrayList<>();
-        }
-        return reportData.stream()
-                .filter(report -> report.getStatus() == status)
-                .collect(Collectors.toList());
-    }
-
-    public List<Report> findByTechnicianNameContainingIgnoreCaseAndStatus(
-            String technicianName, ReportStatus status) {
-        if (technicianName == null || status == null) {
-            return new ArrayList<>();
-        }
-        String nameLower = technicianName.toLowerCase();
-        return reportData.stream()
-                .filter(report -> report.getTechnicianName().toLowerCase().contains(nameLower)
-                        && report.getStatus() == status)
-                .collect(Collectors.toList());
-    }
-
-    public List<Report> findByRepairDate(LocalDate date) {
-        return reportData.stream()
-                .filter(report -> report.getRepairDate().equals(date))
-                .collect(Collectors.toList());
-    }
-
-    public List<Report> findByRepairDateBetween(LocalDate startDate, LocalDate endDate) {
-        return reportData.stream()
-                .filter(report ->
-                        !report.getRepairDate().isBefore(startDate) &&
-                                !report.getRepairDate().isAfter(endDate))
-                .collect(Collectors.toList());
-    }
+    @Query("SELECT r FROM Report r WHERE r.repairDate BETWEEN :startDate AND :endDate")
+    List<Report> findByRepairDateBetween(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
