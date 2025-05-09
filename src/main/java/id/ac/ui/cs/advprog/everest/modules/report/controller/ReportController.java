@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.report.controller;
 
+import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
 import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
 import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.service.ReportService;
@@ -16,16 +17,17 @@ import java.util.UUID;
 public class ReportController {
 
     private final ReportService reportService;
+
     public ReportController(ReportService reportService) {
         this.reportService = reportService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Report>> getReportList(
+    public ResponseEntity<List<ReportResponse>> getReportList(
             @RequestParam(required = false) String technician,
             @RequestParam(required = false) ReportStatus status) {
 
-        List<Report> reports;
+        List<ReportResponse> reports;
         if (technician != null && status != null) {
             reports = reportService.getReportsByTechnicianAndStatus(technician, status);
         } else if (technician != null) {
@@ -39,10 +41,10 @@ public class ReportController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Report> getReportDetailById(@PathVariable UUID id) {
+    public ResponseEntity<ReportResponse> getReportDetailById(@PathVariable UUID id) {
         try {
-            Report rpt = reportService.getReportById(id);
-            return ResponseEntity.ok(rpt);
+            ReportResponse report = reportService.getReportById(id);
+            return ResponseEntity.ok(report);
         } catch (RuntimeException ex) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,

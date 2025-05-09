@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.modules.report.service;
 
 
+import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
 import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
 import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.service.ReportServiceImpl;
@@ -50,7 +51,7 @@ class ReportServiceTest {
 
         when(reportRepository.findAll()).thenReturn(reportList);
 
-        List<Report> result = reportService.getAllReports();
+        List<ReportResponse> result = reportService.getAllReports();
 
         assertEquals(1, result.size());
         assertEquals(sampleReport.getTechnicianName(), result.get(0).getTechnicianName());
@@ -62,7 +63,7 @@ class ReportServiceTest {
         when(reportRepository.findById(sampleReportId)).thenReturn(Optional.of(sampleReport));
 
         // Execute
-        Report result = reportService.getReportById(sampleReportId);
+        ReportResponse result = reportService.getReportById(sampleReportId);
 
         // Verify
         assertNotNull(result);
@@ -95,7 +96,7 @@ class ReportServiceTest {
                 .thenReturn(reportList);
 
         // Execute
-        List<Report> result = reportService.getReportsByTechnician(technicianName);
+        List<ReportResponse> result = reportService.getReportsByTechnician(technicianName);
 
         // Verify
         assertEquals(1, result.size());
@@ -109,7 +110,7 @@ class ReportServiceTest {
         when(reportRepository.findByTechnicianNameContainingIgnoreCase("Unknown"))
                 .thenReturn(Collections.emptyList());
 
-        List<Report> result = reportService.getReportsByTechnician("Unknown");
+        List<ReportResponse> result = reportService.getReportsByTechnician("Unknown");
         assertTrue(result.isEmpty());
     }
 
@@ -118,7 +119,7 @@ class ReportServiceTest {
         when(reportRepository.findByTechnicianNameContainingIgnoreCase(null))
                 .thenReturn(Collections.emptyList());
 
-        List<Report> result = reportService.getReportsByTechnician(null);
+        List<ReportResponse> result = reportService.getReportsByTechnician(null);
         assertTrue(result.isEmpty());
     }
 
@@ -130,7 +131,7 @@ class ReportServiceTest {
         when(reportRepository.findByStatus(ReportStatus.COMPLETED))
                 .thenReturn(reportList);
 
-        List<Report> result = reportService.getReportsByStatus(ReportStatus.COMPLETED);
+        List<ReportResponse> result = reportService.getReportsByStatus(ReportStatus.COMPLETED);
         assertEquals(1, result.size());
         verify(reportRepository, times(1)).findByStatus(ReportStatus.COMPLETED);
     }
@@ -143,7 +144,7 @@ class ReportServiceTest {
         when(reportRepository.findByStatus(ReportStatus.COMPLETED))
                 .thenReturn(reportList);
 
-        List<Report> result = reportService.getReportsByStatus(ReportStatus.COMPLETED);
+        List<ReportResponse> result = reportService.getReportsByStatus(ReportStatus.COMPLETED);
         assertEquals(1, result.size());
     }
 
@@ -152,7 +153,7 @@ class ReportServiceTest {
         when(reportRepository.findByStatus(ReportStatus.CANCELLED))
                 .thenReturn(Collections.emptyList());
 
-        List<Report> result = reportService.getReportsByStatus(ReportStatus.CANCELLED);
+        List<ReportResponse> result = reportService.getReportsByStatus(ReportStatus.CANCELLED);
 
         assertTrue(result.isEmpty(), "Expected no reports for status CANCELLED");
         verify(reportRepository, times(1)).findByStatus(ReportStatus.CANCELLED);
@@ -162,7 +163,7 @@ class ReportServiceTest {
     void testGetReportsByStatus_NullStatus() {
         when(reportRepository.findByStatus(null)).thenReturn(Collections.emptyList());
 
-        List<Report> result = reportService.getReportsByStatus(null);
+        List<ReportResponse> result = reportService.getReportsByStatus(null);
 
         assertTrue(result.isEmpty(), "Expected empty result when status is null");
         verify(reportRepository, times(1)).findByStatus(null);
@@ -178,7 +179,7 @@ class ReportServiceTest {
                 ReportStatus.COMPLETED))
                 .thenReturn(reportList);
 
-        List<Report> result = reportService.getReportsByTechnicianAndStatus("John", ReportStatus.COMPLETED);
+        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus("John", ReportStatus.COMPLETED);
         assertEquals(1, result.size());
         verify(reportRepository, times(1))
                 .findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.COMPLETED);
@@ -196,7 +197,7 @@ class ReportServiceTest {
                 ReportStatus.COMPLETED))
                 .thenReturn(List.of(sampleReport, anotherReport));
 
-        List<Report> result = reportService.getReportsByTechnicianAndStatus("john", ReportStatus.COMPLETED);
+        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus("john", ReportStatus.COMPLETED);
         assertEquals(2, result.size());
     }
 
@@ -207,14 +208,14 @@ class ReportServiceTest {
                 ReportStatus.PENDING_CONFIRMATION))
                 .thenReturn(Collections.emptyList());
 
-        List<Report> result = reportService.getReportsByTechnicianAndStatus("Alice", ReportStatus.PENDING_CONFIRMATION);
+        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus("Alice", ReportStatus.PENDING_CONFIRMATION);
         assertTrue(result.isEmpty());
     }
 
     @Test
     void testEmptyReportList() {
         when(reportRepository.findAll()).thenReturn(Collections.emptyList());
-        List<Report> result = reportService.getAllReports();
+        List<ReportResponse> result = reportService.getAllReports();
         assertTrue(result.isEmpty());
     }
 
@@ -228,10 +229,7 @@ class ReportServiceTest {
         when(reportRepository.findByTechnicianNameContainingIgnoreCase("john"))
                 .thenReturn(List.of(weirdNameReport));
 
-        List<Report> result = reportService.getReportsByTechnician("john");
+        List<ReportResponse> result = reportService.getReportsByTechnician("john");
         assertEquals(1, result.size());
     }
-
-    
-
 }

@@ -4,11 +4,12 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 @Builder
 public class ReportResponse {
-    private Long id;
+    private UUID id;
     private String technicianName;
     private String repairDetails;
     private LocalDate repairDate;
