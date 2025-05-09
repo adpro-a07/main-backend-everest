@@ -8,6 +8,9 @@ import id.ac.ui.cs.advprog.everest.modules.rating.repository.RatingRepository;
 import id.ac.ui.cs.advprog.everest.modules.rating.strategy.AdminDeleteStrategy;
 import id.ac.ui.cs.advprog.everest.modules.rating.strategy.RatingDeleteStrategy;
 import id.ac.ui.cs.advprog.everest.modules.rating.strategy.UserDeleteStrategy;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.RepairOrder;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,23 +19,50 @@ import java.util.UUID;
 @Service
 public class RatingServiceImpl implements RatingService {
 
+    private final RepairOrderRepository repairOrderRepository;
     private final RatingRepository ratingRepository;
 
-    public RatingServiceImpl(RatingRepository ratingRepository) {
+    public RatingServiceImpl(RatingRepository ratingRepository, RepairOrderRepository repairOrderRepository) {
         this.ratingRepository = ratingRepository;
+        this.repairOrderRepository = repairOrderRepository;
     }
 
+
+//    @Override
+//    public Rating createRating(AuthenticatedUser customer, UUID technicianId, CreateAndUpdateRatingRequest dto) {
+//        Rating rating = Rating.builder()
+//                .userId(customer.id())
+//                .technicianId(technicianId)
+//                .comment(dto.getComment())
+//                .rating(dto.getRating())
+//                .build();
+//
+//        return ratingRepository.save(rating);
+//    }
+
     @Override
-    public Rating createRating(AuthenticatedUser customer, UUID technicianId, CreateAndUpdateRatingRequest dto) {
+    public Rating createRating(AuthenticatedUser customer, UUID repairOrderId, CreateAndUpdateRatingRequest dto) {
+        RepairOrder repairOrder = repairOrderRepository.findById(repairOrderId)
+                .orElseThrow(() -> new RuntimeException("Repair order tidak ditemukan"));
+
+        if (!repairOrder.getCustomerId().equals(customer.id())) {
+            throw new RuntimeException("Kamu tidak memiliki akses ke order ini.");
+        }
+
+        if (!repairOrder.getStatus().equals(RepairOrderStatus.COMPLETED)) {
+            throw new RuntimeException("Order belum selesai, tidak bisa memberi rating.");
+        }
+
         Rating rating = Rating.builder()
                 .userId(customer.id())
-                .technicianId(technicianId)
+                .technicianId(repairOrder.getTechnicianId())
                 .comment(dto.getComment())
                 .rating(dto.getRating())
                 .build();
 
         return ratingRepository.save(rating);
     }
+
 
     @Override
     public List<Rating> getRatingsByTechnician(UUID technicianId) {

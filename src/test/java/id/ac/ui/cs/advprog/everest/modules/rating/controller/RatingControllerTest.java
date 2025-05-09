@@ -80,16 +80,22 @@ class RatingControllerTest {
 
     @Test
     void testCreateRating_Success() throws Exception {
-        Mockito.when(ratingService.createRating(any(AuthenticatedUser.class), eq(technicianId), any()))
+        UUID repairOrderId = UUID.randomUUID(); // Simulasi repair order selesai
+
+        Mockito.when(ratingService.createRating(any(AuthenticatedUser.class), eq(repairOrderId), any()))
                 .thenReturn(expectedRating);
 
         mockMvc.perform(post("/api/v1/rating/ratings")
-                        .param("technicianId", technicianId.toString())
+                        .param("repairOrderId", repairOrderId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.technicianId").value(technicianId.toString()))
+                .andExpect(jsonPath("$.comment").value("Great service!"))
+                .andExpect(jsonPath("$.rating").value(5));
 
-        Mockito.verify(ratingService).createRating(any(AuthenticatedUser.class), eq(technicianId), any());
+        Mockito.verify(ratingService).createRating(any(AuthenticatedUser.class), eq(repairOrderId), any());
     }
 
     @Test

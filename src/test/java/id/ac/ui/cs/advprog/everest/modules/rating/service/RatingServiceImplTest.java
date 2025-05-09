@@ -1,10 +1,12 @@
 package id.ac.ui.cs.advprog.everest.modules.rating.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
-import id.ac.ui.cs.advprog.everest.common.service.UserServiceGrpcClient;
 import id.ac.ui.cs.advprog.everest.modules.rating.dto.CreateAndUpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.modules.rating.model.Rating;
 import id.ac.ui.cs.advprog.everest.modules.rating.repository.RatingRepository;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.RepairOrder;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +23,7 @@ import static org.mockito.Mockito.*;
 class RatingServiceImplTest {
 
     private RatingRepository ratingRepository;
-    private UserServiceGrpcClient userServiceGrpcClient;
+    private RepairOrderRepository repairOrderRepository;
     private RatingServiceImpl ratingService;
     private AuthenticatedUser user;
     private UUID userId;
@@ -30,7 +32,8 @@ class RatingServiceImplTest {
     @BeforeEach
     void setUp() {
         ratingRepository = mock(RatingRepository.class);
-        ratingService = new RatingServiceImpl(ratingRepository);
+        repairOrderRepository = mock(RepairOrderRepository.class);
+        ratingService = new RatingServiceImpl(ratingRepository, repairOrderRepository);
 
         userId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
@@ -50,20 +53,51 @@ class RatingServiceImplTest {
     }
 
     @Test
-    void testCreateRatingSuccess() {
-        CreateAndUpdateRatingRequest request = new CreateAndUpdateRatingRequest();
-        request.setComment("Mantap");
-        request.setRating(4);
+    void testCreateRatingFromCompletedRepairOrder_Success() {
+        UUID repairOrderId = UUID.randomUUID();
 
+        CreateAndUpdateRatingRequest request = new CreateAndUpdateRatingRequest();
+        request.setComment("Bagus banget");
+        request.setRating(5);
+
+        RepairOrder repairOrder = RepairOrder.builder()
+                .id(repairOrderId)
+                .customerId(userId)
+                .technicianId(technicianId)
+                .status(RepairOrderStatus.COMPLETED)
+                .build();
+
+        when(repairOrderRepository.findById(repairOrderId)).thenReturn(Optional.of(repairOrder));
         when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Rating result = ratingService.createRating(user, technicianId, request);
+        Rating result = ratingService.createRating(user, repairOrderId, request);
 
         assertEquals(userId, result.getUserId());
         assertEquals(technicianId, result.getTechnicianId());
-        assertEquals("Mantap", result.getComment());
-        assertEquals(4, result.getRating());
-        assertFalse(result.isDeleted());
+        assertEquals("Bagus banget", result.getComment());
+        assertEquals(5, result.getRating());
+    }
+
+    @Test
+    void testCreateRating_FailsIfOrderNotCompleted() {
+        UUID repairOrderId = UUID.randomUUID();
+
+        RepairOrder repairOrder = RepairOrder.builder()
+                .id(repairOrderId)
+                .customerId(userId)
+                .technicianId(technicianId)
+                .status(RepairOrderStatus.IN_PROGRESS)
+                .build();
+
+        when(repairOrderRepository.findById(repairOrderId)).thenReturn(Optional.of(repairOrder));
+
+        CreateAndUpdateRatingRequest request = new CreateAndUpdateRatingRequest();
+        request.setComment("Invalid case");
+        request.setRating(3);
+
+        assertThrows(RuntimeException.class, () ->
+                ratingService.createRating(user, repairOrderId, request)
+        );
     }
 
     @Test

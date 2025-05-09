@@ -30,9 +30,9 @@ public class RatingController {
     @PostMapping("/ratings")
     public ResponseEntity<Rating> createRating(
             @CurrentUser AuthenticatedUser customer,
-            @RequestParam("technicianId") UUID technicianId,
+            @RequestParam("repairOrderId") UUID repairOrderId,
             @RequestBody @Valid CreateAndUpdateRatingRequest dto) {
-        Rating createdRating = ratingService.createRating(customer, technicianId, dto);
+        Rating createdRating = ratingService.createRating(customer, repairOrderId, dto);
         return ResponseEntity.ok(createdRating);
     }
 
