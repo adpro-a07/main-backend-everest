@@ -18,8 +18,8 @@ class RatingTest {
 
         Rating rating = Rating.builder()
                 .id(id)
-                .userId(userId.toString())
-                .technicianId(technicianId.toString())
+                .userId(userId)
+                .technicianId(technicianId)
                 .comment(comment)
                 .rating(ratingValue)
                 .deleted(false)
@@ -41,8 +41,8 @@ class RatingTest {
         UUID technicianId = UUID.randomUUID();
 
         Rating rating = Rating.builder()
-                .userId(userId.toString())
-                .technicianId(technicianId.toString())
+                .userId(userId)
+                .technicianId(technicianId)
                 .comment("Mantap")
                 .rating(5)
                 .build();
@@ -62,8 +62,8 @@ class RatingTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId(userId.toString())
-                    .technicianId(technicianId.toString())
+                    .userId(userId)
+                    .technicianId(technicianId)
                     .comment("Buruk")
                     .rating(0)
                     .build();
@@ -71,8 +71,8 @@ class RatingTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId(userId.toString())
-                    .technicianId(technicianId.toString())
+                    .userId(userId)
+                    .technicianId(technicianId)
                     .comment("Buruk")
                     .rating(6)
                     .build();
@@ -86,7 +86,7 @@ class RatingTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .technicianId(technicianId.toString())
+                    .technicianId(technicianId)
                     .comment("Lumayan")
                     .rating(3)
                     .build();
@@ -94,7 +94,7 @@ class RatingTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId(userId.toString())
+                    .userId(userId)
                     .comment("Lumayan")
                     .rating(3)
                     .build();
@@ -102,30 +102,9 @@ class RatingTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId(userId.toString())
-                    .technicianId(technicianId.toString())
+                    .userId(userId)
+                    .technicianId(technicianId)
                     .rating(3)
-                    .build();
-        });
-    }
-
-    @Test
-    void testInvalidUUIDFormatThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Rating.builder()
-                    .userId("invalid-uuid")
-                    .technicianId(UUID.randomUUID().toString())
-                    .comment("Test")
-                    .rating(4)
-                    .build();
-        });
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            Rating.builder()
-                    .userId(UUID.randomUUID().toString())
-                    .technicianId("invalid-uuid")
-                    .comment("Test")
-                    .rating(4)
                     .build();
         });
     }
@@ -136,8 +115,8 @@ class RatingTest {
         UUID technicianId = UUID.randomUUID();
 
         Rating rating = Rating.builder()
-                .userId(userId.toString())
-                .technicianId(technicianId.toString())
+                .userId(userId)
+                .technicianId(technicianId)
                 .comment("Awalnya biasa saja")
                 .rating(3)
                 .build();
@@ -155,8 +134,8 @@ class RatingTest {
         UUID technicianId = UUID.randomUUID();
 
         Rating rating = Rating.builder()
-                .userId(userId.toString())
-                .technicianId(technicianId.toString())
+                .userId(userId)
+                .technicianId(technicianId)
                 .comment("Bagus")
                 .rating(4)
                 .build();
@@ -173,8 +152,8 @@ class RatingTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId(userId.toString())
-                    .technicianId(technicianId.toString())
+                    .userId(userId)
+                    .technicianId(technicianId)
                     .comment("   ") // hanya spasi
                     .rating(4)
                     .build();
@@ -187,8 +166,8 @@ class RatingTest {
         UUID technicianId = UUID.randomUUID();
 
         Rating rating = Rating.builder()
-                .userId(userId.toString())
-                .technicianId(technicianId.toString())
+                .userId(userId)
+                .technicianId(technicianId)
                 .comment("Bagus")
                 .rating(4)
                 .build();

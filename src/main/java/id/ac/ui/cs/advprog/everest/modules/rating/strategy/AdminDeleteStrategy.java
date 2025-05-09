@@ -14,7 +14,7 @@ public class AdminDeleteStrategy implements RatingDeleteStrategy {
     }
 
     @Override
-    public void delete(UUID ratingId, String userIdIgnored) {
+    public void delete(UUID ratingId, UUID userIdIgnored) {
         Rating rating = ratingRepository.findById(ratingId)
                 .orElseThrow(() -> new RuntimeException("Rating tidak ditemukan"));
 

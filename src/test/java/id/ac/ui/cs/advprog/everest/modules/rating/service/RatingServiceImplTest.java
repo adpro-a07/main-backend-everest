@@ -1,28 +1,53 @@
 package id.ac.ui.cs.advprog.everest.modules.rating.service;
 
+import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
+import id.ac.ui.cs.advprog.everest.common.service.UserServiceGrpcClient;
 import id.ac.ui.cs.advprog.everest.modules.rating.dto.CreateAndUpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.modules.rating.model.Rating;
 import id.ac.ui.cs.advprog.everest.modules.rating.repository.RatingRepository;
+import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class RatingServiceImplTest {
 
     private RatingRepository ratingRepository;
+    private UserServiceGrpcClient userServiceGrpcClient;
     private RatingServiceImpl ratingService;
+    private AuthenticatedUser user;
+    private UUID userId;
+    private UUID technicianId;
 
     @BeforeEach
     void setUp() {
         ratingRepository = mock(RatingRepository.class);
-        ratingService = new RatingServiceImpl(ratingRepository);
+        userServiceGrpcClient = mock(UserServiceGrpcClient.class);
+        ratingService = new RatingServiceImpl(userServiceGrpcClient, ratingRepository);
+
+        userId = UUID.randomUUID();
+        technicianId = UUID.randomUUID();
+        user = new AuthenticatedUser(
+                userId,
+                "fattah@example.com",
+                "fattah",
+                UserRole.CUSTOMER,
+                "0821123123",
+                Instant.now(),
+                Instant.now(),
+                "Depok",
+                null,
+                0,
+                0L
+        );
     }
 
     @Test
@@ -31,32 +56,25 @@ class RatingServiceImplTest {
         request.setComment("Mantap");
         request.setRating(4);
 
-        ArgumentCaptor<Rating> captor = ArgumentCaptor.forClass(Rating.class);
         when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        String userId = "user-01";
-        String technicianId = "tech-01";
+        Rating result = ratingService.createRating(user, technicianId, request);
 
-        Rating result = ratingService.createRating(userId, technicianId, request);
-
-        verify(ratingRepository).save(captor.capture());
-        Rating saved = captor.getValue();
-
-        assertEquals(userId, saved.getUserId());
-        assertEquals(technicianId, saved.getTechnicianId());
-        assertEquals("Mantap", saved.getComment());
-        assertEquals(4, saved.getRating());
-        assertFalse(saved.isDeleted());
+        assertEquals(userId, result.getUserId());
+        assertEquals(technicianId, result.getTechnicianId());
+        assertEquals("Mantap", result.getComment());
+        assertEquals(4, result.getRating());
+        assertFalse(result.isDeleted());
     }
 
     @Test
     void testGetRatingsByUserReturnsCorrectList() {
-        Rating rating1 = Rating.builder().userId("user-01").technicianId("tech-01").comment("A").rating(5).build();
-        Rating rating2 = Rating.builder().userId("user-01").technicianId("tech-02").comment("B").rating(4).build();
+        Rating rating1 = Rating.builder().userId(userId).technicianId(UUID.randomUUID()).comment("A").rating(5).deleted(false).build();
+        Rating rating2 = Rating.builder().userId(userId).technicianId(UUID.randomUUID()).comment("B").rating(4).deleted(false).build();
 
-        when(ratingRepository.findAllByUserId("user-01")).thenReturn(List.of(rating1, rating2));
+        when(ratingRepository.findAllByUserId(userId)).thenReturn(List.of(rating1, rating2));
 
-        List<Rating> result = ratingService.getRatingsByUser("user-01");
+        List<Rating> result = ratingService.getRatingsByUser(user);
 
         assertEquals(2, result.size());
         assertTrue(result.contains(rating1));
@@ -65,11 +83,11 @@ class RatingServiceImplTest {
 
     @Test
     void testGetRatingsByTechnicianReturnsCorrectList() {
-        Rating rating = Rating.builder().userId("user-02").technicianId("tech-99").comment("C").rating(3).build();
+        Rating rating = Rating.builder().userId(UUID.randomUUID()).technicianId(technicianId).comment("C").rating(3).deleted(false).build();
 
-        when(ratingRepository.findAllByTechnicianId("tech-99")).thenReturn(List.of(rating));
+        when(ratingRepository.findAllByTechnicianId(technicianId)).thenReturn(List.of(rating));
 
-        List<Rating> result = ratingService.getRatingsByTechnician("tech-99");
+        List<Rating> result = ratingService.getRatingsByTechnician(technicianId);
 
         assertEquals(1, result.size());
         assertEquals("C", result.get(0).getComment());
@@ -77,85 +95,88 @@ class RatingServiceImplTest {
 
     @Test
     void testUpdateRatingSuccess() {
+        UUID ratingId = UUID.randomUUID();
         Rating rating = Rating.builder()
-                .id(UUID.randomUUID())
-                .userId("user-01")
-                .technicianId("tech-01")
+                .id(ratingId)
+                .userId(userId)
+                .technicianId(technicianId)
                 .comment("Before")
                 .rating(2)
+                .deleted(false)
                 .build();
 
-        when(ratingRepository.findById(rating.getId())).thenReturn(Optional.of(rating));
-        when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
         CreateAndUpdateRatingRequest request = new CreateAndUpdateRatingRequest();
-        request.setComment("After");
+        request.setComment("Updated");
         request.setRating(5);
 
-        Rating updated = ratingService.updateRating(rating.getId(), "user-01", request);
+        when(ratingRepository.findById(ratingId)).thenReturn(Optional.of(rating));
+        when(ratingRepository.save(any())).thenReturn(rating);
 
-        assertEquals("After", updated.getComment());
+        Rating updated = ratingService.updateRating(ratingId, user, request);
+
+        assertEquals("Updated", updated.getComment());
         assertEquals(5, updated.getRating());
     }
 
     @Test
     void testUpdateRatingFailsIfUserMismatch() {
+        UUID ratingId = UUID.randomUUID();
         Rating rating = Rating.builder()
-                .id(UUID.randomUUID())
-                .userId("owner-user")
-                .technicianId("tech")
-                .comment("X")
-                .rating(2)
+                .id(ratingId)
+                .userId(UUID.randomUUID()) // different user
+                .technicianId(technicianId)
+                .comment("Old")
+                .rating(3)
                 .build();
 
-        when(ratingRepository.findById(rating.getId())).thenReturn(Optional.of(rating));
+        CreateAndUpdateRatingRequest request = new CreateAndUpdateRatingRequest();
+        request.setComment("New");
+        request.setRating(4);
 
-        CreateAndUpdateRatingRequest dto = new CreateAndUpdateRatingRequest();
-        dto.setComment("Y");
-        dto.setRating(4);
+        when(ratingRepository.findById(ratingId)).thenReturn(Optional.of(rating));
 
-        assertThrows(RuntimeException.class, () -> {
-            ratingService.updateRating(rating.getId(), "wrong-user", dto);
-        });
+        assertThrows(RuntimeException.class, () -> ratingService.updateRating(ratingId, user, request));
     }
 
     @Test
     void testDeleteRatingAsUser() {
-        UUID id = UUID.randomUUID();
+        UUID ratingId = UUID.randomUUID();
         Rating rating = Rating.builder()
-                .id(id)
-                .userId("user-x")
-                .technicianId("tech-x")
-                .comment("Nice")
+                .id(ratingId)
+                .userId(userId)
+                .technicianId(technicianId)
+                .comment("Good")
                 .rating(4)
                 .deleted(false)
                 .build();
 
-        when(ratingRepository.findById(id)).thenReturn(Optional.of(rating));
-        when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
+        when(ratingRepository.findById(ratingId)).thenReturn(Optional.of(rating));
+        when(ratingRepository.save(any())).thenReturn(rating);
 
-        ratingService.deleteRating(id, "user-x", false);
+        ratingService.deleteRating(ratingId, user, false);
 
-        verify(ratingRepository).save(argThat(r -> r.isDeleted()));
+        assertTrue(rating.isDeleted());
+        verify(ratingRepository).save(argThat(Rating::isDeleted));
     }
 
     @Test
     void testDeleteRatingAsAdmin() {
-        UUID id = UUID.randomUUID();
+        UUID ratingId = UUID.randomUUID();
         Rating rating = Rating.builder()
-                .id(id)
-                .userId("any-user")
-                .technicianId("any-tech")
-                .comment("OK")
+                .id(ratingId)
+                .userId(UUID.randomUUID())
+                .technicianId(technicianId)
+                .comment("Admin delete")
                 .rating(5)
                 .deleted(false)
                 .build();
 
-        when(ratingRepository.findById(id)).thenReturn(Optional.of(rating));
-        when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
+        when(ratingRepository.findById(ratingId)).thenReturn(Optional.of(rating));
+        when(ratingRepository.save(any())).thenReturn(rating);
 
-        ratingService.deleteRating(id, "admin-id", true);
+        ratingService.deleteRating(ratingId, user, true);
 
-        verify(ratingRepository).save(argThat(r -> r.isDeleted()));
+        assertTrue(rating.isDeleted());
+        verify(ratingRepository).save(argThat(Rating::isDeleted));
     }
 }

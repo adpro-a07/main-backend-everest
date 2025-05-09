@@ -1,11 +1,14 @@
 package id.ac.ui.cs.advprog.everest.modules.rating.controller;
 
+import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
+import id.ac.ui.cs.advprog.everest.authentication.CurrentUser;
 import id.ac.ui.cs.advprog.everest.modules.rating.dto.CreateAndUpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.modules.rating.model.Rating;
 import id.ac.ui.cs.advprog.everest.modules.rating.service.RatingService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,45 +27,50 @@ public class RatingController {
     }
 
     // POST /ratings
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/ratings")
     public ResponseEntity<Rating> createRating(
 
             // TODO Sementara
-            @AuthenticationPrincipal String userId,
-            @RequestParam("technicianId") String technicianId,
+            @CurrentUser AuthenticatedUser customer,
+            @RequestParam("technicianId") UUID technicianId,
             @RequestBody @Valid CreateAndUpdateRatingRequest dto) {
-        Rating createdRating = ratingService.createRating(userId, technicianId, dto);
+        Rating createdRating = ratingService.createRating(customer, technicianId, dto);
         return ResponseEntity.ok(createdRating);
     }
 
     // GET /technicians/{technicianId}/ratings
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN')")
     @GetMapping("/technicians/{technicianId}/ratings")
-    public ResponseEntity<List<Rating>> getRatingsByTechnician(@PathVariable String technicianId) {
+    public ResponseEntity<List<Rating>> getRatingsByTechnician(@PathVariable UUID technicianId) {
         return ResponseEntity.ok(ratingService.getRatingsByTechnician(technicianId));
     }
 
     // GET /users/<id>/ratings
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/users/{userId}/ratings")
-    public ResponseEntity<List<Rating>> getRatingsByUser(@PathVariable String userId) {
-        return ResponseEntity.ok(ratingService.getRatingsByUser(userId));
+    public ResponseEntity<List<Rating>> getRatingsByUser(@CurrentUser AuthenticatedUser customer) {
+        return ResponseEntity.ok(ratingService.getRatingsByUser(customer));
     }
 
     // PUT /ratings/<id>
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/ratings/{id}")
     public ResponseEntity<Rating> updateRating(
             @PathVariable UUID id,
-            @AuthenticationPrincipal String userId,
+            @CurrentUser AuthenticatedUser customer,
             @RequestBody @Valid CreateAndUpdateRatingRequest dto) {
-        return ResponseEntity.ok(ratingService.updateRating(id, userId, dto));
+        return ResponseEntity.ok(ratingService.updateRating(id, customer, dto));
     }
 
     // DELETE /ratings/<id>
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     @DeleteMapping("/ratings/{id}")
     public ResponseEntity<Void> deleteRating(
             @PathVariable UUID id,
-            @AuthenticationPrincipal String userId,
+            @CurrentUser AuthenticatedUser customer,
             @RequestParam(name = "admin", defaultValue = "false") boolean isAdmin) {
-        ratingService.deleteRating(id, userId, isAdmin);
+        ratingService.deleteRating(id, customer, isAdmin);
         return ResponseEntity.noContent().build();
     }
 }

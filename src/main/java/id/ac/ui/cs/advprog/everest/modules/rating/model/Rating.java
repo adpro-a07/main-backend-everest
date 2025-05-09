@@ -61,8 +61,8 @@ public class Rating {
 
     @Builder
     public Rating(UUID id,
-                  String userId,
-                  String technicianId,
+                  UUID userId,
+                  UUID technicianId,
                   String comment,
                   int rating,
                   Boolean deleted) {
@@ -75,8 +75,8 @@ public class Rating {
         }
 
         this.id = (id == null) ? UUID.randomUUID() : id;
-        this.userId = UUID.fromString(userId);
-        this.technicianId = UUID.fromString(technicianId);
+        this.userId = userId;
+        this.technicianId = technicianId;
         this.comment = comment;
         this.rating = rating;
         this.deleted = (deleted == null) ? false : deleted;

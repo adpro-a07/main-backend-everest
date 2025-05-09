@@ -1,19 +1,20 @@
 package id.ac.ui.cs.advprog.everest.modules.rating.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.modules.rating.dto.CreateAndUpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.modules.rating.model.Rating;
 import id.ac.ui.cs.advprog.everest.modules.rating.service.RatingService;
+import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+// ... import tetap sama
 
 class RatingControllerTest {
 
@@ -33,28 +36,36 @@ class RatingControllerTest {
 
     private CreateAndUpdateRatingRequest request;
     private Rating expectedRating;
-    private final UUID ratingId = UUID.randomUUID();
-    private final String userId = "user-1";
-    private final String technicianId = "tech-1";
 
-    // RequestPostProcessor untuk autentikasi
-    private RequestPostProcessor userAuth() {
-        return request -> {
-            request.addHeader("X-User-ID", userId);
-            return request;
-        };
-    }
+    private UUID ratingId;
+    private UUID userId;
+    private UUID technicianId;
+    private AuthenticatedUser customer;
 
     @BeforeEach
     void setUp() {
         ratingService = Mockito.mock(RatingService.class);
         ratingController = new RatingController(ratingService);
-        mockMvc = MockMvcBuilders.standaloneSetup(ratingController)
-                .alwaysDo(result -> {
-                    System.out.println(result.getResponse().getContentAsString());
-                })
-                .build();
+        mockMvc = MockMvcBuilders.standaloneSetup(ratingController).build();
         objectMapper = new ObjectMapper();
+
+        ratingId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+        technicianId = UUID.randomUUID();
+
+        customer = new AuthenticatedUser(
+                userId,
+                "sisi@example.com",
+                "sisi",
+                UserRole.CUSTOMER,
+                "0821123123",
+                Instant.now(),
+                Instant.now(),
+                "Depok",
+                null,
+                0,
+                0L
+        );
 
         request = new CreateAndUpdateRatingRequest();
         request.setComment("Great service!");
@@ -72,99 +83,83 @@ class RatingControllerTest {
 
     @Test
     void testCreateRating_Success() throws Exception {
-        // Setup mock
-        Mockito.when(ratingService.createRating(any(), any(), any())).thenReturn(expectedRating);
+        Mockito.when(ratingService.createRating(any(AuthenticatedUser.class), eq(technicianId), any()))
+                .thenReturn(expectedRating);
 
-        // Panggil API dan verifikasi
         mockMvc.perform(post("/api/v1/rating/ratings")
-                        .param("technicianId", technicianId)
+                        .param("technicianId", technicianId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                        .with(userAuth()))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
-        // Verifikasi service dipanggil
-        Mockito.verify(ratingService).createRating(any(), eq(technicianId), any());
+        Mockito.verify(ratingService).createRating(any(AuthenticatedUser.class), eq(technicianId), any());
     }
 
     @Test
     void testUpdateRating_Success() throws Exception {
-        // Setup rating yang diupdate
-        Rating updatedRating = Rating.builder()
+        Rating updated = Rating.builder()
                 .id(ratingId)
                 .userId(userId)
                 .technicianId(technicianId)
-                .comment("Service improved!")
+                .comment("Updated comment")
                 .rating(4)
                 .deleted(false)
                 .build();
 
         CreateAndUpdateRatingRequest updateRequest = new CreateAndUpdateRatingRequest();
-        updateRequest.setComment("Service improved!");
+        updateRequest.setComment("Updated comment");
         updateRequest.setRating(4);
 
-        // Setup mock
-        Mockito.when(ratingService.updateRating(any(), any(), any())).thenReturn(updatedRating);
+        Mockito.when(ratingService.updateRating(eq(ratingId), any(AuthenticatedUser.class), any()))
+                .thenReturn(updated);
 
-        // Panggil API dan verifikasi
         mockMvc.perform(put("/api/v1/rating/ratings/{id}", ratingId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateRequest))
-                        .with(userAuth()))
+                        .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk());
 
-        // Verifikasi service dipanggil
-        Mockito.verify(ratingService).updateRating(eq(ratingId), any(), any());
+        Mockito.verify(ratingService).updateRating(eq(ratingId), any(AuthenticatedUser.class), any());
     }
 
     @Test
     void testGetRatingsByTechnician_ReturnsList() throws Exception {
-        List<Rating> ratings = Arrays.asList(expectedRating);
-
-        Mockito.when(ratingService.getRatingsByTechnician(technicianId))
-                .thenReturn(ratings);
+        List<Rating> ratings = List.of(expectedRating);
+        Mockito.when(ratingService.getRatingsByTechnician(eq(technicianId))).thenReturn(ratings);
 
         mockMvc.perform(get("/api/v1/rating/technicians/{technicianId}/ratings", technicianId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].userId").value(userId))
-                .andExpect(jsonPath("$[0].technicianId").value(technicianId))
+                .andExpect(jsonPath("$[0].userId").value(userId.toString()))
+                .andExpect(jsonPath("$[0].technicianId").value(technicianId.toString()))
                 .andExpect(jsonPath("$[0].comment").value("Great service!"));
     }
 
     @Test
     void testGetRatingsByUser_ReturnsList() throws Exception {
-        List<Rating> ratings = Arrays.asList(expectedRating);
+        List<Rating> ratings = List.of(expectedRating);
+        Mockito.when(ratingService.getRatingsByUser(any(AuthenticatedUser.class))).thenReturn(ratings);
 
-        Mockito.when(ratingService.getRatingsByUser(userId))
-                .thenReturn(ratings);
-
-        mockMvc.perform(get("/api/v1/rating/users/{userId}/ratings", userId))
+        mockMvc.perform(get("/api/v1/rating/users/me/ratings"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].userId").value(userId))
-                .andExpect(jsonPath("$[0].technicianId").value(technicianId))
+                .andExpect(jsonPath("$[0].userId").value(userId.toString()))
+                .andExpect(jsonPath("$[0].technicianId").value(technicianId.toString()))
                 .andExpect(jsonPath("$[0].comment").value("Great service!"));
     }
 
     @Test
     void testDeleteRating_Success() throws Exception {
-        Mockito.doNothing().when(ratingService).deleteRating(ratingId, userId, false);
+        Mockito.doNothing().when(ratingService).deleteRating(eq(ratingId), any(AuthenticatedUser.class), eq(false));
 
-        mockMvc.perform(
-                        delete("/api/v1/rating/ratings/{id}", ratingId)
-                                .principal(() -> userId)
-                )
+        mockMvc.perform(delete("/api/v1/rating/ratings/{id}", ratingId)
+                        .param("admin", "false"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void testDeleteRatingAsAdmin_Success() throws Exception {
-        Mockito.doNothing().when(ratingService).deleteRating(ratingId, userId, true);
+        Mockito.doNothing().when(ratingService).deleteRating(eq(ratingId), any(AuthenticatedUser.class), eq(true));
 
-        mockMvc.perform(
-                        delete("/api/v1/rating/ratings/{id}", ratingId)
-                                .param("admin", "true")
-                                .principal(() -> userId)
-                )
+        mockMvc.perform(delete("/api/v1/rating/ratings/{id}", ratingId)
+                        .param("admin", "true"))
                 .andExpect(status().isNoContent());
     }
 }
