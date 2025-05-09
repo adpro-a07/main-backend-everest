@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"id.ac.ui.cs.advprog.everest.requestServiceAcceptance.models"}];updateSearchResults();
