@@ -45,7 +45,7 @@ public class RatingController {
 
     // GET /users/<id>/ratings
     @PreAuthorize("hasRole('CUSTOMER')")
-    @GetMapping("/users/{userId}/ratings")
+    @GetMapping("/users/me/ratings")
     public ResponseEntity<List<Rating>> getRatingsByUser(@CurrentUser AuthenticatedUser customer) {
         return ResponseEntity.ok(ratingService.getRatingsByUser(customer));
     }
