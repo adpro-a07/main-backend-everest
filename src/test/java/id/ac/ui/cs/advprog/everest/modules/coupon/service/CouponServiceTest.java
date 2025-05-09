@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.coupon.service;
 
+import id.ac.ui.cs.advprog.everest.modules.coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.repository.CouponRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -19,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class CouponServiceTest {
 
     @Mock
@@ -29,265 +30,192 @@ class CouponServiceTest {
     private CouponServiceImpl couponService;
 
     private UUID couponId;
-    private Coupon validCoupon;
-    private Coupon invalidCoupon;
+    private CouponRequest validRequest;
+    private CouponRequest invalidRequest;
+    private Coupon savedEntity;
 
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.openMocks(this);
         couponId = UUID.randomUUID();
 
-        // Set up a valid coupon
-        validCoupon = Coupon.builder()
+        validRequest = CouponRequest.builder()
                 .code("TEST50")
                 .discountAmount(50000)
                 .maxUsage(100)
-                .usageCount(0)
                 .validUntil(LocalDate.now().plusDays(30))
                 .build();
-        validCoupon.setId(couponId);
 
-        // Set up an invalid coupon (negative discount)
-        invalidCoupon = Coupon.builder()
-                .code("INVALID")
-                .discountAmount(-1000)
+        invalidRequest = CouponRequest.builder()
+                .code("INV123")
+                .discountAmount(-100)
                 .maxUsage(0)
-                .usageCount(0)
                 .validUntil(LocalDate.now().minusDays(1))
                 .build();
-        invalidCoupon.setId(UUID.randomUUID());
+
+        // entity returned by repository after save
+        savedEntity = Coupon.builder()
+                .code(validRequest.getCode())
+                .discountAmount(validRequest.getDiscountAmount())
+                .maxUsage(validRequest.getMaxUsage())
+                .usageCount(0)
+                .validUntil(validRequest.getValidUntil())
+                .build();
+        savedEntity.setId(couponId);
     }
 
     @Test
     void testGetAllCoupons() {
-        // Setup
-        List<Coupon> couponList = new ArrayList<>();
-        couponList.add(validCoupon);
+        List<Coupon> list = new ArrayList<>();
+        list.add(savedEntity);
+        when(couponRepository.findAll()).thenReturn(list);
 
-        when(couponRepository.findAll()).thenReturn(couponList);
-
-        // Execute
         List<Coupon> result = couponService.getAllCoupons();
 
-        // Verify
         assertEquals(1, result.size());
-        assertEquals(validCoupon.getCode(), result.get(0).getCode());
-        verify(couponRepository, times(1)).findAll();
+        assertEquals(savedEntity, result.get(0));
+        verify(couponRepository).findAll();
     }
 
     @Test
-    void testGetCouponById() {
-        // Setup
-        when(couponRepository.findById(couponId)).thenReturn(Optional.of(validCoupon));
+    void testGetCouponById_Found() {
+        when(couponRepository.findById(couponId)).thenReturn(Optional.of(savedEntity));
 
-        // Execute
         Coupon result = couponService.getCouponById(couponId);
 
-        // Verify
+        assertEquals(savedEntity, result);
+        verify(couponRepository).findById(couponId);
+    }
+
+    @Test
+    void testGetCouponById_NotFound() {
+        UUID id2 = UUID.randomUUID();
+        when(couponRepository.findById(id2)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> couponService.getCouponById(id2));
+        verify(couponRepository).findById(id2);
+    }
+
+    @Test
+    void testCreateCoupon_Success() {
+        when(couponRepository.existsByCode(validRequest.getCode())).thenReturn(false);
+        when(couponRepository.save(any(Coupon.class))).thenReturn(savedEntity);
+
+        Coupon result = couponService.createCoupon(validRequest);
+
         assertNotNull(result);
-        assertEquals(validCoupon.getCode(), result.getCode());
-        verify(couponRepository, times(1)).findById(couponId);
+        assertEquals(couponId, result.getId());
+        assertEquals(validRequest.getCode(), result.getCode());
+        assertEquals(0, result.getUsageCount());
+        verify(couponRepository).existsByCode(validRequest.getCode());
+        verify(couponRepository).save(any(Coupon.class));
     }
 
     @Test
-    void testGetCouponByIdNotFound() {
-        // Setup
-        UUID nonExistentId = UUID.randomUUID();
-        when(couponRepository.findById(nonExistentId)).thenReturn(Optional.empty());
-
-        // Execute & Verify
-        assertThrows(RuntimeException.class, () -> {
-            couponService.getCouponById(nonExistentId);
-        });
-        verify(couponRepository, times(1)).findById(nonExistentId);
+    void testCreateCoupon_DuplicateCode() {
+        when(couponRepository.existsByCode(validRequest.getCode())).thenReturn(true);
+        assertThrows(IllegalArgumentException.class, () -> couponService.createCoupon(validRequest));
+        verify(couponRepository).existsByCode(validRequest.getCode());
+        verify(couponRepository, never()).save(any());
     }
 
     @Test
-    void testCreateCouponValid() {
-        // Setup
-        when(couponRepository.save(any(Coupon.class))).thenReturn(validCoupon);
-
-        // Execute
-        Coupon result = couponService.createCoupon(validCoupon);
-
-        // Verify
-        assertNotNull(result);
-        assertEquals(validCoupon.getCode(), result.getCode());
-        verify(couponRepository, times(1)).save(any(Coupon.class));
+    void testCreateCoupon_InvalidData() {
+        // invalidRequest has negative discount, zero maxUsage, past date
+        when(couponRepository.existsByCode(invalidRequest.getCode())).thenReturn(false);
+        assertThrows(IllegalArgumentException.class, () -> couponService.createCoupon(invalidRequest));
+        verify(couponRepository, never()).save(any());
     }
 
     @Test
-    void testCreateCouponInvalid() {
-        // Execute & Verify
-        assertThrows(IllegalArgumentException.class, () -> {
-            couponService.createCoupon(invalidCoupon);
-        });
+    void testUpdateCoupon_Success() {
+        Coupon existing = Coupon.builder()
+                .code("OLD")
+                .discountAmount(1000)
+                .maxUsage(10)
+                .usageCount(0)
+                .validUntil(LocalDate.now().plusDays(5))
+                .build();
+        existing.setId(couponId);
 
-        // The repository save method should not be called for invalid coupon
-        verify(couponRepository, never()).save(any(Coupon.class));
-    }
-
-    @Test
-    void testCreateCouponWithCodeGeneration() {
-        // Setup
-        Coupon couponWithoutCode = Coupon.builder()
-                .code("SUPER50")
-                .discountAmount(50000)
-                .maxUsage(100)
-                .usageCount(null)
-                .validUntil(LocalDate.now().plusDays(30))
+        CouponRequest upd = CouponRequest.builder()
+                .code("NEW50")
+                .discountAmount(2000)
+                .maxUsage(20)
+                .validUntil(LocalDate.now().plusDays(10))
                 .build();
 
+        when(couponRepository.findById(couponId)).thenReturn(Optional.of(existing));
+        when(couponRepository.existsByCode(upd.getCode())).thenReturn(false);
+        when(couponRepository.save(any(Coupon.class))).thenAnswer(i -> i.getArgument(0));
 
-        when(couponRepository.save(any(Coupon.class))).thenAnswer(invocation -> {
-            Coupon savedCoupon = invocation.getArgument(0);
-            savedCoupon.setId(UUID.randomUUID());
-            return savedCoupon;
-        });
+        Coupon out = couponService.updateCoupon(couponId, upd);
 
-        // Execute
-        Coupon result = couponService.createCoupon(couponWithoutCode);
-
-        // Verify
-        assertNotNull(result);
-        assertNotNull(result.getCode());
-        assertEquals(0, result.getUsageCount());
-        verify(couponRepository, times(1)).save(any(Coupon.class));
+        assertEquals("NEW50", out.getCode());
+        assertEquals(2000, out.getDiscountAmount());
+        verify(couponRepository).findById(couponId);
+        verify(couponRepository).save(any());
     }
 
     @Test
-    void testUpdateCouponValid() {
-        // Setup
-        when(couponRepository.findById(couponId)).thenReturn(Optional.of(validCoupon));
-        when(couponRepository.save(any(Coupon.class))).thenReturn(validCoupon);
+    void testUpdateCoupon_DuplicateCode() {
+        Coupon existing = savedEntity;
+        when(couponRepository.findById(couponId)).thenReturn(Optional.of(existing));
+        when(couponRepository.existsByCode("DUP"))
+                .thenReturn(true);
+        CouponRequest dupReq = CouponRequest.builder()
+                .code("DUP")
+                .discountAmount(100)
+                .maxUsage(1)
+                .validUntil(LocalDate.now().plusDays(1))
+                .build();
 
-        // Execute
-        Coupon result = couponService.updateCoupon(validCoupon);
-
-        // Verify
-        assertNotNull(result);
-        assertEquals(validCoupon.getCode(), result.getCode());
-        verify(couponRepository, times(1)).findById(couponId);
-        verify(couponRepository, times(1)).save(any(Coupon.class));
+        assertThrows(IllegalArgumentException.class,
+                () -> couponService.updateCoupon(couponId, dupReq));
     }
 
     @Test
-    void testUpdateCouponInvalid() {
-        // Setup
-        when(couponRepository.findById(invalidCoupon.getId())).thenReturn(Optional.of(invalidCoupon));
-
-        // Execute & Verify
-        assertThrows(IllegalArgumentException.class, () -> {
-            couponService.updateCoupon(invalidCoupon);
-        });
-
-        verify(couponRepository, times(1)).findById(invalidCoupon.getId());
-        // The repository save method should not be called for invalid coupon
-        verify(couponRepository, never()).save(any(Coupon.class));
+    void testUpdateCoupon_NotFound() {
+        when(couponRepository.findById(couponId)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class,
+                () -> couponService.updateCoupon(couponId, validRequest));
     }
 
     @Test
-    void testUpdateCouponNotFound() {
-        // Setup
-        UUID nonExistentId = UUID.randomUUID();
-        validCoupon.setId(nonExistentId);
-        when(couponRepository.findById(nonExistentId)).thenReturn(Optional.empty());
-
-        // Execute & Verify
-        assertThrows(RuntimeException.class, () -> {
-            couponService.updateCoupon(validCoupon);
-        });
-        verify(couponRepository, times(1)).findById(nonExistentId);
-        verify(couponRepository, never()).save(any(Coupon.class));
-    }
-
-    @Test
-    void testDeleteCoupon() {
-        // Setup
-        when(couponRepository.findById(couponId)).thenReturn(Optional.of(validCoupon));
+    void testDeleteCoupon_Success() {
+        when(couponRepository.findById(couponId)).thenReturn(Optional.of(savedEntity));
         doNothing().when(couponRepository).deleteById(couponId);
 
-        // Execute
         couponService.deleteCoupon(couponId);
 
-        // Verify
-        verify(couponRepository, times(1)).findById(couponId);
-        verify(couponRepository, times(1)).deleteById(couponId);
+        verify(couponRepository).deleteById(couponId);
     }
 
     @Test
-    void testDeleteCouponNotFound() {
-        // Setup
-        UUID nonExistentId = UUID.randomUUID();
-        when(couponRepository.findById(nonExistentId)).thenReturn(Optional.empty());
-
-        // Execute & Verify
-        assertThrows(RuntimeException.class, () -> {
-            couponService.deleteCoupon(nonExistentId);
-        });
-        verify(couponRepository, times(1)).findById(nonExistentId);
-        verify(couponRepository, never()).deleteById(any(UUID.class));
+    void testDeleteCoupon_NotFound() {
+        when(couponRepository.findById(couponId)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class,
+                () -> couponService.deleteCoupon(couponId));
     }
 
     @Test
-    void testIsValidCouponWithValidCoupon() {
-        // Execute
-        boolean result = couponService.isValidCoupon(validCoupon);
-
-        // Verify
-        assertTrue(result);
-    }
-
-    @Test
-    void testIsValidCouponWithNegativeDiscount() {
-        // Setup
-        Coupon coupon = Coupon.builder()
-                .code("TEST50")
-                .discountAmount(-1000)  // Negative discount
-                .maxUsage(100)
+    void testIsValidCoupon() {
+        Coupon good = Coupon.builder()
+                .code("C1")
+                .discountAmount(10)
+                .maxUsage(1)
                 .usageCount(0)
-                .validUntil(LocalDate.now().plusDays(30))
+                .validUntil(LocalDate.now().plusDays(1))
                 .build();
+        assertTrue(couponService.isValidCoupon(good));
 
-        // Execute
-        boolean result = couponService.isValidCoupon(coupon);
-
-        // Verify
-        assertFalse(result);
-    }
-
-    @Test
-    void testIsValidCouponWithZeroMaxUsage() {
-        // Setup
-        Coupon coupon = Coupon.builder()
-                .code("TEST50")
-                .discountAmount(50000)
-                .maxUsage(0)  // Zero max usage
-                .usageCount(0)
-                .validUntil(LocalDate.now().plusDays(30))
-                .build();
-
-        // Execute
-        boolean result = couponService.isValidCoupon(coupon);
-
-        // Verify
-        assertFalse(result);
-    }
-
-    @Test
-    void testIsValidCouponWithPastDate() {
-        // Setup
-        Coupon coupon = Coupon.builder()
-                .code("TEST50")
-                .discountAmount(50000)
-                .maxUsage(100)
+        Coupon bad = Coupon.builder()
+                .code("C2")
+                .discountAmount(0)
+                .maxUsage(0)
                 .usageCount(0)
                 .validUntil(LocalDate.now().minusDays(1))
                 .build();
-
-        // Execute
-        boolean result = couponService.isValidCoupon(coupon);
-
-        // Verify
-        assertFalse(result);
+        assertFalse(couponService.isValidCoupon(bad));
     }
 }

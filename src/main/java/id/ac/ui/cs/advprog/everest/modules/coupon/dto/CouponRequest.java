@@ -23,7 +23,7 @@ public class CouponRequest {
 
     @NotNull(message = "Discount amount cannot be null")
     @Positive(message = "Discount amount must be positive")
-    private Long discountAmount;
+    private Integer discountAmount;
 
     @NotNull(message = "Max usage cannot be null")
     @Min(value = 1, message = "Max usage must be at least 1")

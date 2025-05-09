@@ -1,11 +1,13 @@
 package id.ac.ui.cs.advprog.everest.modules.coupon.service;
 
+import id.ac.ui.cs.advprog.everest.modules.coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.repository.CouponRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,32 +33,52 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public Coupon createCoupon(Coupon coupon) {
+    public Coupon createCoupon(CouponRequest couponRequest) {
+        // Convert DTO ke Entity
+        Coupon coupon = convertToEntity(couponRequest);
+
+
+        // Validasi unik code
         if (!isValidCoupon(coupon)) {
             throw new IllegalArgumentException("Invalid coupon data");
         }
-
-        if (coupon.getCode().isEmpty()) {
-            coupon.setCode(generateCouponCode());
+        if (couponRepository.existsByCode(coupon.getCode())) {
+            throw new IllegalArgumentException("Coupon code already exists");
         }
 
-        if (coupon.getUsageCount() == null) {
-            coupon.setUsageCount(0);
-        }
+        // Set nilai default
+        coupon.setUsageCount(0);
+        coupon.setCreatedAt(LocalDateTime.now());
 
         return couponRepository.save(coupon);
     }
 
     @Override
-    public Coupon updateCoupon(Coupon coupon) {
-        getCouponById(coupon.getId());
+    public Coupon updateCoupon(UUID id, CouponRequest req) {
+        Coupon existing = getCouponById(id);
 
-        if (!isValidCoupon(coupon)) {
+        String oldCode = existing.getCode();
+        String newCode = req.getCode();
+
+        // Code‐uniqueness check happens against the NEW code—but only if it actually changed
+        if (!oldCode.equals(newCode) && couponRepository.existsByCode(newCode)) {
+            throw new IllegalArgumentException("New coupon code already exists");
+        }
+
+        // apply all updates
+        existing.setCode(newCode);
+        existing.setDiscountAmount(req.getDiscountAmount());
+        existing.setMaxUsage(req.getMaxUsage());
+        existing.setValidUntil(req.getValidUntil());
+        existing.setUpdatedAt(LocalDateTime.now());
+
+        if (!isValidCoupon(existing)) {
             throw new IllegalArgumentException("Invalid coupon data");
         }
 
-        return couponRepository.save(coupon);
+        return couponRepository.save(existing);
     }
+
 
     @Override
     public void deleteCoupon(UUID id) {
@@ -78,6 +100,15 @@ public class CouponServiceImpl implements CouponService {
             return false;
         }
         return true;
+    }
+
+    private Coupon convertToEntity(CouponRequest request) {
+        return Coupon.builder()
+                .code(request.getCode())
+                .discountAmount(request.getDiscountAmount())
+                .maxUsage(request.getMaxUsage())
+                .validUntil(request.getValidUntil())
+                .build();
     }
 
     private String generateCouponCode() {

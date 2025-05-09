@@ -24,7 +24,7 @@ class CouponRequestTest {
     @Test
     void shouldPassValidation() {
         CouponRequest request = CouponRequest.builder()
-                .discountAmount(10000L)
+                .discountAmount(10000)
                 .maxUsage(5)
                 .validUntil(LocalDate.now().plusDays(30))
                 .code("PROMO1234")
@@ -39,7 +39,7 @@ class CouponRequestTest {
     @Test
     void shouldFailOnInvalidCodeFormat() {
         CouponRequest request = CouponRequest.builder()
-                .discountAmount(10000L)
+                .discountAmount(10000)
                 .maxUsage(5)
                 .validUntil(LocalDate.now().plusDays(30))
                 .code("invalid_code!") // Invalid
@@ -58,7 +58,7 @@ class CouponRequestTest {
     @Test
     void shouldFailOnPastDate() {
         CouponRequest request = CouponRequest.builder()
-                .discountAmount(10000L)
+                .discountAmount(10000)
                 .maxUsage(5)
                 .validUntil(LocalDate.now().minusDays(1)) // Invalid
                 .code("PROMO1234")

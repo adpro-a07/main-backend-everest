@@ -1,7 +1,9 @@
 package id.ac.ui.cs.advprog.everest.modules.coupon.controller;
 
+import id.ac.ui.cs.advprog.everest.modules.coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.service.CouponService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,8 +38,10 @@ public class CouponController {
     }
 
     @PostMapping
-    public ResponseEntity<Coupon> createCoupon(@RequestBody Coupon coupon) {
-        Coupon created = couponService.createCoupon(coupon);
+    public ResponseEntity<Coupon> createCoupon(
+            @Valid @RequestBody CouponRequest couponRequest) {
+
+        Coupon created = couponService.createCoupon(couponRequest);
         return ResponseEntity
                 .created(URI.create("/api/v1/coupons/" + created.getId()))
                 .body(created);
@@ -46,9 +50,9 @@ public class CouponController {
     @PutMapping("/{id}")
     public ResponseEntity<Coupon> updateCoupon(
             @PathVariable UUID id,
-            @RequestBody Coupon coupon) {
-        coupon.setId(id);
-        Coupon updated = couponService.updateCoupon(coupon);
+            @Valid @RequestBody CouponRequest couponRequest) {
+
+        Coupon updated = couponService.updateCoupon(id, couponRequest);
         return ResponseEntity.ok(updated);
     }
 

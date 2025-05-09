@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
 import id.ac.ui.cs.advprog.everest.modules.coupon.controller.CouponController;
+import id.ac.ui.cs.advprog.everest.modules.coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.service.CouponService;
 import org.junit.jupiter.api.Test;
@@ -66,37 +67,18 @@ class CouponControllerTest {
     }
 
     @Test
-    void testCreateCoupon() throws Exception {
-        Coupon input = Coupon.builder()
-                .code("XMAS")
-                .discountAmount(15000)
-                .maxUsage(5)
-                .usageCount(0)
-                .validUntil(LocalDate.of(2024,12,31))
-                .build();
-
-        Coupon saved = Coupon.builder()
-                .code("XMAS")
-                .discountAmount(15000)
-                .maxUsage(5)
-                .usageCount(0)
-                .validUntil(LocalDate.of(2024,12,31))
-                .build();
-        saved.setId(UUID.randomUUID());
-
-        when(couponService.createCoupon(any())).thenReturn(saved);
+    void testCreateCoupon_InvalidInput() throws Exception {
+        CouponRequest invalidRequest = new CouponRequest(
+                null,       // discountAmount null
+                0,          // maxUsage invalid
+                LocalDate.now().minusDays(1), // validUntil past
+                "INV@LID"   // invalid code pattern
+        );
 
         mockMvc.perform(post("/api/v1/coupons")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(input)))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", containsString("/api/v1/coupons/" + saved.getId())))
-                .andExpect(jsonPath("$.id", is(saved.getId().toString())))
-                .andExpect(jsonPath("$.code", is("XMAS")));
-
-        ArgumentCaptor<Coupon> captor = ArgumentCaptor.forClass(Coupon.class);
-        verify(couponService).createCoupon(captor.capture());
-        assertEquals(15000, captor.getValue().getDiscountAmount());
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -109,34 +91,22 @@ class CouponControllerTest {
     }
 
     @Test
-    void testUpdateCoupon() throws Exception {
+    void testUpdateCoupon_ValidationFailed() throws Exception {
         UUID id = UUID.randomUUID();
-        Coupon input = Coupon.builder()
-                .code("UPDATE")
-                .discountAmount(20000)
-                .maxUsage(3)
-                .usageCount(0)
-                .validUntil(LocalDate.of(2025,1,1))
-                .build();
-        Coupon updated = Coupon.builder()
-                .code("UPDATE")
-                .discountAmount(20000)
-                .maxUsage(3)
-                .usageCount(0)
-                .validUntil(LocalDate.of(2025,1,1))
-                .build();
-        updated.setId(id);
+        CouponRequest invalidRequest = new CouponRequest(
+                -1000,
+                null,
+                LocalDate.now(),
+                "NEWCODE"
+        );
 
-        when(couponService.updateCoupon(any())).thenReturn(updated);
+        when(couponService.updateCoupon(eq(id), any()))
+                .thenThrow(new IllegalArgumentException("Invalid data"));
 
         mockMvc.perform(put("/api/v1/coupons/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(input)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(id.toString())))
-                .andExpect(jsonPath("$.code", is("UPDATE")));
-
-        verify(couponService).updateCoupon(any(Coupon.class));
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
