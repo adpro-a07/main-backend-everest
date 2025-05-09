@@ -121,9 +121,9 @@ public class TechnicianReportServiceTest {
 
         when(technicianReportRepository.findById(reportId)).thenReturn(Optional.of(existingReport));
         when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(updatedReport);
+        when(incomingRequestRepository.findById(requestId)).thenReturn(Optional.of(incomingRequest));
 
         TechnicianReport result = technicianReportService.updateReport(updatedReport);
-
         assertEquals(updatedReport, result);
         verify(technicianReportRepository).findById(reportId);
         verify(technicianReportRepository).save(updatedReport);
