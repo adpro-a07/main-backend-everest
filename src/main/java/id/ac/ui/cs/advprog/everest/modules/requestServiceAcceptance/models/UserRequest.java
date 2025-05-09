@@ -1,19 +1,20 @@
 package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
 
+import jakarta.persistence.*;
+import jakarta.validation.*;
+import lombok.*;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor // Required for JPA
+@AllArgsConstructor
 public class UserRequest {
-    private final Long id;
-    private final String userDescription;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-    public UserRequest(Long id, String userDescription) {
-        this.id = id;
-        this.userDescription = userDescription;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getUserDescription() {
-        return userDescription;
-    }
+    @Column(name = "user_description")
+    private String userDescription;
 }
