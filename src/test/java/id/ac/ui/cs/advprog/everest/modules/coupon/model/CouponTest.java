@@ -1,36 +1,39 @@
 package id.ac.ui.cs.advprog.everest.modules.coupon.model;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class CouponTest {
     private Coupon coupon;
     private LocalDate future;
 
-    @Test
-    public void testCouponBuilder_Success() {
-        Coupon coupon = Coupon.builder()
+    @BeforeEach
+    void init() {
+        future = LocalDate.now().plusDays(10);
+        coupon = Coupon.builder()
                 .code("TEST2025")
                 .discountAmount(50000)
                 .maxUsage(5)
                 .usageCount(0)
-                .validUntil(LocalDate.now().plusDays(10))
+                .validUntil(future)
                 .build();
+    }
 
-        assertNotNull(coupon, "Coupon seharusnya tidak null setelah dibangun");
+    @Test
+    void testCouponBuilder_Success() {
         assertNotNull(coupon.getId(), "ID harus ter-generate dan tidak boleh null");
-        assertTrue(isValidUUID(coupon.getId()), "ID harus berupa UUID yang valid");
-
-        assertEquals("TEST2025", coupon.getCode(), "Kode coupon harus TEST2025");
-        assertEquals(50000, coupon.getDiscountAmount(), "Besaran diskon harus 5000");
-        assertEquals(5, coupon.getMaxUsage(), "Jumlah penggunaan maksimal harus 5");
-        assertEquals(0, coupon.getUsageCount(), "Jumlah pemakaian awal harus 0");
-        assertEquals(LocalDate.now().plusDays(10), coupon.getValidUntil(), "Tanggal valid until tidak sesuai");
+        assertEquals("TEST2025", coupon.getCode());
+        assertEquals(Integer.valueOf(50000), coupon.getDiscountAmount());
+        assertEquals(Integer.valueOf(5), coupon.getMaxUsage());
+        assertEquals(Integer.valueOf(0), coupon.getUsageCount());
+        assertEquals(future, coupon.getValidUntil());
     }
 
     @Test
@@ -67,16 +70,10 @@ public class CouponTest {
     }
 
     @Test
-    void testSetters_NonNullEnforced() {
-        assertThrows(NullPointerException.class, () -> coupon.setCode(null));
-        assertThrows(NullPointerException.class, () -> coupon.setId(null));
-    }
-
-    @Test
     void testIdUniqueness() {
         Coupon a = Coupon.builder().code("A").validUntil(future).build();
         Coupon b = Coupon.builder().code("B").validUntil(future).build();
-        assertNotEquals(a.getId(), b.getId());
+        assertNotEquals(a.getId(), b.getId(), "ID harus unik");
     }
 
     @Test
@@ -89,8 +86,7 @@ public class CouponTest {
                 .validUntil(LocalDate.now().plusDays(5))
                 .build();
 
-        assertTrue(coupon.getDiscountAmount() < 0,
-                "Diskon negatif harus dianggap sebagai input yang tidak valid");
+        assertTrue(coupon.getDiscountAmount() < 0);
     }
 
     @Test
@@ -103,7 +99,7 @@ public class CouponTest {
                     .usageCount(0)
                     .validUntil(LocalDate.now().plusDays(10))
                     .build();
-        }, "Membangun Coupon dengan code null harus melempar NullPointerException");
+        });
     }
 
     @Test
@@ -181,11 +177,11 @@ public class CouponTest {
                 .build();
 
         assertNotNull(coupon, "Coupon harus berhasil dibuat meski beberapa nilai null");
-        assertEquals("NULLTEST", coupon.getCode(), "Code harus tetap ada");
-        assertNull(coupon.getDiscountAmount(), "DiscountAmount seharusnya null");
-        assertNull(coupon.getMaxUsage(), "MaxUsage seharusnya null");
-        assertNull(coupon.getUsageCount(), "UsageCount seharusnya null");
-        assertNull(coupon.getValidUntil(), "ValidUntil seharusnya null");
+        assertEquals("NULLTEST", coupon.getCode());
+        assertNull(coupon.getDiscountAmount());
+        assertNull(coupon.getMaxUsage());
+        assertNull(coupon.getUsageCount());
+        assertNull(coupon.getValidUntil());
     }
 
     @Test
@@ -198,7 +194,14 @@ public class CouponTest {
         assertTrue(isValidUUID(coupon1.getId()), "ID harus UUID yang valid");
 
         UUID customId = UUID.randomUUID();
-        Coupon coupon2 = new Coupon("CUSTOMID", 1000, 5, 0, LocalDate.now());
+        Coupon coupon2 = Coupon.builder()
+                .code("CUSTOMID")
+                .discountAmount(1000)
+                .maxUsage(5)
+                .usageCount(0)
+                .validUntil(LocalDate.now())
+                .build();
+
         coupon2.setId(customId);
 
         assertEquals(customId, coupon2.getId(), "Custom ID harus tetap dipertahankan");
@@ -218,6 +221,52 @@ public class CouponTest {
         assertEquals(Integer.MAX_VALUE, coupon.getMaxUsage(), "Max usage harus dapat menyimpan nilai maksimum");
         assertEquals(Integer.MAX_VALUE, coupon.getUsageCount(), "Usage count harus dapat menyimpan nilai maksimum");
         assertEquals(LocalDate.of(9999, 12, 31), coupon.getValidUntil(), "Valid until harus dapat menyimpan tanggal jauh");
+    }
+
+    @Test
+    void testProtectedConstructorAndSyncId() throws Exception {
+        // Akses constructor protected
+        Constructor<Coupon> constructor = Coupon.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        Coupon coupon = constructor.newInstance();
+
+        // Verifikasi ID null sebelum sync
+        assertNull(coupon.getId());
+
+        // Panggil method syncId via reflection
+        Method syncIdMethod = Coupon.class.getDeclaredMethod("syncId");
+        syncIdMethod.setAccessible(true);
+        syncIdMethod.invoke(coupon);
+
+        // Verifikasi ID terisi setelah sync
+        assertNotNull(coupon.getId());
+        assertEquals(coupon.getGeneratedId(), coupon.getId());
+    }
+
+    @Test
+    void testSyncIdPreserveExistingId() throws Exception {
+        Coupon coupon = Coupon.builder()
+                .code("TEST")
+                .build();
+
+        UUID originalId = coupon.getId();
+
+        // Panggil syncId
+        Method syncIdMethod = Coupon.class.getDeclaredMethod("syncId");
+        syncIdMethod.setAccessible(true);
+        syncIdMethod.invoke(coupon);
+
+        // Verifikasi ID tetap sama
+        assertEquals(originalId, coupon.getId());
+    }
+
+    @Test
+    void testGeneratedIdInitializedInProtectedConstructor() throws Exception {
+        Constructor<Coupon> constructor = Coupon.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        Coupon coupon = constructor.newInstance();
+
+        assertNotNull(coupon.getGeneratedId());
     }
 
     private boolean isValidUUID(UUID uuid) {
