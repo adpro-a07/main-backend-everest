@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.rating.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
-import id.ac.ui.cs.advprog.everest.common.service.UserServiceGrpcClient;
 import id.ac.ui.cs.advprog.everest.modules.rating.dto.CreateAndUpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.modules.rating.model.Rating;
 import id.ac.ui.cs.advprog.everest.modules.rating.repository.RatingRepository;
@@ -27,19 +26,6 @@ public class RatingServiceImpl implements RatingService {
         this.repairOrderRepository = repairOrderRepository;
     }
 
-
-//    @Override
-//    public Rating createRating(AuthenticatedUser customer, UUID technicianId, CreateAndUpdateRatingRequest dto) {
-//        Rating rating = Rating.builder()
-//                .userId(customer.id())
-//                .technicianId(technicianId)
-//                .comment(dto.getComment())
-//                .rating(dto.getRating())
-//                .build();
-//
-//        return ratingRepository.save(rating);
-//    }
-
     @Override
     public Rating createRating(AuthenticatedUser customer, UUID repairOrderId, CreateAndUpdateRatingRequest dto) {
         RepairOrder repairOrder = repairOrderRepository.findById(repairOrderId)
@@ -62,7 +48,6 @@ public class RatingServiceImpl implements RatingService {
 
         return ratingRepository.save(rating);
     }
-
 
     @Override
     public List<Rating> getRatingsByTechnician(UUID technicianId) {

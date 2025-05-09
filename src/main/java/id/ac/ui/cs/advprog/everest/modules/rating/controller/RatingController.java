@@ -25,7 +25,6 @@ public class RatingController {
         this.ratingService = ratingService;
     }
 
-    // POST /ratings
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/ratings")
     public ResponseEntity<Rating> createRating(
@@ -36,21 +35,18 @@ public class RatingController {
         return ResponseEntity.ok(createdRating);
     }
 
-    // GET /technicians/{technicianId}/ratings
     @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN')")
     @GetMapping("/technicians/{technicianId}/ratings")
     public ResponseEntity<List<Rating>> getRatingsByTechnician(@PathVariable UUID technicianId) {
         return ResponseEntity.ok(ratingService.getRatingsByTechnician(technicianId));
     }
 
-    // GET /users/<id>/ratings
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/users/me/ratings")
     public ResponseEntity<List<Rating>> getRatingsByUser(@CurrentUser AuthenticatedUser customer) {
         return ResponseEntity.ok(ratingService.getRatingsByUser(customer));
     }
 
-    // PUT /ratings/<id>
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/ratings/{id}")
     public ResponseEntity<Rating> updateRating(
@@ -60,7 +56,6 @@ public class RatingController {
         return ResponseEntity.ok(ratingService.updateRating(id, customer, dto));
     }
 
-    // DELETE /ratings/<id>
     @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     @DeleteMapping("/ratings/{id}")
     public ResponseEntity<Void> deleteRating(
