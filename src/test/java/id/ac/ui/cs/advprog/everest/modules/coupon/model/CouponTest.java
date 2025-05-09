@@ -52,11 +52,15 @@ public class CouponTest {
         assertNull(c.getValidUntil());
     }
 
+    private Coupon buildCouponWithNullCode() {
+        return Coupon.builder()
+                .code(null)
+                .build();
+    }
+
     @Test
     void testCouponBuilder_NullCode_Throws() {
-        assertThrows(NullPointerException.class, () -> Coupon.builder()
-                .code(null)
-                .build());
+        assertThrows(NullPointerException.class, this::buildCouponWithNullCode);
     }
 
     @Test
@@ -89,18 +93,6 @@ public class CouponTest {
         assertTrue(coupon.getDiscountAmount() < 0);
     }
 
-    @Test
-    public void testCoupon_NullCode_ShouldThrowException() {
-        assertThrows(NullPointerException.class, () -> {
-            Coupon.builder()
-                    .code(null)
-                    .discountAmount(5000)
-                    .maxUsage(5)
-                    .usageCount(0)
-                    .validUntil(LocalDate.now().plusDays(10))
-                    .build();
-        });
-    }
 
     @Test
     public void testCouponFieldValueEquality() {
