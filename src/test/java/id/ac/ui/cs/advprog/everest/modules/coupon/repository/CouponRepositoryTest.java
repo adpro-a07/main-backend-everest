@@ -3,6 +3,9 @@ package id.ac.ui.cs.advprog.everest.modules.coupon.repository;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,18 +14,22 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DataJpaTest
+@ActiveProfiles("test")
 class CouponRepositoryTest {
 
+    @Autowired
     private CouponRepository couponRepository;
+
     private UUID couponId;
     private Coupon sampleCoupon;
 
     @BeforeEach
     void setUp() {
-        couponRepository = new CouponRepository();
+        // Clear repository before each test
+        couponRepository.deleteAll();
 
         // Create sample coupon for testing
-        couponId = UUID.randomUUID();
         sampleCoupon = Coupon.builder()
                 .code("TEST50")
                 .discountAmount(50000)
@@ -30,7 +37,6 @@ class CouponRepositoryTest {
                 .usageCount(0)
                 .validUntil(LocalDate.now().plusDays(30))
                 .build();
-        sampleCoupon.setId(couponId);
     }
 
     @Test
@@ -48,9 +54,11 @@ class CouponRepositoryTest {
 
     @Test
     void testFindById() {
-        couponRepository.save(sampleCoupon);
+        // Save first to get the generated ID
+        Coupon savedCoupon = couponRepository.save(sampleCoupon);
+        UUID savedId = savedCoupon.getId();
 
-        Optional<Coupon> foundCoupon = couponRepository.findById(couponId);
+        Optional<Coupon> foundCoupon = couponRepository.findById(savedId);
 
         assertTrue(foundCoupon.isPresent());
         assertEquals(sampleCoupon.getCode(), foundCoupon.get().getCode());
@@ -65,13 +73,14 @@ class CouponRepositoryTest {
 
     @Test
     void testUpdateExistingCoupon() {
-        couponRepository.save(sampleCoupon);
+        // Save first to get the generated ID
+        Coupon savedCoupon = couponRepository.save(sampleCoupon);
 
         // Update the coupon
-        sampleCoupon.setDiscountAmount(75000);
-        sampleCoupon.setMaxUsage(200);
+        savedCoupon.setDiscountAmount(75000);
+        savedCoupon.setMaxUsage(200);
 
-        Coupon updatedCoupon = couponRepository.save(sampleCoupon);
+        Coupon updatedCoupon = couponRepository.save(savedCoupon);
 
         assertEquals(75000, updatedCoupon.getDiscountAmount());
         assertEquals(200, updatedCoupon.getMaxUsage());
@@ -83,14 +92,16 @@ class CouponRepositoryTest {
 
     @Test
     void testDeleteById() {
-        couponRepository.save(sampleCoupon);
+        // Save first to get the generated ID
+        Coupon savedCoupon = couponRepository.save(sampleCoupon);
+        UUID savedId = savedCoupon.getId();
 
-        couponRepository.deleteById(couponId);
+        couponRepository.deleteById(savedId);
 
         List<Coupon> allCoupons = couponRepository.findAll();
         assertEquals(0, allCoupons.size());
 
-        Optional<Coupon> foundCoupon = couponRepository.findById(couponId);
+        Optional<Coupon> foundCoupon = couponRepository.findById(savedId);
         assertFalse(foundCoupon.isPresent());
     }
 
@@ -107,7 +118,7 @@ class CouponRepositoryTest {
                 .usageCount(0)
                 .validUntil(LocalDate.now().minusDays(1))
                 .build();
-        expiredCoupon.setId(UUID.randomUUID());
+
         couponRepository.save(expiredCoupon);
 
         List<Coupon> validCoupons = couponRepository.findByValidUntilAfter(LocalDate.now());
@@ -126,16 +137,16 @@ class CouponRepositoryTest {
                 .code("USED")
                 .discountAmount(30000)
                 .maxUsage(50)
-                .usageCount(50)  // Max usage reached
+                .usageCount(50)
                 .validUntil(LocalDate.now().plusDays(30))
                 .build();
-        usedCoupon.setId(UUID.randomUUID());
+
         couponRepository.save(usedCoupon);
 
         List<Coupon> availableCoupons = couponRepository.findByUsageCountLessThanMaxUsage();
 
         assertEquals(1, availableCoupons.size());
-        assertEquals("TEST50", availableCoupons.getFirst().getCode());
+        assertEquals("TEST50", availableCoupons.get(0).getCode());
     }
 
     @Test
