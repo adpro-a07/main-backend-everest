@@ -1,17 +1,40 @@
 package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
 
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.Duration;
 
+@Entity
+@Table(name = "technician_reports")
+@Getter
+@NoArgsConstructor // Required for JPA
 public class TechnicianReport {
-    private final Long reportId;
-    private final Long requestId;
-    private final Long technicianId;
-    private final String diagnosis;
-    private final String actionPlan;
-    private final BigDecimal estimatedCost;
-    private final Duration estimatedTime;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "report_id")
+    private Long reportId;
 
+    @Column(name = "request_id")
+    private Long requestId;
+
+    @Column(name = "technician_id")
+    private Long technicianId;
+
+    @Column(name = "diagnosis", length = 500)
+    private String diagnosis;
+
+    @Column(name = "action_plan", length = 500)
+    private String actionPlan;
+
+    @Column(name = "estimated_cost", precision = 10, scale = 2)
+    private BigDecimal estimatedCost;
+
+    @Column(name = "estimated_time_seconds")
+    private Long estimatedTimeSeconds;
+
+    // Constructor handles the Duration conversion
     public TechnicianReport(Long reportId, Long requestId, Long technicianId,
                             String diagnosis, String actionPlan,
                             BigDecimal estimatedCost, Duration estimatedTime) {
@@ -21,17 +44,13 @@ public class TechnicianReport {
         this.diagnosis = diagnosis;
         this.actionPlan = actionPlan;
         this.estimatedCost = estimatedCost;
-        this.estimatedTime = estimatedTime;
+        this.estimatedTimeSeconds = estimatedTime != null ? estimatedTime.getSeconds() : null;
     }
 
-    // Getters
-    public Long getReportId() { return reportId; }
-    public Long getRequestId() { return requestId; }
-    public Long getTechnicianId() { return technicianId; }
-    public String getDiagnosis() { return diagnosis; }
-    public String getActionPlan() { return actionPlan; }
-    public BigDecimal getEstimatedCost() { return estimatedCost; }
-    public Duration getEstimatedTime() { return estimatedTime; }
+    // Getter for Duration that converts from seconds
+    public Duration getEstimatedTime() {
+        return estimatedTimeSeconds != null ? Duration.ofSeconds(estimatedTimeSeconds) : null;
+    }
 
     // Builder pattern
     public static Builder builder() {
