@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.modules.rating.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,18 +23,24 @@ public class Rating {
 
     @Id
     @GeneratedValue
-    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    @Column(columnDefinition = "UUID", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(nullable = false)
-    private String userId;
+    @NotNull
+    @Column(columnDefinition = "UUID", updatable = false, nullable = false)
+    private UUID userId;
 
-    @Column(nullable = false)
-    private String technicianId;
+    @NotNull
+    @Column(columnDefinition = "UUID", updatable = false, nullable = false)
+    private UUID technicianId;
 
+    @NotBlank
+    @Size(max = 1000)
     @Column(nullable = false, columnDefinition = "TEXT")
     private String comment;
 
+    @Min(value = 1)
+    @Max(value = 5)
     @Column(nullable = false)
     private int rating;
 
@@ -68,8 +75,8 @@ public class Rating {
         }
 
         this.id = (id == null) ? UUID.randomUUID() : id;
-        this.userId = userId;
-        this.technicianId = technicianId;
+        this.userId = UUID.fromString(userId);
+        this.technicianId = UUID.fromString(technicianId);
         this.comment = comment;
         this.rating = rating;
         this.deleted = (deleted == null) ? false : deleted;

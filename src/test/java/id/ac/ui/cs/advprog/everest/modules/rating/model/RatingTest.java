@@ -11,15 +11,15 @@ class RatingTest {
     @Test
     void testBuildRatingWithAllFields() {
         UUID id = UUID.randomUUID();
-        String userId = "user-001";
-        String technicianId = "tech-001";
+        UUID userId = UUID.randomUUID();
+        UUID technicianId = UUID.randomUUID();
         String comment = "Pelayanan sangat memuaskan.";
         int ratingValue = 4;
 
         Rating rating = Rating.builder()
                 .id(id)
-                .userId(userId)
-                .technicianId(technicianId)
+                .userId(userId.toString())
+                .technicianId(technicianId.toString())
                 .comment(comment)
                 .rating(ratingValue)
                 .deleted(false)
@@ -37,14 +37,19 @@ class RatingTest {
 
     @Test
     void testDefaultValuesWhenOptionalFieldsAreNull() {
+        UUID userId = UUID.randomUUID();
+        UUID technicianId = UUID.randomUUID();
+
         Rating rating = Rating.builder()
-                .userId("user-002")
-                .technicianId("tech-002")
+                .userId(userId.toString())
+                .technicianId(technicianId.toString())
                 .comment("Mantap")
                 .rating(5)
                 .build();
 
         assertNotNull(rating.getId());
+        assertEquals(userId, rating.getUserId());
+        assertEquals(technicianId, rating.getTechnicianId());
         assertFalse(rating.isDeleted());
         assertNull(rating.getCreatedAt());
         assertNull(rating.getUpdatedAt());
@@ -52,10 +57,13 @@ class RatingTest {
 
     @Test
     void testInvalidRatingThrowsException() {
+        UUID userId = UUID.randomUUID();
+        UUID technicianId = UUID.randomUUID();
+
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId("user-003")
-                    .technicianId("tech-003")
+                    .userId(userId.toString())
+                    .technicianId(technicianId.toString())
                     .comment("Buruk")
                     .rating(0)
                     .build();
@@ -63,8 +71,8 @@ class RatingTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId("user-003")
-                    .technicianId("tech-003")
+                    .userId(userId.toString())
+                    .technicianId(technicianId.toString())
                     .comment("Buruk")
                     .rating(6)
                     .build();
@@ -73,9 +81,12 @@ class RatingTest {
 
     @Test
     void testMissingFieldsThrowsException() {
+        UUID userId = UUID.randomUUID();
+        UUID technicianId = UUID.randomUUID();
+
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .technicianId("tech-004")
+                    .technicianId(technicianId.toString())
                     .comment("Lumayan")
                     .rating(3)
                     .build();
@@ -83,7 +94,7 @@ class RatingTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId("user-004")
+                    .userId(userId.toString())
                     .comment("Lumayan")
                     .rating(3)
                     .build();
@@ -91,18 +102,42 @@ class RatingTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId("user-004")
-                    .technicianId("tech-004")
+                    .userId(userId.toString())
+                    .technicianId(technicianId.toString())
                     .rating(3)
                     .build();
         });
     }
 
     @Test
+    void testInvalidUUIDFormatThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Rating.builder()
+                    .userId("invalid-uuid")
+                    .technicianId(UUID.randomUUID().toString())
+                    .comment("Test")
+                    .rating(4)
+                    .build();
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            Rating.builder()
+                    .userId(UUID.randomUUID().toString())
+                    .technicianId("invalid-uuid")
+                    .comment("Test")
+                    .rating(4)
+                    .build();
+        });
+    }
+
+    @Test
     void testUpdateCommentAndRatingShouldChangeFields() {
+        UUID userId = UUID.randomUUID();
+        UUID technicianId = UUID.randomUUID();
+
         Rating rating = Rating.builder()
-                .userId("user-005")
-                .technicianId("tech-005")
+                .userId(userId.toString())
+                .technicianId(technicianId.toString())
                 .comment("Awalnya biasa saja")
                 .rating(3)
                 .build();
@@ -116,9 +151,12 @@ class RatingTest {
 
     @Test
     void testUpdateWithBlankCommentShouldThrowException() {
+        UUID userId = UUID.randomUUID();
+        UUID technicianId = UUID.randomUUID();
+
         Rating rating = Rating.builder()
-                .userId("user-001")
-                .technicianId("tech-001")
+                .userId(userId.toString())
+                .technicianId(technicianId.toString())
                 .comment("Bagus")
                 .rating(4)
                 .build();
@@ -130,10 +168,13 @@ class RatingTest {
 
     @Test
     void testBuildRatingWithBlankCommentShouldThrowException() {
+        UUID userId = UUID.randomUUID();
+        UUID technicianId = UUID.randomUUID();
+
         assertThrows(IllegalArgumentException.class, () -> {
             Rating.builder()
-                    .userId("user-001")
-                    .technicianId("tech-001")
+                    .userId(userId.toString())
+                    .technicianId(technicianId.toString())
                     .comment("   ") // hanya spasi
                     .rating(4)
                     .build();
@@ -142,9 +183,12 @@ class RatingTest {
 
     @Test
     void testUpdateWithInvalidRatingShouldThrowException() {
+        UUID userId = UUID.randomUUID();
+        UUID technicianId = UUID.randomUUID();
+
         Rating rating = Rating.builder()
-                .userId("user-001")
-                .technicianId("tech-001")
+                .userId(userId.toString())
+                .technicianId(technicianId.toString())
                 .comment("Bagus")
                 .rating(4)
                 .build();
