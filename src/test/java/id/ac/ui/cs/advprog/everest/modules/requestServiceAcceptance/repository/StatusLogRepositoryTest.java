@@ -40,10 +40,8 @@ public class StatusLogRepositoryTest {
         Long requestId = 1L;
 
         StatusLog log1 = new StatusLog(requestId, RequestStatus.PENDING, RequestStatus.REPORTED, 2L);
-        log1.setTimestamp(LocalDateTime.now().minusHours(2));
 
         StatusLog log2 = new StatusLog(requestId, RequestStatus.REPORTED, RequestStatus.ESTIMATED, 2L);
-        log2.setTimestamp(LocalDateTime.now().minusHours(1));
 
         StatusLog log3 = new StatusLog(requestId, RequestStatus.ESTIMATED, RequestStatus.ACCEPTED, 2L);
 
@@ -68,13 +66,10 @@ public class StatusLogRepositoryTest {
         Long technicianId = 2L;
 
         StatusLog log1 = new StatusLog(1L, RequestStatus.PENDING, RequestStatus.REPORTED, technicianId);
-        log1.setTimestamp(LocalDateTime.now().minusHours(3));
 
         StatusLog log2 = new StatusLog(2L, RequestStatus.PENDING, RequestStatus.REPORTED, technicianId);
-        log2.setTimestamp(LocalDateTime.now().minusHours(2));
 
         StatusLog log3 = new StatusLog(3L, RequestStatus.PENDING, RequestStatus.REPORTED, technicianId);
-        log3.setTimestamp(LocalDateTime.now().minusHours(1));
 
         StatusLog otherLog = new StatusLog(4L, RequestStatus.PENDING, RequestStatus.REPORTED, 3L);
 
@@ -106,15 +101,5 @@ public class StatusLogRepositoryTest {
         List<StatusLog> allLogs = statusLogRepository.findAll();
 
         assertEquals(3, allLogs.size());
-    }
-
-    static class TestStatusLog extends StatusLog {
-        public TestStatusLog(Long requestId, RequestStatus oldStatus, RequestStatus newStatus, Long technicianId) {
-            super(requestId, oldStatus, newStatus, technicianId);
-        }
-
-        public void setTimestamp(LocalDateTime timestamp) {
-            this.timestamp = timestamp;
-        }
     }
 }
