@@ -40,7 +40,7 @@ class RequestStateTest {
     @Test
     void testEstimatedStateInitialStatus() {
         RequestState state = new EstimatedState();
-        assertEquals(RequestStatus.PENDING, state.getStatus());
+        assertEquals(RequestStatus.ESTIMATED, state.getStatus());
     }
 
     @Test
@@ -76,7 +76,7 @@ class RequestStateTest {
         UserRequest userRequest = new UserRequest(100L, "Fix washing machine");
         TechnicianViewableRequest request = IncomingRequest.from(userRequest, 200L);
         RequestContext context = new RequestContext(request);
-        RequestState newState = state.processAction("inprogress", context);
+        RequestState newState = state.processAction("start_work", context);
         assertTrue(newState.getStatus() == RequestStatus.IN_PROGRESS);
     }
 
