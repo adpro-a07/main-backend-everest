@@ -36,4 +36,52 @@ class RequestStateTest {
         assertSame(state, newState);
         assertEquals(RequestStatus.PENDING, newState.getStatus());
     }
+
+    @Test
+    void testEstimatedStateInitialStatus() {
+        RequestState state = new EstimatedState();
+        assertEquals(RequestStatus.PENDING, state.getStatus());
+    }
+
+    @Test
+    void testEstimatedStateTransitionToAccepted() {
+        RequestState state = new EstimatedState();
+        UserRequest userRequest = new UserRequest(100L, "Fix washing machine");
+        TechnicianViewableRequest request = IncomingRequest.from(userRequest, 200L);
+        RequestContext context = new RequestContext(request);
+
+        RequestState newState = state.processAction("accept", context);
+        assertTrue(newState.getStatus() == RequestStatus.ACCEPTED);
+    }
+
+    @Test
+    void testEstimatedStateTransitionToRejected() {
+        RequestState state = new EstimatedState();
+        UserRequest userRequest = new UserRequest(100L, "Fix washing machine");
+        TechnicianViewableRequest request = IncomingRequest.from(userRequest, 200L);
+        RequestContext context = new RequestContext(request);
+        RequestState newState = state.processAction("reject", context);
+        assertTrue(newState.getStatus() == RequestStatus.REJECTED);
+    }
+
+    @Test
+    void testAcceptedStateInitialStatus() {
+        RequestState state = new AcceptedState();
+        assertEquals(RequestStatus.ACCEPTED, state.getStatus());
+    }
+
+    @Test
+    void testAcceptedStateTransitionToInProgress() {
+        RequestState state = new AcceptedState();
+        UserRequest userRequest = new UserRequest(100L, "Fix washing machine");
+        TechnicianViewableRequest request = IncomingRequest.from(userRequest, 200L);
+        RequestContext context = new RequestContext(request);
+        RequestState newState = state.processAction("inprogress", context);
+        assertTrue(newState.getStatus() == RequestStatus.IN_PROGRESS);
+    }
+
+    @Test void testRejectedStateInitialStatus() {
+        RequestState state = new RejectedState();
+        assertEquals(RequestStatus.REJECTED, state.getStatus());
+    }
 }
