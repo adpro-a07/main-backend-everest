@@ -1,8 +1,10 @@
 package id.ac.ui.cs.advprog.everest.config;
 
 import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
+import id.ac.ui.cs.advprog.everest.common.service.UserServiceGrpcClient;
 import id.ac.ui.cs.advprog.everest.common.utils.RequestMetadataUtil;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.AuthServiceGrpc;
+import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import jakarta.annotation.PreDestroy;
@@ -28,6 +30,7 @@ public class GrpcConfig {
         return this.managedChannel;
     }
 
+    // --- AuthServiceGrpcClient ---
     @Bean
     public AuthServiceGrpc.AuthServiceBlockingStub authServiceBlockingStub(ManagedChannel channel) {
         return AuthServiceGrpc.newBlockingStub(channel);
@@ -39,6 +42,20 @@ public class GrpcConfig {
             RequestMetadataUtil requestMetadataUtil
     ) {
         return new AuthServiceGrpcClient(stub, requestMetadataUtil);
+    }
+
+    // --- UserServiceGrpcClient ---
+    @Bean
+    public UserServiceGrpc.UserServiceBlockingStub userServiceBlockingStub(ManagedChannel channel) {
+        return UserServiceGrpc.newBlockingStub(channel);
+    }
+
+    @Bean
+    public UserServiceGrpcClient userServiceClient(
+            UserServiceGrpc.UserServiceBlockingStub stub,
+            RequestMetadataUtil requestMetadataUtil
+    ) {
+        return new UserServiceGrpcClient(stub, requestMetadataUtil);
     }
 
     @PreDestroy
