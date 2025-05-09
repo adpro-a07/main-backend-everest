@@ -1,78 +1,66 @@
-package id.ac.ui.cs.advprog.everest.model;
+package id.ac.ui.cs.advprog.everest.modules.paymentmethod.model;
 
-import id.ac.ui.cs.advprog.everest.enums.PaymentType;
-import lombok.Getter;
-import lombok.Setter;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.enums.PaymentType;
+import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Builder
 @Getter
 @Setter
 @Entity
 @Table(name = "payment_methods")
+@AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class PaymentMethod {
 
     @Id
     @GeneratedValue
+    @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @NotNull(message = "Name must not be null")
+    @NotBlank
+    @Size(max = 100)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @NotNull(message = "Type must not be null")
+    @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentType type;
 
-    @NotNull(message = "Provider must not be null")
+    @NotBlank
+    @Size(max = 100)
+    @Column(nullable = false)
     private String provider;
 
-    @NotNull(message = "Account number must not be null")
+    @NotBlank
+    @Size(max = 30)
+    @Column(nullable = false)
     private String accountNumber;
 
-    @NotNull(message = "Account name must not be null")
+    @NotBlank
+    @Size(max = 100)
+    @Column(nullable = false)
     private String accountName;
 
-    public PaymentMethod withId(UUID id) {
-        this.id = id;
-        return this;
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    protected PaymentMethod() {
+        // Required by JPA
     }
 
-    public PaymentMethod withName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public PaymentMethod withType(PaymentType type) {
-        this.type = type;
-        return this;
-    }
-
-    public PaymentMethod withProvider(String provider) {
-        this.provider = provider;
-        return this;
-    }
-
-    public PaymentMethod withAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
-        return this;
-    }
-
-    public PaymentMethod withAccountName(String accountName) {
-        this.accountName = accountName;
-        return this;
-    }
-
-    public PaymentMethod build() {
-        PaymentMethod paymentMethod = new PaymentMethod();
-        paymentMethod.setId(id != null ? id : UUID.randomUUID());
-        paymentMethod.setName(name);
-        paymentMethod.setType(type);
-        paymentMethod.setProvider(provider);
-        paymentMethod.setAccountNumber(accountNumber);
-        paymentMethod.setAccountName(accountName);
-        return paymentMethod;
-    }
 }

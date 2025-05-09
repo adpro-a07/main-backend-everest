@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.enums;
+package id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.enums;
 
 import lombok.Getter;
 

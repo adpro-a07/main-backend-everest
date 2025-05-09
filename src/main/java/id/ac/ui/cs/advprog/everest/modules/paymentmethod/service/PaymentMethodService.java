@@ -1,8 +1,7 @@
-package id.ac.ui.cs.advprog.everest.service;
+package id.ac.ui.cs.advprog.everest.modules.paymentmethod.service;
 
-import id.ac.ui.cs.advprog.everest.enums.PaymentType;
-import id.ac.ui.cs.advprog.everest.model.PaymentMethod;
-import id.ac.ui.cs.advprog.everest.repository.PaymentMethodRepository;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.PaymentMethod;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.repository.PaymentMethodRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

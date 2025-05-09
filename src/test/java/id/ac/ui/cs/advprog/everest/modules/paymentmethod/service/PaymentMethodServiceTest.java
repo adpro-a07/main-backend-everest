@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.service;
+package id.ac.ui.cs.advprog.everest.modules.paymentmethod.service;
 
 import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.enums.PaymentType;
 import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.PaymentMethod;
@@ -26,13 +26,13 @@ public class PaymentMethodServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        sampleMethod = new PaymentMethod();
-        sampleMethod.setId(UUID.randomUUID());
-        sampleMethod.setName("Transfer BCA");
-        sampleMethod.setType(PaymentType.BANK_TRANSFER);
-        sampleMethod.setProvider("BCA");
-        sampleMethod.setAccountNumber("1234567890");
-        sampleMethod.setAccountName("PT Perbaikiin Aja");
+        sampleMethod = PaymentMethod.builder()
+                .name("Transfer BCA")
+                .type(PaymentType.BANK_TRANSFER)
+                .provider("BCA")
+                .accountNumber("1234567890")
+                .accountName("PT Perbaikiin Aja")
+                .build();
     }
 
     @Test
@@ -43,7 +43,7 @@ public class PaymentMethodServiceTest {
         List<PaymentMethod> result = service.getAllPaymentMethods();
 
         assertEquals(1, result.size());
-        assertEquals("Transfer BCA", result.get(0).getName());
+        assertEquals("Transfer BCA", result.getFirst().getName());
         verify(repository).findAll();
     }
 
@@ -61,12 +61,13 @@ public class PaymentMethodServiceTest {
     @Test
     void testUpdatePaymentMethodSuccess() {
         UUID id = sampleMethod.getId();
-        PaymentMethod newData = new PaymentMethod();
-        newData.setName("Dana");
-        newData.setType(PaymentType.E_WALLET);
-        newData.setProvider("Dana");
-        newData.setAccountNumber("9876543210");
-        newData.setAccountName("PT Perbaikiin Aja");
+        PaymentMethod newData = PaymentMethod.builder()
+                .name("Dana")
+                .type(PaymentType.E_WALLET)
+                .provider("Dana")
+                .accountNumber("9876543210")
+                .accountName("PT Perbaikiin Aja")
+                .build();
 
         when(repository.findById(id)).thenReturn(Optional.of(sampleMethod));
         when(repository.save(any(PaymentMethod.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -82,7 +83,14 @@ public class PaymentMethodServiceTest {
     @Test
     void testUpdatePaymentMethodNotFound() {
         UUID id = UUID.randomUUID();
-        PaymentMethod newData = new PaymentMethod();
+
+        PaymentMethod newData = PaymentMethod.builder()
+                .name("Dana")
+                .type(PaymentType.E_WALLET)
+                .provider("Dana")
+                .accountNumber("9876543210")
+                .accountName("PT Perbaikiin Aja")
+                .build();
 
         when(repository.findById(id)).thenReturn(Optional.empty());
 
@@ -107,12 +115,13 @@ public class PaymentMethodServiceTest {
 
     @Test
     void testSavePaymentMethodInvalidAccountNumberForBankTransfer() {
-        PaymentMethod invalid = new PaymentMethod();
-        invalid.setName("Transfer BRI");
-        invalid.setType(PaymentType.BANK_TRANSFER);
-        invalid.setProvider("BRI");
-        invalid.setAccountNumber("123"); // Too short
-        invalid.setAccountName("PT Perbaikiin Aja");
+        PaymentMethod invalid = PaymentMethod.builder()
+                .name("Transfer BRI")
+                .type(PaymentType.BANK_TRANSFER)
+                .provider("BRI")
+                .accountNumber("123")
+                .accountName("PT Perbaikiin Aja")
+                .build();
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             service.save(invalid);
@@ -123,8 +132,8 @@ public class PaymentMethodServiceTest {
 
     @Test
     void testSavePaymentMethodNullFields() {
-        PaymentMethod invalid = new PaymentMethod();
-        // Missing all fields
+        // Using builder without setting any fields
+        PaymentMethod invalid = PaymentMethod.builder().build();
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             service.save(invalid);
