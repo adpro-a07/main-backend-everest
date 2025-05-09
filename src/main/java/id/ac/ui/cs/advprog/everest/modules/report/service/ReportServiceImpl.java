@@ -28,7 +28,7 @@ public class ReportServiceImpl implements ReportService {
         return reportRepository.findAll()
                 .stream()
                 .map(this::mapToReportResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class ReportServiceImpl implements ReportService {
                 .findByTechnicianNameContainingIgnoreCase(technicianName)
                 .stream()
                 .map(this::mapToReportResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ReportServiceImpl implements ReportService {
                 .findByStatus(status)
                 .stream()
                 .map(this::mapToReportResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ReportServiceImpl implements ReportService {
                 .findByTechnicianNameContainingIgnoreCaseAndStatus(technicianName, status)
                 .stream()
                 .map(this::mapToReportResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private ReportResponse mapToReportResponse(Report report) {
