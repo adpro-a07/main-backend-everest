@@ -9,4 +9,5 @@
     <include file="db/changelog/2025/05/06-01-update-repair-order-model-best-practices.xml"/>
     <include file="db/changelog/2025/05/07-01-add-not-null-constraint-for-issue-desc-and-status.xml"/>
     <include file="db/changelog/2025/05/09-01-init-coupons-report-table.xml"/>
+    <include file="db/changelog/2025/05/09-01-add-notnull-constraint-for-coupon.xml"/>
 </databaseChangeLog>
