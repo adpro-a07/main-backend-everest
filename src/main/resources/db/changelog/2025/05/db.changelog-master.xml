@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1746789611479-1" author="dannielang">
+        <createTable tableName="status_logs">
+            <column autoIncrement="true" name="log_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_status_logs"/>
+            </column>
+            <column name="request_id" type="BIGINT"/>
+            <column name="old_status" type="VARCHAR(255)"/>
+            <column name="new_status" type="VARCHAR(255)"/>
+            <column name="technician_id" type="BIGINT"/>
+            <column name="timestamp" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1746789611479-2" author="dannielang">
+        <createTable tableName="technician_reports">
+            <column autoIncrement="true" name="report_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_technician_reports"/>
+            </column>
+            <column name="request_id" type="BIGINT"/>
+            <column name="technician_id" type="BIGINT"/>
+            <column name="diagnosis" type="VARCHAR(500)"/>
+            <column name="action_plan" type="VARCHAR(500)"/>
+            <column name="estimated_cost" type="DECIMAL(10, 2)"/>
+            <column name="estimated_time_seconds" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1746789611479-3" author="dannielang">
+        <createTable tableName="technician_requests">
+            <column name="request_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_technician_requests"/>
+            </column>
+            <column name="technician_id" type="BIGINT"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1746789611479-4" author="dannielang">
+        <createTable tableName="user_requests">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_user_requests"/>
+            </column>
+            <column name="user_description" type="VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
