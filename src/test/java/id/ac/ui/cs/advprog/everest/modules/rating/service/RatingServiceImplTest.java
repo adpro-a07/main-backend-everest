@@ -30,8 +30,7 @@ class RatingServiceImplTest {
     @BeforeEach
     void setUp() {
         ratingRepository = mock(RatingRepository.class);
-        userServiceGrpcClient = mock(UserServiceGrpcClient.class);
-        ratingService = new RatingServiceImpl(userServiceGrpcClient, ratingRepository);
+        ratingService = new RatingServiceImpl(ratingRepository);
 
         userId = UUID.randomUUID();
         technicianId = UUID.randomUUID();

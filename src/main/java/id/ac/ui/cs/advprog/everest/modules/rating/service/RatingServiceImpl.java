@@ -16,11 +16,9 @@ import java.util.UUID;
 @Service
 public class RatingServiceImpl implements RatingService {
 
-    private final UserServiceGrpcClient userServiceGrpcClient;
     private final RatingRepository ratingRepository;
 
-    public RatingServiceImpl(UserServiceGrpcClient userServiceGrpcClient, RatingRepository ratingRepository) {
-        this.userServiceGrpcClient = userServiceGrpcClient;
+    public RatingServiceImpl(RatingRepository ratingRepository) {
         this.ratingRepository = ratingRepository;
     }
 

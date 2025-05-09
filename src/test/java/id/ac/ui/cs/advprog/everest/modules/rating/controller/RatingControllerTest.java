@@ -23,8 +23,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// ... import tetap sama
-
 class RatingControllerTest {
 
     private MockMvc mockMvc;
@@ -40,7 +38,6 @@ class RatingControllerTest {
     private UUID ratingId;
     private UUID userId;
     private UUID technicianId;
-    private AuthenticatedUser customer;
 
     @BeforeEach
     void setUp() {
@@ -53,7 +50,7 @@ class RatingControllerTest {
         userId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
 
-        customer = new AuthenticatedUser(
+        AuthenticatedUser customer = new AuthenticatedUser(
                 userId,
                 "sisi@example.com",
                 "sisi",
