@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.everest.modules.coupon.dto;
 
-import id.ac.ui.cs.advprog.everest.modules.coupon.dto.CouponRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
