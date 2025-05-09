@@ -5,25 +5,28 @@ import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.repository.ReportRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+@DataJpaTest
 class ReportRepositoryTest {
 
+    @Autowired
     private ReportRepository reportRepository;
+
     private Report sampleReport;
-    private UUID sampleReportId;
 
     @BeforeEach
     void setUp() {
-        reportRepository = new ReportRepository();
-        sampleReportId = UUID.randomUUID();
-
+        reportRepository.deleteAll();
         sampleReport = Report.builder()
                 .technicianName("John Doe")
                 .repairDetails("Fixed broken screen")
@@ -34,178 +37,182 @@ class ReportRepositoryTest {
 
     @Test
     void testSaveNewReport() {
-        Report savedReport = reportRepository.save(sampleReport);
+        Report saved = reportRepository.save(sampleReport);
 
-        assertNotNull(savedReport);
-        assertNotNull(savedReport.getId());
-        assertEquals(sampleReport.getTechnicianName(), savedReport.getTechnicianName());
+        assertThat(saved).isNotNull();
+        assertThat(saved.getId()).isNotNull();
+        assertThat(saved.getTechnicianName()).isEqualTo(sampleReport.getTechnicianName());
 
-        List<Report> allReports = reportRepository.findAll();
-        assertEquals(1, allReports.size());
+        List<Report> all = reportRepository.findAll();
+        assertThat(all).hasSize(1);
     }
 
     @Test
     void testFindById() {
-        Report savedReport = reportRepository.save(sampleReport);
-        UUID reportId = savedReport.getId();
+        Report saved = reportRepository.save(sampleReport);
+        UUID id = saved.getId();
 
-        Optional<Report> foundReport = reportRepository.findById(reportId);
-
-        assertTrue(foundReport.isPresent());
-        assertEquals(reportId, foundReport.get().getId());
-        assertEquals(sampleReport.getTechnicianName(), foundReport.get().getTechnicianName());
+        Optional<Report> found = reportRepository.findById(id);
+        assertThat(found).isPresent();
+        assertThat(found.get().getId()).isEqualTo(id);
+        assertThat(found.get().getTechnicianName()).isEqualTo(sampleReport.getTechnicianName());
     }
 
     @Test
     void testFindByIdWithNonExistentId() {
-        UUID nonExistentId = UUID.randomUUID();
-        Optional<Report> foundReport = reportRepository.findById(nonExistentId);
-        assertFalse(foundReport.isPresent());
+        Optional<Report> found = reportRepository.findById(UUID.randomUUID());
+        assertThat(found).isNotPresent();
     }
 
     @Test
     void testUpdateExistingReport() {
-        Report savedReport = reportRepository.save(sampleReport);
+        Report saved = reportRepository.save(sampleReport);
+        saved.setRepairDetails("Updated details");
+        saved.setStatus(ReportStatus.COMPLETED);
 
-        savedReport.setRepairDetails("Fixed broken screen and replaced battery");
-        savedReport.setStatus(ReportStatus.COMPLETED);
+        Report updated = reportRepository.save(saved);
+        assertThat(updated.getRepairDetails()).isEqualTo("Updated details");
+        assertThat(updated.getStatus()).isEqualTo(ReportStatus.COMPLETED);
 
-        Report updatedReport = reportRepository.save(savedReport);
-
-        assertEquals("Fixed broken screen and replaced battery", updatedReport.getRepairDetails());
-        assertEquals(ReportStatus.COMPLETED, updatedReport.getStatus());
-
-        List<Report> allReports = reportRepository.findAll();
-        assertEquals(1, allReports.size());
+        List<Report> all = reportRepository.findAll();
+        assertThat(all).hasSize(1);
     }
 
     @Test
     void testFindByTechnicianNameContainingIgnoreCase() {
         reportRepository.save(sampleReport);
-
-        Report anotherReport = Report.builder()
+        Report other = Report.builder()
                 .technicianName("Alice Johnson")
                 .repairDetails("Replaced motherboard")
                 .repairDate(LocalDate.now())
                 .status(ReportStatus.PENDING_CONFIRMATION)
                 .build();
-        reportRepository.save(anotherReport);
+        reportRepository.save(other);
 
-        List<Report> johnReports = reportRepository.findByTechnicianNameContainingIgnoreCase("John Doe");
-        assertEquals(1, johnReports.size());
+        List<Report> johnDoe = reportRepository.findByTechnicianNameContainingIgnoreCase("John Doe");
+        assertThat(johnDoe).hasSize(1);
 
-        List<Report> johReports = reportRepository.findByTechnicianNameContainingIgnoreCase("joh");
-        assertEquals(2, johReports.size());
+        List<Report> joh = reportRepository.findByTechnicianNameContainingIgnoreCase("joh");
+        assertThat(joh).hasSize(2);
 
-        List<Report> noReports = reportRepository.findByTechnicianNameContainingIgnoreCase("Bob");
-        assertEquals(0, noReports.size());
+        List<Report> none = reportRepository.findByTechnicianNameContainingIgnoreCase("Bob");
+        assertThat(none).isEmpty();
     }
 
     @Test
-    void testFindByStatusIgnoreCase() {
+    void testFindByStatus() {
         reportRepository.save(sampleReport);
-
-        Report anotherReport = Report.builder()
-                .technicianName("Alice Johnson")
-                .repairDetails("Replaced motherboard")
+        Report pending = Report.builder()
+                .technicianName("Alice")
+                .repairDetails("Test")
                 .repairDate(LocalDate.now())
                 .status(ReportStatus.PENDING_CONFIRMATION)
                 .build();
-        reportRepository.save(anotherReport);
+        reportRepository.save(pending);
 
-        List<Report> completedReports = reportRepository.findByStatus(ReportStatus.COMPLETED);
-        assertEquals(1, completedReports.size());
+        List<Report> completed = reportRepository.findByStatus(ReportStatus.COMPLETED);
+        assertThat(completed).hasSize(1);
 
-        List<Report> noReports = reportRepository.findByStatus(ReportStatus.CANCELLED);
-        assertEquals(0, noReports.size());
+        List<Report> canceled = reportRepository.findByStatus(ReportStatus.CANCELLED);
+        assertThat(canceled).isEmpty();
     }
 
     @Test
-    void testFindByTechnicianNameContainingIgnoreCaseAndStatusIgnoreCase() {
+    void testFindByTechnicianNameAndStatus() {
         reportRepository.save(sampleReport);
-
-        Report report2 = Report.builder()
+        Report inProgress = Report.builder()
                 .technicianName("John Doe")
-                .repairDetails("Repaired keyboard")
+                .repairDetails("Something else")
                 .repairDate(LocalDate.now())
                 .status(ReportStatus.PENDING_CONFIRMATION)
                 .build();
-        reportRepository.save(report2);
-
-        Report report3 = Report.builder()
-                .technicianName("Jane Smith")
-                .repairDetails("Fixed display")
+        reportRepository.save(inProgress);
+        Report other = Report.builder()
+                .technicianName("Jane")
+                .repairDetails("More")
                 .repairDate(LocalDate.now())
                 .status(ReportStatus.COMPLETED)
                 .build();
-        reportRepository.save(report3);
+        reportRepository.save(other);
 
-        List<Report> johnCompletedReports =
-                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.COMPLETED);
-        assertEquals(1, johnCompletedReports.size());
+        List<Report> johnCompleted = reportRepository
+                .findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.COMPLETED);
+        assertThat(johnCompleted).hasSize(1);
 
-        List<Report> johnInProgressReports =
-                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.PENDING_CONFIRMATION);
-        assertEquals(1, johnInProgressReports.size());
+        List<Report> johnPending = reportRepository
+                .findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.PENDING_CONFIRMATION);
+        assertThat(johnPending).hasSize(1);
 
-        List<Report> noReports =
-                reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus("Bob", ReportStatus.CANCELLED);
-        assertEquals(0, noReports.size());
+        List<Report> none = reportRepository
+                .findByTechnicianNameContainingIgnoreCaseAndStatus("Bob", ReportStatus.CANCELLED);
+        assertThat(none).isEmpty();
+    }
+
+    @Test
+    void testSearchByTechnicianAndStatusQuery() {
+        reportRepository.save(sampleReport);
+        Report other = Report.builder()
+                .technicianName("Johnathan Doe")
+                .repairDetails("Other")
+                .repairDate(LocalDate.now())
+                .status(ReportStatus.COMPLETED)
+                .build();
+        reportRepository.save(other);
+
+        List<Report> res = reportRepository.searchByTechnicianAndStatus("john", ReportStatus.COMPLETED);
+        assertThat(res).hasSize(2);
     }
 
     @Test
     void testFindByRepairDate() {
         reportRepository.save(sampleReport);
-
-        Report yesterdayReport = Report.builder()
-                .technicianName("Jane Smith")
-                .repairDetails("Fixed display")
+        Report yesterday = Report.builder()
+                .technicianName("Jane")
+                .repairDetails("Fix")
                 .repairDate(LocalDate.now().minusDays(1))
                 .status(ReportStatus.COMPLETED)
                 .build();
-        reportRepository.save(yesterdayReport);
+        reportRepository.save(yesterday);
 
-        List<Report> todayReports = reportRepository.findByRepairDate(LocalDate.now());
-        assertEquals(1, todayReports.size());
+        List<Report> today = reportRepository.findByRepairDate(LocalDate.now());
+        assertThat(today).hasSize(1);
 
-        List<Report> yesterdayReports = reportRepository.findByRepairDate(LocalDate.now().minusDays(1));
-        assertEquals(1, yesterdayReports.size());
+        List<Report> yest = reportRepository.findByRepairDate(LocalDate.now().minusDays(1));
+        assertThat(yest).hasSize(1);
 
-        List<Report> noReports = reportRepository.findByRepairDate(LocalDate.now().minusDays(2));
-        assertEquals(0, noReports.size());
+        List<Report> none = reportRepository.findByRepairDate(LocalDate.now().minusDays(2));
+        assertThat(none).isEmpty();
     }
 
     @Test
     void testFindByRepairDateBetween() {
-        Report todayReport = sampleReport;
-        reportRepository.save(todayReport);
-
-        Report yesterdayReport = Report.builder()
-                .technicianName("Jane Smith")
-                .repairDetails("Fixed display")
+        Report today = sampleReport;
+        reportRepository.save(today);
+        Report yesterday = Report.builder()
+                .technicianName("Jane")
+                .repairDetails("Fix")
                 .repairDate(LocalDate.now().minusDays(1))
                 .status(ReportStatus.COMPLETED)
                 .build();
-        reportRepository.save(yesterdayReport);
-
-        Report lastWeekReport = Report.builder()
-                .technicianName("Bob Brown")
-                .repairDetails("Replaced hard drive")
+        reportRepository.save(yesterday);
+        Report lastWeek = Report.builder()
+                .technicianName("Bob")
+                .repairDetails("Fix")
                 .repairDate(LocalDate.now().minusDays(7))
                 .status(ReportStatus.COMPLETED)
                 .build();
-        reportRepository.save(lastWeekReport);
+        reportRepository.save(lastWeek);
 
-        List<Report> recentReports = reportRepository.findByRepairDateBetween(
+        List<Report> recent = reportRepository.findByRepairDateBetween(
                 LocalDate.now().minusDays(1), LocalDate.now());
-        assertEquals(2, recentReports.size());
+        assertThat(recent).hasSize(2);
 
-        List<Report> weekReports = reportRepository.findByRepairDateBetween(
+        List<Report> allWeek = reportRepository.findByRepairDateBetween(
                 LocalDate.now().minusDays(7), LocalDate.now());
-        assertEquals(3, weekReports.size());
+        assertThat(allWeek).hasSize(3);
 
-        List<Report> noReports = reportRepository.findByRepairDateBetween(
+        List<Report> none = reportRepository.findByRepairDateBetween(
                 LocalDate.now().minusDays(14), LocalDate.now().minusDays(8));
-        assertEquals(0, noReports.size());
+        assertThat(none).isEmpty();
     }
 }
