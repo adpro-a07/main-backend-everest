@@ -1,10 +1,11 @@
 package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
+@Table(name = "user_requests")
 @Getter
 @Setter
 @NoArgsConstructor // Required for JPA
@@ -15,6 +16,7 @@ public class UserRequest {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "user_description")
+    @Size(max = 500)
+    @Column(name = "user_description", length = 500)
     private String userDescription;
 }
