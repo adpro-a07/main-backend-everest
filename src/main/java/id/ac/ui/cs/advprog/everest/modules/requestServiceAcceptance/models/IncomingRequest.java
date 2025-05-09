@@ -1,17 +1,27 @@
 package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
 
-public class IncomingRequest implements TechnicianViewableRequest {
-    private final Long requestId;
-    private final Long technicianId;
-    private final String description;
-    private final RequestStatus status;
+import jakarta.persistence.*;
+import lombok.*;
 
-    public IncomingRequest(Long requestId, Long technicianId, String description, RequestStatus status) {
-        this.requestId = requestId;
-        this.technicianId = technicianId;
-        this.description = description;
-        this.status = status;
-    }
+@Entity
+@Table(name = "technician_requests")
+@Getter
+@NoArgsConstructor // Required for JPA
+@AllArgsConstructor
+public class IncomingRequest implements TechnicianViewableRequest {
+    @Id
+    @Column(name = "request_id")
+    private Long requestId;
+
+    @Column(name = "technician_id")
+    private Long technicianId;
+
+    @Column(name = "description")
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private RequestStatus status;
 
     public static IncomingRequest from(UserRequest userRequest, Long technicianId) {
         return new IncomingRequest(
