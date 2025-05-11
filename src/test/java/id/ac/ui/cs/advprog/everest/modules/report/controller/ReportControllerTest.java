@@ -18,7 +18,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -40,8 +39,6 @@ class ReportControllerTest {
     @Autowired
     private WebApplicationContext context;
 
-    private MockMvc mockMvc;
-
     @MockBean
     private ReportService reportService;
 
@@ -54,7 +51,6 @@ class ReportControllerTest {
     private ReportController controller;
     private AuthenticatedUser adminUser;
     private AuthenticatedUser techUser;
-    private final UUID userId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
