@@ -96,10 +96,7 @@ public class CouponServiceImpl implements CouponService {
             return false;
         }
 
-        if (coupon.getValidUntil() == null || coupon.getValidUntil().isBefore(LocalDate.now())) {
-            return false;
-        }
-        return true;
+        return coupon.getValidUntil() != null && !coupon.getValidUntil().isBefore(LocalDate.now());
     }
 
     private Coupon convertToEntity(CouponRequest request) {
@@ -109,10 +106,5 @@ public class CouponServiceImpl implements CouponService {
                 .maxUsage(request.getMaxUsage())
                 .validUntil(request.getValidUntil())
                 .build();
-    }
-
-    private String generateCouponCode() {
-        String uuid = UUID.randomUUID().toString().toUpperCase();
-        return "PROMO" + uuid.substring(0, 8);
     }
 }
