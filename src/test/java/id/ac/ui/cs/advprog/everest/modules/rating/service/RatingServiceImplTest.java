@@ -28,6 +28,7 @@ class RatingServiceImplTest {
     private AuthenticatedUser user;
     private UUID userId;
     private UUID technicianId;
+    private UUID repairOrderId;
 
     @BeforeEach
     void setUp() {
@@ -37,6 +38,7 @@ class RatingServiceImplTest {
 
         userId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
+        repairOrderId = UUID.randomUUID();
         user = new AuthenticatedUser(
                 userId,
                 "fattah@example.com",
@@ -54,11 +56,9 @@ class RatingServiceImplTest {
 
     @Test
     void testCreateRatingFromCompletedRepairOrder_Success() {
-        UUID repairOrderId = UUID.randomUUID();
-
         CreateAndUpdateRatingRequest request = new CreateAndUpdateRatingRequest();
         request.setComment("Bagus banget");
-        request.setRating(5);
+        request.setScore(5);
 
         RepairOrder repairOrder = RepairOrder.builder()
                 .id(repairOrderId)
@@ -75,13 +75,11 @@ class RatingServiceImplTest {
         assertEquals(userId, result.getUserId());
         assertEquals(technicianId, result.getTechnicianId());
         assertEquals("Bagus banget", result.getComment());
-        assertEquals(5, result.getRating());
+        assertEquals(5, result.getScore());
     }
 
     @Test
     void testCreateRating_FailsIfOrderNotCompleted() {
-        UUID repairOrderId = UUID.randomUUID();
-
         RepairOrder repairOrder = RepairOrder.builder()
                 .id(repairOrderId)
                 .customerId(userId)
@@ -93,7 +91,7 @@ class RatingServiceImplTest {
 
         CreateAndUpdateRatingRequest request = new CreateAndUpdateRatingRequest();
         request.setComment("Invalid case");
-        request.setRating(3);
+        request.setScore(3);
 
         assertThrows(RuntimeException.class, () ->
                 ratingService.createRating(user, repairOrderId, request)
@@ -102,8 +100,22 @@ class RatingServiceImplTest {
 
     @Test
     void testGetRatingsByUserReturnsCorrectList() {
-        Rating rating1 = Rating.builder().userId(userId).technicianId(UUID.randomUUID()).comment("A").rating(5).deleted(false).build();
-        Rating rating2 = Rating.builder().userId(userId).technicianId(UUID.randomUUID()).comment("B").rating(4).deleted(false).build();
+        Rating rating1 = Rating.builder()
+                .userId(userId)
+                .technicianId(UUID.randomUUID())
+                .repairOrderId(UUID.randomUUID())
+                .comment("A")
+                .score(5)
+                .deleted(false)
+                .build();
+        Rating rating2 = Rating.builder()
+                .userId(userId)
+                .technicianId(UUID.randomUUID())
+                .repairOrderId(UUID.randomUUID())
+                .comment("B")
+                .score(4)
+                .deleted(false)
+                .build();
 
         when(ratingRepository.findAllByUserId(userId)).thenReturn(List.of(rating1, rating2));
 
@@ -116,14 +128,21 @@ class RatingServiceImplTest {
 
     @Test
     void testGetRatingsByTechnicianReturnsCorrectList() {
-        Rating rating = Rating.builder().userId(UUID.randomUUID()).technicianId(technicianId).comment("C").rating(3).deleted(false).build();
+        Rating rating = Rating.builder()
+                .userId(UUID.randomUUID())
+                .technicianId(technicianId)
+                .repairOrderId(UUID.randomUUID())
+                .comment("C")
+                .score(3)
+                .deleted(false)
+                .build();
 
         when(ratingRepository.findAllByTechnicianId(technicianId)).thenReturn(List.of(rating));
 
         List<Rating> result = ratingService.getRatingsByTechnician(technicianId);
 
         assertEquals(1, result.size());
-        assertEquals("C", result.get(0).getComment());
+        assertEquals("C", result.getFirst().getComment());
     }
 
     @Test
@@ -133,14 +152,15 @@ class RatingServiceImplTest {
                 .id(ratingId)
                 .userId(userId)
                 .technicianId(technicianId)
+                .repairOrderId(repairOrderId)
                 .comment("Before")
-                .rating(2)
+                .score(2)
                 .deleted(false)
                 .build();
 
         CreateAndUpdateRatingRequest request = new CreateAndUpdateRatingRequest();
         request.setComment("Updated");
-        request.setRating(5);
+        request.setScore(5);
 
         when(ratingRepository.findById(ratingId)).thenReturn(Optional.of(rating));
         when(ratingRepository.save(any())).thenReturn(rating);
@@ -148,7 +168,7 @@ class RatingServiceImplTest {
         Rating updated = ratingService.updateRating(ratingId, user, request);
 
         assertEquals("Updated", updated.getComment());
-        assertEquals(5, updated.getRating());
+        assertEquals(5, updated.getScore());
     }
 
     @Test
@@ -156,15 +176,16 @@ class RatingServiceImplTest {
         UUID ratingId = UUID.randomUUID();
         Rating rating = Rating.builder()
                 .id(ratingId)
-                .userId(UUID.randomUUID()) // different user
+                .userId(UUID.randomUUID())
                 .technicianId(technicianId)
+                .repairOrderId(repairOrderId)
                 .comment("Old")
-                .rating(3)
+                .score(3)
                 .build();
 
         CreateAndUpdateRatingRequest request = new CreateAndUpdateRatingRequest();
         request.setComment("New");
-        request.setRating(4);
+        request.setScore(4);
 
         when(ratingRepository.findById(ratingId)).thenReturn(Optional.of(rating));
 
@@ -178,8 +199,9 @@ class RatingServiceImplTest {
                 .id(ratingId)
                 .userId(userId)
                 .technicianId(technicianId)
+                .repairOrderId(repairOrderId)
                 .comment("Good")
-                .rating(4)
+                .score(4)
                 .deleted(false)
                 .build();
 
@@ -199,8 +221,9 @@ class RatingServiceImplTest {
                 .id(ratingId)
                 .userId(UUID.randomUUID())
                 .technicianId(technicianId)
+                .repairOrderId(repairOrderId)
                 .comment("Admin delete")
-                .rating(5)
+                .score(5)
                 .deleted(false)
                 .build();
 
@@ -211,5 +234,22 @@ class RatingServiceImplTest {
 
         assertTrue(rating.isDeleted());
         verify(ratingRepository).save(argThat(Rating::isDeleted));
+    }
+
+    @Test
+    void testCreateRatingFailsIfAlreadyRated() {
+        UUID repairOrderId = UUID.randomUUID();
+
+        when(ratingRepository.existsByUserIdAndRepairOrderId(user.id(), repairOrderId))
+                .thenReturn(true);
+
+        CreateAndUpdateRatingRequest dto = new CreateAndUpdateRatingRequest();
+        dto.setComment("Double rating test");
+        dto.setScore(4);
+
+        assertThrows(RuntimeException.class, () ->
+                ratingService.createRating(user, repairOrderId, dto));
+
+        verify(ratingRepository, never()).save(any());
     }
 }

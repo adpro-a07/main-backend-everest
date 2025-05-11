@@ -15,5 +15,5 @@ public class CreateAndUpdateRatingRequest {
 
     @Min(value = 1, message = "Rating minimal 1")
     @Max(value = 5, message = "Rating maksimal 5")
-    private int rating;
+    private int score;
 }

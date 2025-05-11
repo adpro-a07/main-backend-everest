@@ -34,6 +34,10 @@ public class Rating {
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
     private UUID technicianId;
 
+    @NotNull
+    @Column(columnDefinition = "UUID", updatable = false, nullable = false)
+    private UUID repairOrderId;
+
     @NotBlank
     @Size(max = 1000)
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -42,7 +46,7 @@ public class Rating {
     @Min(value = 1)
     @Max(value = 5)
     @Column(nullable = false)
-    private int rating;
+    private int score;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -63,27 +67,29 @@ public class Rating {
     public Rating(UUID id,
                   UUID userId,
                   UUID technicianId,
+                  UUID repairOrderId,
                   String comment,
-                  int rating,
+                  int score,
                   Boolean deleted) {
 
-        if (rating < 1 || rating > 5) {
+        if (score < 1 || score > 5) {
             throw new IllegalArgumentException("Rating harus antara 1 dan 5.");
         }
-        if (userId == null || technicianId == null || comment == null || comment.isBlank()) {
+        if (userId == null || technicianId == null || repairOrderId == null || comment == null || comment.isBlank()) {
             throw new IllegalArgumentException("Semua field wajib diisi.");
         }
 
         this.id = (id == null) ? UUID.randomUUID() : id;
         this.userId = userId;
         this.technicianId = technicianId;
+        this.repairOrderId = repairOrderId;
         this.comment = comment;
-        this.rating = rating;
-        this.deleted = (deleted == null) ? false : deleted;
+        this.score = score;
+        this.deleted = deleted != null && deleted;
     }
 
-    public void update(String comment, int rating) {
-        if (rating < 1 || rating > 5) {
+    public void update(String comment, int score) {
+        if (score < 1 || score > 5) {
             throw new IllegalArgumentException("Rating harus antara 1 dan 5.");
         }
         if (comment == null || comment.isBlank()) {
@@ -91,6 +97,6 @@ public class Rating {
         }
 
         this.comment = comment;
-        this.rating = rating;
+        this.score = score;
     }
 }

@@ -31,6 +31,10 @@ public class RatingServiceImpl implements RatingService {
         RepairOrder repairOrder = repairOrderRepository.findById(repairOrderId)
                 .orElseThrow(() -> new RuntimeException("Repair order tidak ditemukan"));
 
+        if (ratingRepository.existsByUserIdAndRepairOrderId(customer.id(), repairOrderId)) {
+            throw new RuntimeException("Kamu sudah memberi rating untuk order ini.");
+        }
+
         if (!repairOrder.getCustomerId().equals(customer.id())) {
             throw new RuntimeException("Kamu tidak memiliki akses ke order ini.");
         }
@@ -42,8 +46,9 @@ public class RatingServiceImpl implements RatingService {
         Rating rating = Rating.builder()
                 .userId(customer.id())
                 .technicianId(repairOrder.getTechnicianId())
+                .repairOrderId(repairOrderId)
                 .comment(dto.getComment())
-                .rating(dto.getRating())
+                .score(dto.getScore())
                 .build();
 
         return ratingRepository.save(rating);
@@ -72,7 +77,7 @@ public class RatingServiceImpl implements RatingService {
             throw new RuntimeException("Kamu tidak memiliki izin untuk mengubah rating ini.");
         }
 
-        rating.update(dto.getComment(), dto.getRating());
+        rating.update(dto.getComment(), dto.getScore());
         return ratingRepository.save(rating);
     }
 

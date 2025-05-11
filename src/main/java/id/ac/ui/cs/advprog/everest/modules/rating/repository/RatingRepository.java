@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface RatingRepository extends JpaRepository<Rating, UUID> {
     List<Rating> findAllByTechnicianId(UUID technicianId);
     List<Rating> findAllByUserId(UUID userId);
+    boolean existsByUserIdAndRepairOrderId(UUID userId, UUID repairOrderId);
 }

@@ -38,6 +38,7 @@ class RatingControllerTest {
     private UUID ratingId;
     private UUID userId;
     private UUID technicianId;
+    private UUID repairOrderId;
 
     @BeforeEach
     void setUp() {
@@ -49,6 +50,7 @@ class RatingControllerTest {
         ratingId = UUID.randomUUID();
         userId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
+        repairOrderId = UUID.randomUUID();
 
         AuthenticatedUser customer = new AuthenticatedUser(
                 userId,
@@ -66,21 +68,22 @@ class RatingControllerTest {
 
         request = new CreateAndUpdateRatingRequest();
         request.setComment("Great service!");
-        request.setRating(5);
+        request.setScore(5);
 
         expectedRating = Rating.builder()
                 .id(ratingId)
                 .userId(userId)
                 .technicianId(technicianId)
+                .repairOrderId(repairOrderId)
                 .comment("Great service!")
-                .rating(5)
+                .score(5)
                 .deleted(false)
                 .build();
     }
 
     @Test
     void testCreateRating_Success() throws Exception {
-        UUID repairOrderId = UUID.randomUUID(); // Simulasi repair order selesai
+        UUID repairOrderId = UUID.randomUUID();
 
         Mockito.when(ratingService.createRating(any(AuthenticatedUser.class), eq(repairOrderId), any()))
                 .thenReturn(expectedRating);
@@ -93,7 +96,7 @@ class RatingControllerTest {
                 .andExpect(jsonPath("$.userId").value(userId.toString()))
                 .andExpect(jsonPath("$.technicianId").value(technicianId.toString()))
                 .andExpect(jsonPath("$.comment").value("Great service!"))
-                .andExpect(jsonPath("$.rating").value(5));
+                .andExpect(jsonPath("$.score").value(5));
 
         Mockito.verify(ratingService).createRating(any(AuthenticatedUser.class), eq(repairOrderId), any());
     }
@@ -104,14 +107,15 @@ class RatingControllerTest {
                 .id(ratingId)
                 .userId(userId)
                 .technicianId(technicianId)
+                .repairOrderId(repairOrderId)
                 .comment("Updated comment")
-                .rating(4)
+                .score(4)
                 .deleted(false)
                 .build();
 
         CreateAndUpdateRatingRequest updateRequest = new CreateAndUpdateRatingRequest();
         updateRequest.setComment("Updated comment");
-        updateRequest.setRating(4);
+        updateRequest.setScore(4);
 
         Mockito.when(ratingService.updateRating(eq(ratingId), any(AuthenticatedUser.class), any()))
                 .thenReturn(updated);
