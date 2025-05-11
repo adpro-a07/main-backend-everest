@@ -96,7 +96,7 @@ class CouponTest {
     @Test
     void testCouponSetters() {
         // Create initial coupon
-        Coupon coupon = Coupon.builder()
+        Coupon coupon1 = Coupon.builder()
                 .code("INITIAL")
                 .discountAmount(1000)
                 .maxUsage(10)
@@ -105,34 +105,34 @@ class CouponTest {
                 .build();
 
         UUID newId = UUID.randomUUID();
-        coupon.setId(newId);
-        assertEquals(newId, coupon.getId(), "ID harus berubah setelah setter dipanggil");
+        coupon1.setId(newId);
+        assertEquals(newId, coupon1.getId(), "ID harus berubah setelah setter dipanggil");
 
-        coupon.setCode("UPDATED");
-        assertEquals("UPDATED", coupon.getCode(), "Code harus berubah setelah setter dipanggil");
+        coupon1.setCode("UPDATED");
+        assertEquals("UPDATED", coupon1.getCode(), "Code harus berubah setelah setter dipanggil");
 
-        coupon.setDiscountAmount(2000);
-        assertEquals(2000, coupon.getDiscountAmount(), "DiscountAmount harus berubah setelah setter dipanggil");
+        coupon1.setDiscountAmount(2000);
+        assertEquals(2000, coupon1.getDiscountAmount(), "DiscountAmount harus berubah setelah setter dipanggil");
 
-        coupon.setMaxUsage(20);
-        assertEquals(20, coupon.getMaxUsage(), "MaxUsage harus berubah setelah setter dipanggil");
+        coupon1.setMaxUsage(20);
+        assertEquals(20, coupon1.getMaxUsage(), "MaxUsage harus berubah setelah setter dipanggil");
 
-        coupon.setUsageCount(5);
-        assertEquals(5, coupon.getUsageCount(), "UsageCount harus berubah setelah setter dipanggil");
+        coupon1.setUsageCount(5);
+        assertEquals(5, coupon1.getUsageCount(), "UsageCount harus berubah setelah setter dipanggil");
 
         LocalDate newDate = LocalDate.now().plusMonths(1);
-        coupon.setValidUntil(newDate);
-        assertEquals(newDate, coupon.getValidUntil(), "ValidUntil harus berubah setelah setter dipanggil");
+        coupon1.setValidUntil(newDate);
+        assertEquals(newDate, coupon1.getValidUntil(), "ValidUntil harus berubah setelah setter dipanggil");
 
         // Test timestamp setter
         LocalDateTime newCreatedAt = LocalDateTime.now().minusDays(5);
         LocalDateTime newUpdatedAt = LocalDateTime.now().minusDays(1);
 
-        coupon.setCreatedAt(newCreatedAt);
-        assertEquals(newCreatedAt, coupon.getCreatedAt(), "CreatedAt harus berubah setelah setter dipanggil");
+        coupon1.setCreatedAt(newCreatedAt);
+        assertEquals(newCreatedAt, coupon1.getCreatedAt(), "CreatedAt harus berubah setelah setter dipanggil");
 
-        coupon.setUpdatedAt(newUpdatedAt);
-        assertEquals(newUpdatedAt, coupon.getUpdatedAt(), "UpdatedAt harus berubah setelah setter dipanggil");
+        coupon1.setUpdatedAt(newUpdatedAt);
+        assertEquals(newUpdatedAt, coupon1.getUpdatedAt(), "UpdatedAt harus berubah setelah setter dipanggil");
     }
 
     @Test
