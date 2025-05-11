@@ -35,7 +35,7 @@ import static org.mockito.Mockito.*;
         GlobalExceptionHandler.class,
         ReportExceptionHandler.class
 })
-public class ReportControllerTest {
+class ReportControllerTest {
 
     @Autowired
     private WebApplicationContext context;

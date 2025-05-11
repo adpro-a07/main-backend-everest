@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ReportTest {
+class ReportTest {
 
     private UUID testId;
     private LocalDateTime testCreatedAt;
@@ -24,7 +24,7 @@ public class ReportTest {
     }
 
     @Test
-    public void testReportBuilder_AllFields() {
+    void testReportBuilder_AllFields() {
         // Given
         LocalDate repairDate = LocalDate.now();
 
@@ -51,7 +51,7 @@ public class ReportTest {
     }
 
     @Test
-    public void testReportNoArgsConstructor() {
+    void testReportNoArgsConstructor() {
         // When using protected constructor through reflection
         Report laporan = new Report();
 
@@ -67,7 +67,7 @@ public class ReportTest {
     }
 
     @Test
-    public void testReportAllArgsConstructor() {
+    void testReportAllArgsConstructor() {
         // Given
         LocalDate repairDate = LocalDate.now();
 
@@ -94,7 +94,7 @@ public class ReportTest {
     }
 
     @Test
-    public void testGetterSetterMethods() {
+    void testGetterSetterMethods() {
         // Given
         Report laporan = new Report();
         LocalDate repairDate = LocalDate.now();
@@ -119,7 +119,7 @@ public class ReportTest {
     }
 
     @Test
-    public void testReportBuilder_MinimalRequiredFields() {
+    void testReportBuilder_MinimalRequiredFields() {
         // Given
         LocalDate repairDate = LocalDate.now();
 
@@ -143,7 +143,7 @@ public class ReportTest {
     }
 
     @Test
-    public void testReportBuilder_MissingRequiredFields() {
+    void testReportBuilder_MissingRequiredFields() {
         Report laporan = Report.builder().build();
 
         assertNull(laporan.getTechnicianName());

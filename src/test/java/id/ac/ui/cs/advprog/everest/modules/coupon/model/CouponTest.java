@@ -10,7 +10,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CouponTest {
+ class CouponTest {
     private Coupon coupon;
     private LocalDate future;
 
@@ -81,7 +81,7 @@ public class CouponTest {
     }
 
     @Test
-    public void testCouponBuilder_InvalidDiscount() {
+    void testCouponBuilder_InvalidDiscount() {
         Coupon coupon = Coupon.builder()
                 .code("INVALID2025")
                 .discountAmount(-1000)
@@ -95,7 +95,7 @@ public class CouponTest {
 
 
     @Test
-    public void testCouponFieldValueEquality() {
+    void testCouponFieldValueEquality() {
         Coupon coupon1 = Coupon.builder()
                 .code("EQUAL2025")
                 .discountAmount(2500)
@@ -124,7 +124,7 @@ public class CouponTest {
     }
 
     @Test
-    public void testCouponSetters() {
+    void testCouponSetters() {
         // Create initial coupon
         Coupon coupon = Coupon.builder()
                 .code("INITIAL")
@@ -159,7 +159,7 @@ public class CouponTest {
     }
 
     @Test
-    public void testCouponWithNullValues() {
+    void testCouponWithNullValues() {
         Coupon coupon = Coupon.builder()
                 .code("NULLTEST")
                 .discountAmount(null)
@@ -177,7 +177,7 @@ public class CouponTest {
     }
 
     @Test
-    public void testCouponIdGeneration() {
+    void testCouponIdGeneration() {
         Coupon coupon1 = Coupon.builder()
                 .code("AUTOID")
                 .build();
@@ -200,7 +200,7 @@ public class CouponTest {
     }
 
     @Test
-    public void testBoundaryValues() {
+    void testBoundaryValues() {
         Coupon coupon = Coupon.builder()
                 .code("EXTREME")
                 .discountAmount(Integer.MAX_VALUE)
