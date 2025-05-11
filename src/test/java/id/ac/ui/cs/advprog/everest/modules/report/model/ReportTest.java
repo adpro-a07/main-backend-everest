@@ -1,10 +1,10 @@
 package id.ac.ui.cs.advprog.everest.modules.report.model;
 
+import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -150,5 +150,44 @@ class ReportTest {
         assertNull(laporan.getRepairDetails());
         assertNull(laporan.getRepairDate());
         assertNull(laporan.getStatus());
+    }
+
+    @Test
+    void testEqualsAndHashCode() {
+        // Given
+        LocalDate repairDate = LocalDate.now();
+        Report report1 = new Report(
+                testId,
+                "Budi",
+                "Penggantian motherboard",
+                repairDate,
+                ReportStatus.COMPLETED,
+                testCreatedAt,
+                testUpdatedAt
+        );
+
+        Report report2 = new Report(
+                testId,
+                "Budi",
+                "Penggantian motherboard",
+                repairDate,
+                ReportStatus.COMPLETED,
+                testCreatedAt,
+                testUpdatedAt
+        );
+
+        Report differentReport = new Report(
+                UUID.randomUUID(),
+                "Andi",
+                "Perbaikan layar",
+                repairDate,
+                ReportStatus.IN_PROGRESS,
+                testCreatedAt,
+                testUpdatedAt
+        );
+
+        // Then - Using Object's default equals and hashCode
+        assertNotSame(report1, report2);
+        assertNotEquals(report1, differentReport);
     }
 }
