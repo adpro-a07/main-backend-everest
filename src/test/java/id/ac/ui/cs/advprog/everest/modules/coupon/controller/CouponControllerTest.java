@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.coupon.controller;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
-import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
 import id.ac.ui.cs.advprog.everest.modules.coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.service.CouponService;
@@ -9,35 +8,24 @@ import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.net.URI;
+import static org.junit.jupiter.api.Assertions.*;
 
-@WebMvcTest(controllers = CouponController.class)
-@AutoConfigureMockMvc(addFilters = false)
 class CouponControllerTest {
 
-    @MockBean
     private CouponService couponService;
     private CouponController controller;
     private AuthenticatedUser adminUser;
-
-    @MockBean
-    private AuthServiceGrpcClient authServiceGrpcClient;
 
     @BeforeEach
     void setUp() {
@@ -71,7 +59,7 @@ class CouponControllerTest {
         when(couponService.getAllCoupons()).thenReturn(List.of(c1));
 
         ResponseEntity<List<Coupon>> resp = controller.getAllCoupons();
-        assertEquals(200, resp.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, resp.getStatusCode());
         assertEquals(1, resp.getBody().size());
         assertEquals(c1, resp.getBody().get(0));
         verify(couponService).getAllCoupons();
@@ -91,7 +79,7 @@ class CouponControllerTest {
         when(couponService.getCouponById(id)).thenReturn(c);
 
         ResponseEntity<Coupon> resp = controller.getCouponById(id);
-        assertEquals(200, resp.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, resp.getStatusCode());
         assertEquals(c, resp.getBody());
     }
 
@@ -101,7 +89,7 @@ class CouponControllerTest {
         when(couponService.getCouponById(id)).thenThrow(new RuntimeException("not found"));
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> controller.getCouponById(id));
-        assertEquals(404, ex.getStatusCode().value());
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 
     @Test
@@ -123,7 +111,7 @@ class CouponControllerTest {
         when(couponService.createCoupon(req)).thenReturn(created);
 
         ResponseEntity<Coupon> resp = controller.createCoupon(req, adminUser);
-        assertEquals(201, resp.getStatusCodeValue());
+        assertEquals(HttpStatus.CREATED, resp.getStatusCode());
         assertEquals(created, resp.getBody());
         assertEquals(URI.create("/api/v1/coupons/" + created.getId()), resp.getHeaders().getLocation());
         verify(couponService).createCoupon(req);
@@ -149,7 +137,7 @@ class CouponControllerTest {
         when(couponService.updateCoupon(id, req)).thenReturn(updated);
 
         ResponseEntity<Coupon> resp = controller.updateCoupon(id, req, adminUser);
-        assertEquals(200, resp.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, resp.getStatusCode());
         assertEquals(updated, resp.getBody());
         verify(couponService).updateCoupon(id, req);
     }
@@ -160,7 +148,7 @@ class CouponControllerTest {
         doNothing().when(couponService).deleteCoupon(id);
 
         ResponseEntity<Void> resp = controller.deleteCoupon(id, adminUser);
-        assertEquals(204, resp.getStatusCodeValue());
+        assertEquals(HttpStatus.NO_CONTENT, resp.getStatusCode());
         verify(couponService).deleteCoupon(id);
     }
 }
