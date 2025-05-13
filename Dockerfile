@@ -10,14 +10,15 @@ ARG USER_NAME=everest_usr
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
 
-RUN addgroup -g ${USER_GID} ${USER_NAME} \
-    && adduser -h /opt/everest -D -u ${USER_UID} -G ${USER_NAME} ${USER_NAME} \
+# Create user and group
+RUN groupadd -g ${USER_GID} ${USER_NAME} && \
+    useradd -m -d /opt/everest -u ${USER_UID} -g ${USER_GID} ${USER_NAME}
 
 # Install dependencies for gRPC
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libstdc++6 && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* \
+    rm -rf /var/lib/apt/lists/*
 
 USER ${USER_NAME}
 WORKDIR /opt/everest
