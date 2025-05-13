@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
+package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model;
 
 import org.junit.jupiter.api.Test;
 import jakarta.validation.Validation;
@@ -17,12 +17,14 @@ class UserRequestTest {
     private final Validator validator = factory.getValidator();
 
     @Test
-    void testUserRequestCreationWithDescription() {
-        // Happy path - testing the single parameter constructor
+    void testUserRequestCreationWithUserIdAndDescription() {
+        // Happy path - testing constructor with userId and description
+        UUID userId = UUID.randomUUID();
         String description = "Fix washing machine";
-        UserRequest request = new UserRequest(description);
+        UserRequest request = new UserRequest(userId, description);
 
-        assertNotNull(request.getId(), "ID should be automatically generated");
+        assertNotNull(request.getRequest_id(), "Request ID should be automatically generated");
+        assertEquals(userId, request.getUser_id(), "User ID should match provided value");
         assertEquals(description, request.getUserDescription(), "Description should match provided value");
     }
 
@@ -31,19 +33,22 @@ class UserRequestTest {
         // Test the no-args constructor
         UserRequest request = new UserRequest();
 
-        assertNull(request.getId(), "ID should be null initially");
+        assertNull(request.getRequest_id(), "Request ID should be null initially");
+        assertNull(request.getUser_id(), "User ID should be null initially");
         assertNull(request.getUserDescription(), "Description should be null initially");
     }
 
     @Test
     void testAllArgsConstructor() {
         // Test the all-args constructor
-        UUID id = UUID.randomUUID();
+        UUID requestId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         String description = "Repair refrigerator";
 
-        UserRequest request = new UserRequest(id, description);
+        UserRequest request = new UserRequest(requestId, userId, description);
 
-        assertEquals(id, request.getId(), "ID should match the provided value");
+        assertEquals(requestId, request.getRequest_id(), "Request ID should match the provided value");
+        assertEquals(userId, request.getUser_id(), "User ID should match the provided value");
         assertEquals(description, request.getUserDescription(), "Description should match the provided value");
     }
 
@@ -52,9 +57,13 @@ class UserRequestTest {
         // Test setter and getter methods
         UserRequest request = new UserRequest();
 
-        UUID id = UUID.randomUUID();
-        request.setId(id);
-        assertEquals(id, request.getId(), "getId should return the set ID");
+        UUID requestId = UUID.randomUUID();
+        request.setRequest_id(requestId);
+        assertEquals(requestId, request.getRequest_id(), "getRequest_id should return the set ID");
+
+        UUID userId = UUID.randomUUID();
+        request.setUser_id(userId);
+        assertEquals(userId, request.getUser_id(), "getUser_id should return the set ID");
 
         String description = "Fix air conditioner";
         request.setUserDescription(description);
@@ -65,12 +74,12 @@ class UserRequestTest {
     void testPrePersistMethod() {
         // Test the @PrePersist method by simulating its behavior
         UserRequest request = new UserRequest();
-        assertNull(request.getId(), "ID should be null before onCreate");
+        assertNull(request.getRequest_id(), "Request ID should be null before onCreate");
 
         // Invoke the method manually to simulate pre-persist behavior
         request.onCreate();
 
-        assertNotNull(request.getId(), "ID should be generated after onCreate");
+        assertNotNull(request.getRequest_id(), "Request ID should be generated after onCreate");
     }
 
     @Test
@@ -78,20 +87,21 @@ class UserRequestTest {
         // Test that @PrePersist doesn't change an existing ID
         UUID originalId = UUID.randomUUID();
         UserRequest request = new UserRequest();
-        request.setId(originalId);
+        request.setRequest_id(originalId);
 
         // Simulate @PrePersist call
         request.onCreate();
 
-        assertEquals(originalId, request.getId(), "Existing ID should not be changed by onCreate");
+        assertEquals(originalId, request.getRequest_id(), "Existing Request ID should not be changed by onCreate");
     }
 
     @Test
     void testDescriptionSizeValidation() {
-        // Test description length validation - negative test
+        // Bad path - Test description length validation
         String tooLongDescription = "X".repeat(501);
         UserRequest request = new UserRequest();
         request.setUserDescription(tooLongDescription);
+        request.setUser_id(UUID.randomUUID()); // Add required user_id
 
         Set<ConstraintViolation<UserRequest>> violations = validator.validate(request);
         assertEquals(1, violations.size(), "Should have one violation for too long description");
@@ -103,12 +113,40 @@ class UserRequestTest {
 
     @Test
     void testValidDescriptionSize() {
-        // Test valid description length - happy path
+        // Happy path - Test valid description length
         String validDescription = "X".repeat(500);
         UserRequest request = new UserRequest();
         request.setUserDescription(validDescription);
+        request.setUser_id(UUID.randomUUID()); // Add required user_id
+        request.setRequest_id(UUID.randomUUID()); // Add required request_id
 
         Set<ConstraintViolation<UserRequest>> violations = validator.validate(request);
         assertTrue(violations.isEmpty(), "Should have no violations for valid description length");
+    }
+
+    @Test
+    void testStringUUIDConversion() {
+        // Happy path - Test converting string to UUID
+        String validUuidString = "123e4567-e89b-12d3-a456-426614174000";
+        UUID uuid = UUID.fromString(validUuidString);
+
+        UserRequest request = new UserRequest();
+        request.setUser_id(uuid);
+
+        assertEquals(UUID.fromString(validUuidString), request.getUser_id(),
+                "UUID should be correctly converted from string");
+    }
+
+    @Test
+    void testInvalidUUIDStringConversion() {
+        // Bad path - Test invalid UUID string
+        String invalidUuidString = "not-a-uuid";
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            UUID.fromString(invalidUuidString);
+        });
+
+        assertTrue(exception.getMessage().contains("Invalid UUID string"),
+                "Should throw exception for invalid UUID format");
     }
 }

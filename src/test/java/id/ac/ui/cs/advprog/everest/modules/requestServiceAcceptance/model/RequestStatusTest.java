@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
+package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
