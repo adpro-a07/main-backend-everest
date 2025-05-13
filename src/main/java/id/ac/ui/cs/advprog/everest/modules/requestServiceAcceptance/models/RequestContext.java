@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 public class RequestContext {
     private RequestState currentState;
@@ -27,8 +28,8 @@ public class RequestContext {
     }
 
     public void logStatusChange(RequestStatus oldStatus, RequestStatus newStatus) {
-        statusLogs.add(new StatusLog(request.getRequestId(), oldStatus,
-                newStatus, request.getTechnicianId()));
+        statusLogs.add(new StatusLog(UUID.fromString(request.getRequestId()), oldStatus,
+                newStatus, UUID.fromString(request.getTechnicianId())));
     }
 
     public StatusLog getLastStatusLog() {

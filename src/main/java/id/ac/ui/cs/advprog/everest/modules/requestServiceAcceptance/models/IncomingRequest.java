@@ -3,6 +3,8 @@ package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "technician_requests")
 @Getter
@@ -11,10 +13,10 @@ import lombok.*;
 public class IncomingRequest implements TechnicianViewableRequest {
     @Id
     @Column(name = "request_id")
-    private Long requestId;
+    private UUID requestId;
 
     @Column(name = "technician_id")
-    private Long technicianId;
+    private UUID technicianId;
 
     @Column(name = "description")
     private String description;
@@ -23,7 +25,7 @@ public class IncomingRequest implements TechnicianViewableRequest {
     @Column(name = "status")
     private RequestStatus status;
 
-    public static IncomingRequest from(UserRequest userRequest, Long technicianId) {
+    public static IncomingRequest from(UserRequest userRequest, UUID technicianId) {
         return new IncomingRequest(
                 userRequest.getId(),
                 technicianId,
@@ -33,13 +35,13 @@ public class IncomingRequest implements TechnicianViewableRequest {
     }
 
     @Override
-    public Long getRequestId() {
-        return requestId;
+    public String getRequestId() {
+        return requestId.toString();
     }
 
     @Override
-    public Long getTechnicianId() {
-        return technicianId;
+    public String getTechnicianId() {
+        return technicianId.toString();
     }
 
     @Override

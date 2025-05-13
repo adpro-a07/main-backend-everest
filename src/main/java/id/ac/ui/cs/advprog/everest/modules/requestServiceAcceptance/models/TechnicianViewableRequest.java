@@ -1,8 +1,8 @@
 package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
 
 public interface TechnicianViewableRequest {
-    Long getRequestId();
+    String getRequestId();
     String getDescription();
-    Long getTechnicianId();
+    String getTechnicianId();
     RequestStatus getStatus();
 }
