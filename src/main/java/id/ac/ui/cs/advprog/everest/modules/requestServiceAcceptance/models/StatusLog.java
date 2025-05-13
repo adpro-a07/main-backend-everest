@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "status_logs")
@@ -13,10 +14,10 @@ public class StatusLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "log_id")
-    private Long id;
+    private UUID id;
 
     @Column(name = "request_id")
-    private Long requestId;
+    private UUID requestId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "old_status")
@@ -27,12 +28,12 @@ public class StatusLog {
     private RequestStatus newStatus;
 
     @Column(name = "technician_id")
-    private Long technicianId;
+    private UUID technicianId;
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
-    public StatusLog(Long requestId, RequestStatus oldStatus, RequestStatus newStatus, Long technicianId) {
+    public StatusLog(UUID requestId, RequestStatus oldStatus, RequestStatus newStatus, UUID technicianId) {
         this.requestId = requestId;
         this.oldStatus = oldStatus;
         this.newStatus = newStatus;
