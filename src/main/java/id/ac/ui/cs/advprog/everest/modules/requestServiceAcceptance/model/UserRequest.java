@@ -7,24 +7,26 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_requests")
+@Table(name = "user_requests", indexes = {
+        @Index(name = "idx_user_requests_user_id", columnList = "user_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRequest {
-    public UserRequest(UUID user_id, String userDescription) {
-        this.request_id = UUID.randomUUID();
+    public UserRequest(UUID userId, String userDescription) {
+        this.requestId = UUID.randomUUID();
+        this.userId = userId;
         this.userDescription = userDescription;
     }
 
     @Id
     @Column(name = "request_id", nullable = false, updatable = false)
-    private UUID request_id;
+    private UUID requestId;
 
-    @Id
     @Column(name = "user_id", nullable = false, updatable = false)
-    private UUID user_id;
+    private UUID userId;
 
     @Size(max = 500)
     @Column(name = "user_description", length = 500)
@@ -32,8 +34,8 @@ public class UserRequest {
 
     @PrePersist
     protected void onCreate() {
-        if (request_id == null) {
-            request_id = UUID.randomUUID();
+        if (requestId == null) {
+            requestId = UUID.randomUUID();
         }
     }
 }
