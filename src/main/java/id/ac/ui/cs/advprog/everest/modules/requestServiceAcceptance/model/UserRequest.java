@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.models;
+package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -13,14 +13,18 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRequest {
-    public UserRequest(String userDescription) {
-        this.id = UUID.randomUUID();
+    public UserRequest(UUID user_id, String userDescription) {
+        this.request_id = UUID.randomUUID();
         this.userDescription = userDescription;
     }
 
     @Id
-    @Column(name = "id", nullable = false, updatable = false)
-    private UUID id;
+    @Column(name = "request_id", nullable = false, updatable = false)
+    private UUID request_id;
+
+    @Id
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private UUID user_id;
 
     @Size(max = 500)
     @Column(name = "user_description", length = 500)
@@ -28,8 +32,8 @@ public class UserRequest {
 
     @PrePersist
     protected void onCreate() {
-        if (id == null) {
-            id = UUID.randomUUID();
+        if (request_id == null) {
+            request_id = UUID.randomUUID();
         }
     }
 }
