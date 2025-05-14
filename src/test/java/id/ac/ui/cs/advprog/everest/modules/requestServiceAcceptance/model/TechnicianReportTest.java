@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model;
 
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model.state.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,162 +12,100 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TechnicianReportTest {
 
+    private TechnicianReport report;
     private UUID reportId;
     private UUID technicianId;
-    private UUID userId;
     private UserRequest userRequest;
-    private String diagnosis;
-    private String actionPlan;
-    private BigDecimal estimatedCost;
-    private Duration estimatedTime;
 
     @BeforeEach
     void setUp() {
         reportId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
-        userId = UUID.randomUUID();
-        userRequest = new UserRequest(userId, "Fix my refrigerator");
-        diagnosis = "Refrigerator compressor is faulty";
-        actionPlan = "Replace compressor and test cooling system";
-        estimatedCost = new BigDecimal("350.75");
-        estimatedTime = Duration.ofHours(2).plusMinutes(30);
-    }
-
-    @Test
-    void testCreateTechnicianReportWithConstructor() {
-        TechnicianReport report = new TechnicianReport(
-                reportId, userRequest, technicianId, diagnosis, actionPlan, estimatedCost, estimatedTime);
-
-        assertEquals(reportId, report.getReportId());
-        assertEquals(userRequest, report.getUserRequest());
-        assertEquals(technicianId, report.getTechnicianId());
-        assertEquals(diagnosis, report.getDiagnosis());
-        assertEquals(actionPlan, report.getActionPlan());
-        assertEquals(estimatedCost, report.getEstimatedCost());
-
-        // Check Duration conversion
-        assertEquals(estimatedTime.getSeconds(), report.getEstimatedTimeSeconds());
-        assertEquals(estimatedTime, report.getEstimatedTime());
-    }
-
-    @Test
-    void testBuilderPattern() {
-        // Note: Fixing the method name from "UserRequest" to "userRequest"
-        TechnicianReport report = TechnicianReport.builder()
+        userRequest = new UserRequest(UUID.randomUUID(), "Fix my refrigerator");
+        report = TechnicianReport.builder()
                 .reportId(reportId)
-                .UserRequest(userRequest)
+                .userRequest(userRequest)
                 .technicianId(technicianId)
-                .diagnosis(diagnosis)
-                .actionPlan(actionPlan)
-                .estimatedCost(estimatedCost)
-                .estimatedTime(estimatedTime)
+                .diagnosis("Compressor issue")
+                .actionPlan("Replace compressor")
+                .estimatedCost(new BigDecimal("300.00"))
+                .estimatedTime(Duration.ofHours(2))
                 .build();
-
-        assertEquals(reportId, report.getReportId());
-        assertEquals(userRequest, report.getUserRequest());
-        assertEquals(technicianId, report.getTechnicianId());
-        assertEquals(diagnosis, report.getDiagnosis());
-        assertEquals(actionPlan, report.getActionPlan());
-        assertEquals(estimatedCost, report.getEstimatedCost());
-        assertEquals(estimatedTime, report.getEstimatedTime());
     }
 
     @Test
-    void testNullReportIdGeneratesUUID() {
-        TechnicianReport report = TechnicianReport.builder()
-                .UserRequest(userRequest)
-                .technicianId(technicianId)
-                .build();
-
-        // Call onCreate manually for testing
-        report.onCreate();
-
-        assertNotNull(report.getReportId());
+    void testInitialStateIsDraft() {
+        assertEquals("DRAFT", report.getStatus());
+        assertTrue(report.canEdit());
     }
 
     @Test
-    void testExistingReportIdRemainsSame() {
-        UUID existingId = UUID.randomUUID();
-
-        TechnicianReport report = TechnicianReport.builder()
-                .reportId(existingId)
-                .UserRequest(userRequest)
-                .technicianId(technicianId)
-                .build();
-
-        // Call onCreate manually for testing
-        report.onCreate();
-
-        assertEquals(existingId, report.getReportId());
+    void testSubmitTransition() {
+        report.submit();
+        assertEquals("SUBMITTED", report.getStatus());
+        assertFalse(report.canEdit());
     }
 
     @Test
-    void testNullEstimatedTimeHandling() {
-        TechnicianReport report = TechnicianReport.builder()
-                .reportId(reportId)
-                .UserRequest(userRequest)
-                .technicianId(technicianId)
-                .estimatedTime(null)
-                .build();
-
-        assertNull(report.getEstimatedTimeSeconds());
-        assertNull(report.getEstimatedTime());
-    }
-
-    @Test
-    void testZeroDuration() {
-        Duration zeroDuration = Duration.ZERO;
-
-        TechnicianReport report = TechnicianReport.builder()
-                .reportId(reportId)
-                .UserRequest(userRequest)
-                .technicianId(technicianId)
-                .estimatedTime(zeroDuration)
-                .build();
-
-        assertEquals(0L, report.getEstimatedTimeSeconds());
-        assertEquals(zeroDuration, report.getEstimatedTime());
-    }
-
-    @Test
-    void testLargeDuration() {
-        Duration largeDuration = Duration.ofDays(30).plusHours(5).plusMinutes(45).plusSeconds(15);
-
-        TechnicianReport report = TechnicianReport.builder()
-                .reportId(reportId)
-                .UserRequest(userRequest)
-                .technicianId(technicianId)
-                .estimatedTime(largeDuration)
-                .build();
-
-        assertEquals(largeDuration.getSeconds(), report.getEstimatedTimeSeconds());
-        assertEquals(largeDuration, report.getEstimatedTime());
-    }
-
-    @Test
-    void testNoArgsConstructor() {
-        TechnicianReport report = new TechnicianReport();
-
-        assertNull(report.getReportId());
-        assertNull(report.getUserRequest());
-        assertNull(report.getTechnicianId());
-        assertNull(report.getDiagnosis());
-        assertNull(report.getActionPlan());
-        assertNull(report.getEstimatedCost());
-        assertNull(report.getEstimatedTimeSeconds());
-        assertNull(report.getEstimatedTime());
-    }
-
-    @Test
-    void testUserRequestRelationship() {
-        TechnicianReport report = TechnicianReport.builder()
-                .reportId(reportId)
-                .UserRequest(userRequest)
+    void testSubmitWithoutDiagnosisThrowsException() {
+        report = TechnicianReport.builder()
+                .userRequest(userRequest)
                 .technicianId(technicianId)
                 .build();
 
-        assertEquals(userRequest.getRequestId(), report.getUserRequest().getRequestId());
-        assertEquals(userRequest.getUserId(), report.getUserRequest().getUserId());
-        assertEquals(userRequest.getUserDescription(), report.getUserRequest().getUserDescription());
+        assertThrows(IllegalStateException.class, report::submit);
+    }
+
+    @Test
+    void testApproveTransition() {
+        report.submit();
+        report.approve();
+        assertEquals("APPROVED", report.getStatus());
+    }
+
+    @Test
+    void testRejectTransition() {
+        report.submit();
+        report.reject("Customer feedback");
+        assertEquals("REJECTED", report.getStatus());
+        assertEquals("Customer feedback", report.getCustomerFeedback());
+    }
+
+    @Test
+    void testRejectWithoutFeedbackThrowsException() {
+        report.submit();
+        assertThrows(IllegalArgumentException.class, () -> report.reject(null));
+    }
+
+    @Test
+    void testReviseTransition() {
+        report.submit();
+        report.reject("Customer feedback");
+        report.revise();
+        assertEquals("DRAFT", report.getStatus());
+        assertTrue(report.canEdit());
+    }
+
+    @Test
+    void testStartWorkTransition() {
+        report.submit();
+        report.approve();
+        report.startWork();
+        assertEquals("IN_PROGRESS", report.getStatus());
+    }
+
+    @Test
+    void testCompleteWorkTransition() {
+        report.submit();
+        report.approve();
+        report.startWork();
+        report.complete();
+        assertEquals("COMPLETED", report.getStatus());
+    }
+
+    @Test
+    void testInvalidTransitionThrowsException() {
+        assertThrows(IllegalStateTransitionException.class, report::approve);
+        assertThrows(IllegalStateTransitionException.class, report::startWork);
     }
 }
