@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model;
 
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model.state.*;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.exception.IllegalStateTransitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -66,24 +67,8 @@ class TechnicianReportTest {
     @Test
     void testRejectTransition() {
         report.submit();
-        report.reject("Customer feedback");
+        report.reject();
         assertEquals("REJECTED", report.getStatus());
-        assertEquals("Customer feedback", report.getCustomerFeedback());
-    }
-
-    @Test
-    void testRejectWithoutFeedbackThrowsException() {
-        report.submit();
-        assertThrows(IllegalArgumentException.class, () -> report.reject(null));
-    }
-
-    @Test
-    void testReviseTransition() {
-        report.submit();
-        report.reject("Customer feedback");
-        report.revise();
-        assertEquals("DRAFT", report.getStatus());
-        assertTrue(report.canEdit());
     }
 
     @Test
@@ -107,5 +92,14 @@ class TechnicianReportTest {
     void testInvalidTransitionThrowsException() {
         assertThrows(IllegalStateTransitionException.class, report::approve);
         assertThrows(IllegalStateTransitionException.class, report::startWork);
+    }
+
+    @Test
+    void testReviseNotAllowedWhenRejected() {
+        report.submit();
+        report.reject();
+        assertThrows(IllegalStateTransitionException.class, report::revise);
+        assertEquals("REJECTED", report.getStatus());
+        assertFalse(report.canEdit());
     }
 }
