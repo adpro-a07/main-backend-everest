@@ -3,8 +3,8 @@ package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.controller;
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.authentication.CurrentUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequestDto;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponseDto;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequest;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponse;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.service.UserRequestService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -26,10 +26,10 @@ public class UserRequestController {
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/user-requests")
     public ResponseEntity<?> createUserRequest(
-            @Valid @RequestBody CreateAndUpdateUserRequestDto createAndUpdateUserRequestDto,
+            @Valid @RequestBody CreateAndUpdateUserRequest createAndUpdateUserRequestDto,
             @CurrentUser AuthenticatedUser user
     ) {
-        GenericResponse<ViewUserRequestResponseDto> response = userRequestService
+        GenericResponse<ViewUserRequestResponse> response = userRequestService
                 .createUserRequest(createAndUpdateUserRequestDto, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -37,7 +37,7 @@ public class UserRequestController {
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/user-requests")
     public ResponseEntity<?> getUserRequests(@CurrentUser AuthenticatedUser user) {
-        GenericResponse<List<ViewUserRequestResponseDto>> response = userRequestService.getUserRequests(user);
+        GenericResponse<List<ViewUserRequestResponse>> response = userRequestService.getUserRequests(user);
         return ResponseEntity.ok(response);
     }
 
@@ -47,7 +47,7 @@ public class UserRequestController {
             @PathVariable String requestId,
             @CurrentUser AuthenticatedUser user
     ) {
-        GenericResponse<ViewUserRequestResponseDto> response = userRequestService.getUserRequestById(requestId, user);
+        GenericResponse<ViewUserRequestResponse> response = userRequestService.getUserRequestById(requestId, user);
         return ResponseEntity.ok(response);
     }
 
@@ -55,10 +55,10 @@ public class UserRequestController {
     @PutMapping("/user-requests/{requestId}")
     public ResponseEntity<?> updateUserRequest(
             @PathVariable String requestId,
-            @Valid @RequestBody CreateAndUpdateUserRequestDto createAndUpdateUserRequestDto,
+            @Valid @RequestBody CreateAndUpdateUserRequest createAndUpdateUserRequestDto,
             @CurrentUser AuthenticatedUser user
     ) {
-        GenericResponse<ViewUserRequestResponseDto> response = userRequestService
+        GenericResponse<ViewUserRequestResponse> response = userRequestService
                 .updateUserRequest(requestId, createAndUpdateUserRequestDto, user);
         return ResponseEntity.ok(response);
     }

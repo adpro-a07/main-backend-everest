@@ -2,8 +2,8 @@ package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequestDto;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponseDto;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequest;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponse;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.exception.DatabaseException;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.exception.InvalidUserRequestStateException;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model.UserRequest;
@@ -24,8 +24,8 @@ public class UserRequestServiceImpl implements UserRequestService {
     }
 
     @Override
-    public GenericResponse<ViewUserRequestResponseDto> createUserRequest(
-            CreateAndUpdateUserRequestDto createAndUpdateUserRequestDto,
+    public GenericResponse<ViewUserRequestResponse> createUserRequest(
+            CreateAndUpdateUserRequest createAndUpdateUserRequestDto,
             AuthenticatedUser customer) {
         if (createAndUpdateUserRequestDto == null || customer == null) {
             throw new InvalidUserRequestStateException("Request or customer cannot be null");
@@ -38,7 +38,7 @@ public class UserRequestServiceImpl implements UserRequestService {
 
             UserRequest savedRequest = userRequestRepository.save(userRequest);
 
-            ViewUserRequestResponseDto responseView = buildUserRequestResponse(savedRequest);
+            ViewUserRequestResponse responseView = buildUserRequestResponse(savedRequest);
 
             return new GenericResponse<>(true, "User request created successfully", responseView);
         } catch (DataAccessException ex) {
@@ -49,7 +49,7 @@ public class UserRequestServiceImpl implements UserRequestService {
     }
 
     @Override
-    public GenericResponse<List<ViewUserRequestResponseDto>> getUserRequests(AuthenticatedUser customer) {
+    public GenericResponse<List<ViewUserRequestResponse>> getUserRequests(AuthenticatedUser customer) {
         if (customer == null) {
             throw new InvalidUserRequestStateException("Customer cannot be null");
         }
@@ -57,7 +57,7 @@ public class UserRequestServiceImpl implements UserRequestService {
         try {
             List<UserRequest> userRequests = userRequestRepository.findByUserId(customer.id());
 
-            List<ViewUserRequestResponseDto> responseList = userRequests.stream()
+            List<ViewUserRequestResponse> responseList = userRequests.stream()
                     .map(this::buildUserRequestResponse)
                     .toList();
 
@@ -68,7 +68,7 @@ public class UserRequestServiceImpl implements UserRequestService {
     }
 
     @Override
-    public GenericResponse<ViewUserRequestResponseDto> getUserRequestById(String requestId, AuthenticatedUser customer) {
+    public GenericResponse<ViewUserRequestResponse> getUserRequestById(String requestId, AuthenticatedUser customer) {
         if (requestId == null || customer == null) {
             throw new InvalidUserRequestStateException("Request ID or customer cannot be null");
         }
@@ -82,7 +82,7 @@ public class UserRequestServiceImpl implements UserRequestService {
                 throw new InvalidUserRequestStateException("You are not authorized to view this request");
             }
 
-            ViewUserRequestResponseDto responseView = buildUserRequestResponse(userRequest);
+            ViewUserRequestResponse responseView = buildUserRequestResponse(userRequest);
 
             return new GenericResponse<>(true, "User request retrieved successfully", responseView);
         } catch (IllegalArgumentException ex) {
@@ -93,9 +93,9 @@ public class UserRequestServiceImpl implements UserRequestService {
     }
 
     @Override
-    public GenericResponse<ViewUserRequestResponseDto> updateUserRequest(
+    public GenericResponse<ViewUserRequestResponse> updateUserRequest(
             String requestId,
-            CreateAndUpdateUserRequestDto createAndUpdateUserRequestDto,
+            CreateAndUpdateUserRequest createAndUpdateUserRequestDto,
             AuthenticatedUser customer) {
         if (requestId == null || createAndUpdateUserRequestDto == null || customer == null) {
             throw new InvalidUserRequestStateException("Request ID, update data, or customer cannot be null");
@@ -114,7 +114,7 @@ public class UserRequestServiceImpl implements UserRequestService {
 
             UserRequest updatedRequest = userRequestRepository.save(userRequest);
 
-            ViewUserRequestResponseDto responseView = buildUserRequestResponse(updatedRequest);
+            ViewUserRequestResponse responseView = buildUserRequestResponse(updatedRequest);
 
             return new GenericResponse<>(true, "User request updated successfully", responseView);
         } catch (IllegalArgumentException ex) {
@@ -149,8 +149,8 @@ public class UserRequestServiceImpl implements UserRequestService {
         }
     }
 
-    private ViewUserRequestResponseDto buildUserRequestResponse(UserRequest userRequest) {
-        return ViewUserRequestResponseDto.builder()
+    private ViewUserRequestResponse buildUserRequestResponse(UserRequest userRequest) {
+        return ViewUserRequestResponse.builder()
                 .requestId(userRequest.getRequestId())
                 .userId(userRequest.getUserId())
                 .userDescription(userRequest.getUserDescription())

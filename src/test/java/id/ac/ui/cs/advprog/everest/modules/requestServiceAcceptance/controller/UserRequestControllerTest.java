@@ -2,8 +2,8 @@ package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.controller;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequestDto;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponseDto;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequest;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponse;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.exception.InvalidUserRequestStateException;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.service.UserRequestService;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
@@ -67,10 +67,10 @@ class UserRequestControllerTest {
     @Test
     void whenCreateUserRequest_withValidRequest_shouldReturn201Created() {
         // Arrange
-        CreateAndUpdateUserRequestDto request = new CreateAndUpdateUserRequestDto();
+        CreateAndUpdateUserRequest request = new CreateAndUpdateUserRequest();
         request.setUserDescription("Fix my washing machine");
 
-        ViewUserRequestResponseDto responseDto = ViewUserRequestResponseDto.builder()
+        ViewUserRequestResponse responseDto = ViewUserRequestResponse.builder()
                 .requestId(UUID.randomUUID())
                 .userId(customer.id())
                 .userDescription("Fix my washing machine")
@@ -78,7 +78,7 @@ class UserRequestControllerTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        GenericResponse<ViewUserRequestResponseDto> expectedResponse = new GenericResponse<>(
+        GenericResponse<ViewUserRequestResponse> expectedResponse = new GenericResponse<>(
                 true,
                 "User request created successfully",
                 responseDto
@@ -98,7 +98,7 @@ class UserRequestControllerTest {
     @Test
     void whenCreateUserRequest_withServiceThrowsException_shouldThrow() {
         // Arrange
-        CreateAndUpdateUserRequestDto request = new CreateAndUpdateUserRequestDto();
+        CreateAndUpdateUserRequest request = new CreateAndUpdateUserRequest();
         request.setUserDescription("Bad request");
 
         when(userRequestService.createUserRequest(request, customer))
@@ -114,7 +114,7 @@ class UserRequestControllerTest {
     @Test
     void whenGetUserRequests_shouldReturnOnlyCustomerRequests() {
         // Arrange
-        ViewUserRequestResponseDto responseDto = ViewUserRequestResponseDto.builder()
+        ViewUserRequestResponse responseDto = ViewUserRequestResponse.builder()
                 .requestId(UUID.randomUUID())
                 .userId(customer.id())
                 .userDescription("Fix my washing machine")
@@ -122,9 +122,9 @@ class UserRequestControllerTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        List<ViewUserRequestResponseDto> customerRequests = Collections.singletonList(responseDto);
+        List<ViewUserRequestResponse> customerRequests = Collections.singletonList(responseDto);
 
-        GenericResponse<List<ViewUserRequestResponseDto>> expectedResponse = new GenericResponse<>(
+        GenericResponse<List<ViewUserRequestResponse>> expectedResponse = new GenericResponse<>(
                 true,
                 "User requests retrieved successfully",
                 customerRequests
@@ -159,7 +159,7 @@ class UserRequestControllerTest {
         // Arrange
         String requestId = UUID.randomUUID().toString();
 
-        ViewUserRequestResponseDto responseDto = ViewUserRequestResponseDto.builder()
+        ViewUserRequestResponse responseDto = ViewUserRequestResponse.builder()
                 .requestId(UUID.fromString(requestId))
                 .userId(customer.id())
                 .userDescription("Fix my washing machine")
@@ -167,7 +167,7 @@ class UserRequestControllerTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        GenericResponse<ViewUserRequestResponseDto> expectedResponse = new GenericResponse<>(
+        GenericResponse<ViewUserRequestResponse> expectedResponse = new GenericResponse<>(
                 true,
                 "User request retrieved successfully",
                 responseDto
@@ -203,10 +203,10 @@ class UserRequestControllerTest {
     void whenUpdateUserRequest_shouldReturnUpdatedRequest() {
         // Arrange
         String requestId = UUID.randomUUID().toString();
-        CreateAndUpdateUserRequestDto request = new CreateAndUpdateUserRequestDto();
+        CreateAndUpdateUserRequest request = new CreateAndUpdateUserRequest();
         request.setUserDescription("Updated description");
 
-        ViewUserRequestResponseDto responseDto = ViewUserRequestResponseDto.builder()
+        ViewUserRequestResponse responseDto = ViewUserRequestResponse.builder()
                 .requestId(UUID.fromString(requestId))
                 .userId(customer.id())
                 .userDescription("Updated description")
@@ -214,7 +214,7 @@ class UserRequestControllerTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        GenericResponse<ViewUserRequestResponseDto> expectedResponse = new GenericResponse<>(
+        GenericResponse<ViewUserRequestResponse> expectedResponse = new GenericResponse<>(
                 true,
                 "User request updated successfully",
                 responseDto
@@ -235,7 +235,7 @@ class UserRequestControllerTest {
     void whenUpdateUserRequest_requestNotFound_shouldThrow() {
         // Arrange
         String requestId = "nonexistent-id";
-        CreateAndUpdateUserRequestDto request = new CreateAndUpdateUserRequestDto();
+        CreateAndUpdateUserRequest request = new CreateAndUpdateUserRequest();
         request.setUserDescription("Updated description");
 
         when(userRequestService.updateUserRequest(requestId, request, customer))
@@ -252,7 +252,7 @@ class UserRequestControllerTest {
     void whenUpdateUserRequest_notOwnedByCustomer_shouldThrow() {
         // Arrange
         String requestId = UUID.randomUUID().toString();
-        CreateAndUpdateUserRequestDto request = new CreateAndUpdateUserRequestDto();
+        CreateAndUpdateUserRequest request = new CreateAndUpdateUserRequest();
         request.setUserDescription("Updated description");
 
         when(userRequestService.updateUserRequest(requestId, request, differentCustomer))

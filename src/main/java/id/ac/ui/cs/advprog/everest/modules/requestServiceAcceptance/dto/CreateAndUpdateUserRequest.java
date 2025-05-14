@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateAndUpdateUserRequestDto {
+public class CreateAndUpdateUserRequest {
     @NotBlank
     @Size(max = 500)
     private String userDescription;

@@ -2,24 +2,24 @@ package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequestDto;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponseDto;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequest;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponse;
 
 import java.util.List;
 
 public interface UserRequestService {
-    GenericResponse<ViewUserRequestResponseDto> createUserRequest(
-            CreateAndUpdateUserRequestDto createAndUpdateUserRequestDto,
+    GenericResponse<ViewUserRequestResponse> createUserRequest(
+            CreateAndUpdateUserRequest createAndUpdateUserRequestDto,
             AuthenticatedUser customer
     );
 
-    GenericResponse<List<ViewUserRequestResponseDto>> getUserRequests(AuthenticatedUser customer);
+    GenericResponse<List<ViewUserRequestResponse>> getUserRequests(AuthenticatedUser customer);
 
-    GenericResponse<ViewUserRequestResponseDto> getUserRequestById(String requestId, AuthenticatedUser customer);
+    GenericResponse<ViewUserRequestResponse> getUserRequestById(String requestId, AuthenticatedUser customer);
 
-    GenericResponse<ViewUserRequestResponseDto> updateUserRequest(
+    GenericResponse<ViewUserRequestResponse> updateUserRequest(
             String requestId,
-            CreateAndUpdateUserRequestDto createAndUpdateUserRequestDto,
+            CreateAndUpdateUserRequest createAndUpdateUserRequestDto,
             AuthenticatedUser customer
     );
 

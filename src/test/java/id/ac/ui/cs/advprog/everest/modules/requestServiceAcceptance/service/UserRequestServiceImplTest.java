@@ -2,8 +2,8 @@ package id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequestDto;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponseDto;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateAndUpdateUserRequest;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.ViewUserRequestResponse;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.exception.DatabaseException;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.exception.InvalidUserRequestStateException;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model.UserRequest;
@@ -35,7 +35,7 @@ class UserRequestServiceImplTest {
 
     private UUID customerId;
     private AuthenticatedUser customer;
-    private CreateAndUpdateUserRequestDto validRequest;
+    private CreateAndUpdateUserRequest validRequest;
     private UserRequest sampleUserRequest;
 
     @BeforeEach
@@ -55,7 +55,7 @@ class UserRequestServiceImplTest {
                 0L
         );
 
-        validRequest = new CreateAndUpdateUserRequestDto();
+        validRequest = new CreateAndUpdateUserRequest();
         validRequest.setUserDescription("Fix my washing machine");
 
         // Sample user request
@@ -73,7 +73,7 @@ class UserRequestServiceImplTest {
         when(userRequestRepository.save(any(UserRequest.class))).thenReturn(sampleUserRequest);
 
         // Act
-        GenericResponse<ViewUserRequestResponseDto> response = userRequestService.createUserRequest(validRequest, customer);
+        GenericResponse<ViewUserRequestResponse> response = userRequestService.createUserRequest(validRequest, customer);
 
         // Assert
         assertTrue(response.isSuccess());
@@ -128,7 +128,7 @@ class UserRequestServiceImplTest {
         when(userRequestRepository.findByUserId(customerId)).thenReturn(userRequests);
 
         // Act
-        GenericResponse<List<ViewUserRequestResponseDto>> response = userRequestService.getUserRequests(customer);
+        GenericResponse<List<ViewUserRequestResponse>> response = userRequestService.getUserRequests(customer);
 
         // Assert
         assertTrue(response.isSuccess());
@@ -147,7 +147,7 @@ class UserRequestServiceImplTest {
         when(userRequestRepository.findByUserId(customerId)).thenReturn(emptyList);
 
         // Act
-        GenericResponse<List<ViewUserRequestResponseDto>> response = userRequestService.getUserRequests(customer);
+        GenericResponse<List<ViewUserRequestResponse>> response = userRequestService.getUserRequests(customer);
 
         // Assert
         assertTrue(response.isSuccess());
@@ -190,7 +190,7 @@ class UserRequestServiceImplTest {
         when(userRequestRepository.findById(requestId)).thenReturn(Optional.of(sampleUserRequest));
 
         // Act
-        GenericResponse<ViewUserRequestResponseDto> response = userRequestService.getUserRequestById(
+        GenericResponse<ViewUserRequestResponse> response = userRequestService.getUserRequestById(
                 requestId.toString(), customer);
 
         // Assert
@@ -275,7 +275,7 @@ class UserRequestServiceImplTest {
         when(userRequestRepository.save(any(UserRequest.class))).thenReturn(sampleUserRequest);
 
         // Act
-        GenericResponse<ViewUserRequestResponseDto> response = userRequestService.updateUserRequest(
+        GenericResponse<ViewUserRequestResponse> response = userRequestService.updateUserRequest(
                 requestId.toString(), validRequest, customer);
 
         // Assert
