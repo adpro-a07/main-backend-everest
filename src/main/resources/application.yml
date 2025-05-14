@@ -1,6 +1,6 @@
 spring:
   application:
-    name: kilimanjaro
+    name: everest
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME}
@@ -19,6 +19,6 @@ spring:
 
 auth:
   grpc:
-    host: localhost
-    port: 9090
-    secure: false
+    host: ${AUTH_GRPC_HOST:localhost}
+    port: ${AUTH_GRPC_PORT:9090}
+    secure: ${AUTH_GRPC_SECURE:false}
