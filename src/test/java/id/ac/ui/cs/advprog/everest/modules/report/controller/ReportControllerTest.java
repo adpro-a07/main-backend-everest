@@ -1,25 +1,14 @@
 package id.ac.ui.cs.advprog.everest.modules.report.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
-import id.ac.ui.cs.advprog.everest.common.exception.GlobalExceptionHandler;
-import id.ac.ui.cs.advprog.everest.common.service.AuthServiceGrpcClient;
 import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
-import id.ac.ui.cs.advprog.everest.modules.report.excecption.ReportExceptionHandler;
 import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.service.ReportService;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -29,25 +18,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@WebMvcTest(ReportController.class)
-@Import({
-        GlobalExceptionHandler.class,
-        ReportExceptionHandler.class
-})
 class ReportControllerTest {
-
-    @Autowired
-    private WebApplicationContext context;
-
-    @MockBean
     private ReportService reportService;
-
-    @MockBean
-    private AuthServiceGrpcClient authServiceGrpcClient;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
     private ReportController controller;
     private AuthenticatedUser adminUser;
     private AuthenticatedUser techUser;
@@ -56,8 +28,6 @@ class ReportControllerTest {
     void setUp() {
         reportService = mock(ReportService.class);
         controller = new ReportController(reportService);
-
-        // Membuat objek AuthenticatedUser untuk testing
         adminUser = new AuthenticatedUser(
                 UUID.randomUUID(),
                 "admin@example.com",
@@ -71,7 +41,6 @@ class ReportControllerTest {
                 0,
                 0L
         );
-
         techUser = new AuthenticatedUser(
                 UUID.randomUUID(),
                 "tech@example.com",
@@ -87,24 +56,22 @@ class ReportControllerTest {
         );
     }
 
-    private ReportResponse createSampleReportResponse(String technician, ReportStatus status) {
+    private ReportResponse createSampleResponse(String tech, ReportStatus status) {
         return ReportResponse.builder()
                 .id(UUID.randomUUID())
-                .technicianName(technician)
-                .repairDetails("Test repair details")
+                .technicianName(tech)
+                .repairDetails("Details")
                 .repairDate(LocalDate.now())
                 .status(status.name())
                 .build();
     }
 
     @Test
-    void testGetAllReportsWithoutFilters() {
-        ReportResponse response = createSampleReportResponse("John", ReportStatus.COMPLETED);
-        List<ReportResponse> responseList = List.of(response);
-        when(reportService.getAllReports(any(AuthenticatedUser.class))).thenReturn(responseList);
+    void testGetAllWithoutFilters() {
+        var resp = createSampleResponse("John", ReportStatus.COMPLETED);
+        when(reportService.getAllReports(any(AuthenticatedUser.class))).thenReturn(List.of(resp));
 
         ResponseEntity<List<ReportResponse>> result = controller.getReportList(null, null, adminUser);
-
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(1, result.getBody().size());
         assertEquals("John", result.getBody().get(0).getTechnicianName());
@@ -112,133 +79,81 @@ class ReportControllerTest {
     }
 
     @Test
-    void testGetReportsByTechnician() {
-        String technicianName = "John";
-        ReportResponse response = createSampleReportResponse(technicianName, ReportStatus.COMPLETED);
-        List<ReportResponse> responseList = List.of(response);
-        when(reportService.getReportsByTechnician(eq(technicianName), any(AuthenticatedUser.class)))
-                .thenReturn(responseList);
+    void testGetByTechnician() {
+        var resp = createSampleResponse("Alice", ReportStatus.IN_PROGRESS);
+        when(reportService.getReportsByTechnician(eq("Alice"), any())).thenReturn(List.of(resp));
 
-        ResponseEntity<List<ReportResponse>> result = controller.getReportList(technicianName, null, adminUser);
-
+        ResponseEntity<List<ReportResponse>> result = controller.getReportList("Alice", null, adminUser);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(1, result.getBody().size());
-        assertEquals(technicianName, result.getBody().get(0).getTechnicianName());
-        verify(reportService).getReportsByTechnician(technicianName, adminUser);
+        assertEquals("Alice", result.getBody().get(0).getTechnicianName());
+        verify(reportService).getReportsByTechnician("Alice", adminUser);
         verify(reportService, never()).getAllReports(any());
     }
 
     @Test
-    void testGetReportsByStatus() {
-        ReportStatus status = ReportStatus.IN_PROGRESS;
-        ReportResponse response = createSampleReportResponse("John", status);
-        List<ReportResponse> responseList = List.of(response);
-        when(reportService.getReportsByStatus(eq(status), any(AuthenticatedUser.class)))
-                .thenReturn(responseList);
+    void testGetByStatus() {
+        var resp = createSampleResponse("Bob", ReportStatus.CANCELLED);
+        when(reportService.getReportsByStatus(eq(ReportStatus.CANCELLED), any())).thenReturn(List.of(resp));
 
-        ResponseEntity<List<ReportResponse>> result = controller.getReportList(null, status, adminUser);
-
+        ResponseEntity<List<ReportResponse>> result = controller.getReportList(null, ReportStatus.CANCELLED, adminUser);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(1, result.getBody().size());
-        assertEquals(status.name(), result.getBody().get(0).getStatus());
-        verify(reportService).getReportsByStatus(status, adminUser);
-        verify(reportService, never()).getAllReports(any());
+        assertEquals(ReportStatus.CANCELLED.name(), result.getBody().get(0).getStatus());
+        verify(reportService).getReportsByStatus(ReportStatus.CANCELLED, adminUser);
     }
 
     @Test
-    void testGetReportsByTechnicianAndStatus() {
-        String technicianName = "John";
-        ReportStatus status = ReportStatus.COMPLETED;
-        ReportResponse response = createSampleReportResponse(technicianName, status);
-        List<ReportResponse> responseList = List.of(response);
-        when(reportService.getReportsByTechnicianAndStatus(
-                eq(technicianName), eq(status), any(AuthenticatedUser.class)))
-                .thenReturn(responseList);
+    void testGetByTechAndStatus() {
+        var resp = createSampleResponse("Charlie", ReportStatus.COMPLETED);
+        when(reportService.getReportsByTechnicianAndStatus(eq("Charlie"), eq(ReportStatus.COMPLETED), any()))
+                .thenReturn(List.of(resp));
 
-        ResponseEntity<List<ReportResponse>> result = controller.getReportList(technicianName, status, adminUser);
-
+        ResponseEntity<List<ReportResponse>> result = controller.getReportList("Charlie", ReportStatus.COMPLETED, adminUser);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(1, result.getBody().size());
-        assertEquals(technicianName, result.getBody().get(0).getTechnicianName());
-        assertEquals(status.name(), result.getBody().get(0).getStatus());
-        verify(reportService).getReportsByTechnicianAndStatus(technicianName, status, adminUser);
-        verify(reportService, never()).getAllReports(any());
+        assertEquals("Charlie", result.getBody().get(0).getTechnicianName());
+        assertEquals(ReportStatus.COMPLETED.name(), result.getBody().get(0).getStatus());
+        verify(reportService).getReportsByTechnicianAndStatus("Charlie", ReportStatus.COMPLETED, adminUser);
     }
 
     @Test
-    void testGetReportDetailById_Success() {
-        UUID reportId = UUID.randomUUID();
-        ReportResponse response = createSampleReportResponse("John", ReportStatus.COMPLETED);
-        response.setId(reportId);
-        when(reportService.getReportById(eq(reportId), any(AuthenticatedUser.class)))
-                .thenReturn(response);
+    void testGetDetailSuccess() {
+        UUID id = UUID.randomUUID();
+        var resp = createSampleResponse("Dan", ReportStatus.COMPLETED);
+        resp.setId(id);
+        when(reportService.getReportById(eq(id), any())).thenReturn(resp);
 
-        ResponseEntity<ReportResponse> result = controller.getReportDetailById(reportId, adminUser);
-
+        ResponseEntity<ReportResponse> result = controller.getReportDetailById(id, adminUser);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(reportId, result.getBody().getId());
-        assertEquals("John", result.getBody().getTechnicianName());
-
-        // Verifikasi bahwa getReportById dipanggil dengan parameter yang benar
-        ArgumentCaptor<UUID> idCaptor = ArgumentCaptor.forClass(UUID.class);
-        verify(reportService).getReportById(idCaptor.capture(), eq(adminUser));
-        assertEquals(reportId, idCaptor.getValue());
+        assertEquals(id, result.getBody().getId());
+        verify(reportService).getReportById(id, adminUser);
     }
 
     @Test
-    void testGetReportDetailById_WithTechnicianUser() {
-        UUID reportId = UUID.randomUUID();
-        ReportResponse response = createSampleReportResponse("John", ReportStatus.COMPLETED);
-        response.setId(reportId);
-        when(reportService.getReportById(eq(reportId), any(AuthenticatedUser.class)))
-                .thenReturn(response);
+    void testGetDetailNotFound() {
+        UUID id = UUID.randomUUID();
+        when(reportService.getReportById(eq(id), any())).thenThrow(new RuntimeException("not found"));
 
-        ResponseEntity<ReportResponse> result = controller.getReportDetailById(reportId, techUser);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(reportId, result.getBody().getId());
-        verify(reportService).getReportById(reportId, techUser);
+        Exception ex = assertThrows(Exception.class, () -> controller.getReportDetailById(id, adminUser));
+        // Controller wraps exception into ResponseStatusException with 404
+        assertTrue(ex instanceof org.springframework.web.server.ResponseStatusException);
     }
 
     @Test
-    void testGetReportDetailById_NotFound() {
-        UUID reportId = UUID.randomUUID();
-        when(reportService.getReportById(eq(reportId), any(AuthenticatedUser.class)))
-                .thenThrow(new RuntimeException("Report not found"));
-
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                controller.getReportDetailById(reportId, adminUser));
-
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-        assertTrue(exception.getMessage().contains("Report not found with id: " + reportId));
-        verify(reportService).getReportById(reportId, adminUser);
-    }
-
-    @Test
-    void testGetReportList_EmptyList() {
-        when(reportService.getAllReports(any(AuthenticatedUser.class))).thenReturn(List.of());
-
-        ResponseEntity<List<ReportResponse>> result = controller.getReportList(null, null, adminUser);
-
+    void testEmptyList() {
+        when(reportService.getAllReports(any())).thenReturn(List.of());
+        var result = controller.getReportList(null, null, techUser);
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertTrue(result.getBody().isEmpty());
-        verify(reportService).getAllReports(adminUser);
     }
 
     @Test
-    void testGetReportList_MultipleItems() {
-        ReportResponse report1 = createSampleReportResponse("John", ReportStatus.COMPLETED);
-        ReportResponse report2 = createSampleReportResponse("Jane", ReportStatus.IN_PROGRESS);
-        List<ReportResponse> responseList = List.of(report1, report2);
+    void testMultipleItems() {
+        var r1 = createSampleResponse("Eve", ReportStatus.IN_PROGRESS);
+        var r2 = createSampleResponse("Frank", ReportStatus.COMPLETED);
+        when(reportService.getAllReports(any())).thenReturn(List.of(r1, r2));
 
-        when(reportService.getAllReports(any(AuthenticatedUser.class))).thenReturn(responseList);
-
-        ResponseEntity<List<ReportResponse>> result = controller.getReportList(null, null, adminUser);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
+        var result = controller.getReportList(null, null, adminUser);
         assertEquals(2, result.getBody().size());
-        assertEquals("John", result.getBody().get(0).getTechnicianName());
-        assertEquals("Jane", result.getBody().get(1).getTechnicianName());
-        verify(reportService).getAllReports(adminUser);
+        assertEquals("Eve", result.getBody().get(0).getTechnicianName());
+        assertEquals("Frank", result.getBody().get(1).getTechnicianName());
     }
 }

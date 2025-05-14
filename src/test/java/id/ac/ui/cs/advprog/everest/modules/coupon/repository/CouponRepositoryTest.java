@@ -21,7 +21,6 @@ class CouponRepositoryTest {
     @Autowired
     private CouponRepository couponRepository;
 
-    private UUID couponId;
     private Coupon sampleCoupon;
 
     @BeforeEach

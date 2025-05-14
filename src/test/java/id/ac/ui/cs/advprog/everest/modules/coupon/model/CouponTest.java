@@ -84,13 +84,11 @@ class CouponTest {
 
     @Test
     void testCouponBuilder_NullCode_Throws() {
-        Exception exception = assertThrows(NullPointerException.class, () -> {
-            Coupon.builder()
-                    .code(null)
-                    .build();
-        });
+        assertThrows(NullPointerException.class, CouponTest::buildCouponWithNullCode);
+    }
 
-        assertNotNull(exception, "Exception must be thrown for null code");
+    private static void buildCouponWithNullCode() {
+        Coupon.builder().code(null).build();
     }
 
     @Test
