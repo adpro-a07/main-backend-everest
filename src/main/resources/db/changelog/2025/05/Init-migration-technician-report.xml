@@ -27,5 +27,12 @@
                                  constraintName="FK_TECHNICIAN_REPORTS_ON_REQUEST" referencedColumnNames="request_id"
                                  referencedTableName="user_requests"/>
     </changeSet>
+    <changeSet id="1747260595867-1" author="dannielang">
+        <addColumn tableName="technician_reports">
+            <column name="customer_feedback" type="VARCHAR(500)"/>
+            <column name="last_updated_at" type="DATETIME"/>
+            <column name="status" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>
