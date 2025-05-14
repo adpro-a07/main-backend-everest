@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1746785655122-1" author="Khansa">
+        <dropColumn columnName="technician_id" tableName="ratings"/>
+
+        <dropColumn columnName="user_id" tableName="ratings"/>
+    </changeSet>
+    <changeSet id="1746785655122-2" author="Khansa">
+        <addColumn tableName="ratings">
+            <column name="technician_id" type="UUID">
+                <constraints nullable="false" validateNullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1746785655122-4" author="Khansa">
+        <addColumn tableName="ratings">
+            <column name="user_id" type="UUID">
+                <constraints nullable="false" validateNullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>
