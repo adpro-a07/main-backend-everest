@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1747210089532-1" author="dannielang">
+        <createTable tableName="technician_reports">
+            <column name="report_id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_technician_reports"/>
+            </column>
+            <column name="request_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="technician_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="diagnosis" type="VARCHAR(500)"/>
+            <column name="action_plan" type="VARCHAR(500)"/>
+            <column name="estimated_cost" type="DECIMAL(10, 2)"/>
+            <column name="estimated_time_seconds" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1747210089532-2" author="dannielang">
+        <addForeignKeyConstraint baseColumnNames="request_id" baseTableName="technician_reports"
+                                 constraintName="FK_TECHNICIAN_REPORTS_ON_REQUEST" referencedColumnNames="request_id"
+                                 referencedTableName="user_requests"/>
+    </changeSet>
+
+</databaseChangeLog>
