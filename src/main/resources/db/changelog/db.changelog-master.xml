@@ -12,4 +12,5 @@
     <include file="db/changelog/2025/05/09-01-change-user-technician-id-data-types.xml"/>
     <include file="db/changelog/2025/05/11-01-add-order-id-field-and-change-rating-field-name-to-score.xml"/>
     <include file="db/changelog/2025/05/init-migrate-UserReques.xml"/>
+    <include file="db/changelog/2025/05/Init-migration-technician-report.xml"/>
 </databaseChangeLog>
