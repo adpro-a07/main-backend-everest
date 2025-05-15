@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateTechnicianReportDraft;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.TechnicianReportDraftResponse;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.exception.DatabaseException;
+import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.exception.IllegalStateTransitionException;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.exception.InvalidTechnicianReportStateException;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model.TechnicianReport;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model.UserRequest;
@@ -68,10 +69,9 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(savedReport);
 
             return new GenericResponse<>(true, "Technician report draft created successfully", response);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidTechnicianReportStateException("Invalid data format", ex);
-        } catch (DataAccessException ex) {
-            throw new DatabaseException("Failed to save technician report", ex);
+        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
+        IllegalStateTransitionException ex) {
+            return new GenericResponse<>(false, ex.getMessage(), null);
         }
     }
 
@@ -112,10 +112,9 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
 
             return new GenericResponse<>(true, "Technician report draft updated successfully", response);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidTechnicianReportStateException("Invalid report ID format", ex);
-        } catch (DataAccessException ex) {
-            throw new DatabaseException("Failed to update technician report", ex);
+        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
+                 IllegalStateTransitionException ex) {
+            return new GenericResponse<>(false, ex.getMessage(), null);
         }
     }
 
@@ -149,10 +148,9 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReportRepository.delete(technicianReport);
 
             return new GenericResponse<>(true, "Technician report draft deleted successfully", response);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidTechnicianReportStateException("Invalid report ID format", ex);
-        } catch (DataAccessException ex) {
-            throw new DatabaseException("Failed to delete technician report", ex);
+        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
+                 IllegalStateTransitionException ex) {
+            return new GenericResponse<>(false, ex.getMessage(), null);
         }
     }
 
@@ -188,10 +186,9 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReportRepository.save(technicianReport);
 
             return new GenericResponse<>(true, "Technician report draft accepted successfully", null);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidTechnicianReportStateException("Invalid report ID format", ex);
-        } catch (DataAccessException ex) {
-            throw new DatabaseException("Failed to update technician report", ex);
+        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
+                IllegalStateTransitionException ex) {
+            return new GenericResponse<>(false, ex.getMessage(), null);
         }
     }
 
@@ -227,10 +224,9 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReportRepository.save(technicianReport);
 
             return new GenericResponse<>(true, "Technician report draft rejected successfully", null);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidTechnicianReportStateException("Invalid report ID format", ex);
-        } catch (DataAccessException ex) {
-            throw new DatabaseException("Failed to update technician report", ex);
+        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
+                 IllegalStateTransitionException ex) {
+            return new GenericResponse<>(false, ex.getMessage(), null);
         }
     }
 
@@ -264,10 +260,9 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             // Create and return response
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
             return new GenericResponse<>(true, "Technician report draft submitted successfully", response);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidTechnicianReportStateException("Invalid report ID format", ex);
-        } catch (DataAccessException ex) {
-            throw new DatabaseException("Failed to update technician report", ex);
+        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
+                 IllegalStateTransitionException ex) {
+            return new GenericResponse<>(false, ex.getMessage(), null);
         }
         }
 
