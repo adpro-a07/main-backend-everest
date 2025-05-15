@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1")
 public class TechnicianReportController {
@@ -19,6 +21,17 @@ public class TechnicianReportController {
 
     public TechnicianReportController(TechnicianReportService technicianReportService) {
         this.technicianReportService = technicianReportService;
+    }
+
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    @GetMapping("/technician-reports")
+    public ResponseEntity<?> getTechnicianReportByStatus(
+            @RequestParam(value = "status", required = false) String status,
+            @CurrentUser AuthenticatedUser user
+    ) {
+        GenericResponse<List<TechnicianReportDraftResponse>> response = technicianReportService
+                .getTechnicianReportByStatus(status, user);
+        return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasRole('TECHNICIAN')")
@@ -52,6 +65,17 @@ public class TechnicianReportController {
     ) {
         GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
                 .deleteTechnicianReportDraft(reportId, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/technician-reports/submissions")
+    public ResponseEntity<?> getTechnicianReportSubmissions(
+            @RequestParam(value = "status", required = false) String status,
+            @CurrentUser AuthenticatedUser user
+    ) {
+        GenericResponse<List<TechnicianReportDraftResponse>> response = technicianReportService
+                .getTechnicianReportSubmissions(status, user);
         return ResponseEntity.ok(response);
     }
 

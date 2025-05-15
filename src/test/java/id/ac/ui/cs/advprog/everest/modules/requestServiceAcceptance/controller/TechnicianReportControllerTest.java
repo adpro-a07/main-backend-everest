@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -241,5 +242,87 @@ public class TechnicianReportControllerTest {
         }
 
         verify(technicianReportService).rejectTechnicianReportSubmit(eq(reportId), eq(user));
+    }
+
+    @Test
+    void testGetTechnicianReportsByStatus() {
+        // Arrange
+        String status = "DRAFT";
+        List<TechnicianReportDraftResponse> responseList = List.of(mockResponse);
+
+        GenericResponse<List<TechnicianReportDraftResponse>> serviceResponse = new GenericResponse<>(
+                true,
+                "Technician reports retrieved successfully",
+                responseList
+        );
+
+        when(technicianReportService.getTechnicianReportSubmissions(anyString(), any()))
+                .thenReturn(serviceResponse);
+
+        // Act
+        ResponseEntity<?> result = technicianReportController.getTechnicianReportSubmissions(status, technician);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        verify(technicianReportService).getTechnicianReportSubmissions(eq(status), eq(technician));
+    }
+
+    @Test
+    void testGetTechnicianReportsByStatus_ServiceThrowsException() {
+        // Arrange
+        String status = "DRAFT";
+        when(technicianReportService.getTechnicianReportSubmissions(anyString(), any()))
+                .thenThrow(new DatabaseException("Database error", new RuntimeException()));
+
+        // Act & Assert
+        try {
+            technicianReportController.getTechnicianReportSubmissions(status, technician);
+        } catch (DatabaseException e) {
+            assertEquals("Database error", e.getMessage());
+        }
+
+        verify(technicianReportService).getTechnicianReportSubmissions(eq(status), eq(technician));
+    }
+
+    @Test
+    void testGetTechnicianReportSubmissions() {
+        // Arrange
+        String status = "SUBMITTED";
+        List<TechnicianReportDraftResponse> responseList = List.of(mockResponse);
+
+        GenericResponse<List<TechnicianReportDraftResponse>> serviceResponse = new GenericResponse<>(
+                true,
+                "Technician report submissions retrieved successfully",
+                responseList
+        );
+
+        when(technicianReportService.getTechnicianReportSubmissions(anyString(), any()))
+                .thenReturn(serviceResponse);
+
+        // Act
+        ResponseEntity<?> result = technicianReportController.getTechnicianReportSubmissions(status, user);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        verify(technicianReportService).getTechnicianReportSubmissions(eq(status), eq(user));
+    }
+
+    @Test
+    void testGetTechnicianReportSubmissions_ServiceThrowsException() {
+        // Arrange
+        String status = "SUBMITTED";
+        when(technicianReportService.getTechnicianReportSubmissions(anyString(), any()))
+                .thenThrow(new InvalidTechnicianReportStateException("Invalid state"));
+
+        // Act & Assert
+        try {
+            technicianReportController.getTechnicianReportSubmissions(status, user);
+        } catch (InvalidTechnicianReportStateException e) {
+            assertEquals("Invalid state", e.getMessage());
+        }
+
+        verify(technicianReportService).getTechnicianReportSubmissions(eq(status), eq(user));
     }
 }

@@ -19,6 +19,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
+import static org.apache.commons.lang3.StringUtils.upperCase;
+
 @Service
 public class TechnicianReportServiceImpl implements TechnicianReportService {
 
@@ -30,6 +32,23 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             UserRequestRepository userRequestRepository) {
         this.technicianReportRepository = technicianReportRepository;
         this.userRequestRepository = userRequestRepository;
+    }
+
+    @Override
+    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatus(String status, AuthenticatedUser technician) {
+        if (technician == null) {
+            return new GenericResponse<>(false, "Technician cannot be null", null);
+        }
+
+        try {
+            List<TechnicianReport> reports = technicianReportRepository.findAllByTechnicianIdAndStatus(technician.id(), upperCase(status));
+            List<TechnicianReportDraftResponse> response = reports.stream()
+                    .map(this::buildTechnicianReportDraftResponse)
+                    .toList();
+            return new GenericResponse<>(true, "Technician reports retrieved successfully", response);
+        } catch (DataAccessException ex) {
+            throw new DatabaseException("Failed to retrieve technician reports", ex);
+        }
     }
 
     @Override
@@ -151,6 +170,32 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
                  IllegalStateTransitionException ex) {
             return new GenericResponse<>(false, ex.getMessage(), null);
+        }
+    }
+
+    @Override
+    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportSubmissions(String status, AuthenticatedUser customer) {
+        if (customer == null) {
+            return new GenericResponse<>(false, "Customer cannot be null", null);
+        }
+
+        try {
+            List<TechnicianReport> reports = technicianReportRepository.findAllByStatus(status);
+            if (reports.isEmpty()) {
+                return new GenericResponse<>(false, "No technician report submissions found", null);
+            }
+            // Filter reports by customer ID
+            reports = reports.stream()
+                    .filter(report -> report.getUserRequest().getUserId().equals(customer.id()))
+                    .filter(report -> !report.getStatus().equals("DRAFT"))
+                    .toList();
+
+            List<TechnicianReportDraftResponse> response = reports.stream()
+                    .map(this::buildTechnicianReportDraftResponse)
+                    .toList();
+            return new GenericResponse<>(true, "Technician report submissions retrieved successfully", response);
+        } catch (DataAccessException ex) {
+            throw new DatabaseException("Failed to retrieve technician report submissions", ex);
         }
     }
 

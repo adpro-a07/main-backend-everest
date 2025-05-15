@@ -22,10 +22,7 @@ import org.springframework.dao.DataAccessException;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -586,5 +583,151 @@ class TechnicianReportServiceImplTest {
         assertNull(response.getData());
         verify(technicianReportRepository).findByReportId(reportId);
         verify(technicianReportRepository).save(any(TechnicianReport.class));
+    }
+
+    @Test
+    void getTechnicianReportByStatus_Success() {
+        // Arrange
+        String status = "DRAFT";
+        List<TechnicianReport> mockReports = Arrays.asList(mockTechnicianReport);
+        when(technicianReportRepository.findAllByTechnicianIdAndStatus(technicianId, status))
+                .thenReturn(mockReports);
+
+        // Act
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatus(status, technician);
+
+        // Assert
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+        assertEquals(1, response.getData().size());
+        assertEquals(reportId, response.getData().get(0).getReportId());
+        assertEquals("Technician reports retrieved successfully", response.getMessage());
+
+        // Verify repository interactions
+        verify(technicianReportRepository).findAllByTechnicianIdAndStatus(technicianId, status);
+    }
+
+    @Test
+    void getTechnicianReportByStatus_NullTechnician() {
+        // Act
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatus("DRAFT", null);
+
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("cannot be null"));
+
+        // Verify no repository interactions
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void getTechnicianReportByStatus_EmptyReportsList() {
+        // Arrange
+        String status = "DRAFT";
+        when(technicianReportRepository.findAllByTechnicianIdAndStatus(technicianId, status))
+                .thenReturn(Collections.emptyList());
+
+        // Act
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatus(status, technician);
+
+        // Assert
+        assertTrue(response.isSuccess());
+        assertEquals(response.getData(), Collections.emptyList());
+
+
+        // Verify repository interactions
+        verify(technicianReportRepository).findAllByTechnicianIdAndStatus(technicianId, status);
+    }
+
+    @Test
+    void getTechnicianReportByStatus_DatabaseException() {
+        // Arrange
+        String status = "DRAFT";
+        when(technicianReportRepository.findAllByTechnicianIdAndStatus(any(UUID.class), anyString()))
+                .thenThrow(mock(DataAccessException.class));
+
+        // Act & Assert
+        assertThrows(DatabaseException.class, () ->
+                technicianReportService.getTechnicianReportByStatus(status, technician));
+
+        // Verify repository interactions
+        verify(technicianReportRepository).findAllByTechnicianIdAndStatus(technicianId, status);
+    }
+
+    @Test
+    void getTechnicianReportSubmissions_Success() {
+        // Arrange
+        String status = "SUBMITTED";
+        mockTechnicianReport.submit(); // Change state to SUBMITTED
+        List<TechnicianReport> mockReports = Arrays.asList(mockTechnicianReport);
+
+        when(technicianReportRepository.findAllByStatus(status)).thenReturn(mockReports);
+
+        // Act
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportSubmissions(status, customer);
+
+        // Assert
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+        assertEquals(1, response.getData().size());
+        assertEquals("Technician report submissions retrieved successfully", response.getMessage());
+
+        // Verify repository interactions
+        verify(technicianReportRepository).findAllByStatus(status);
+    }
+
+    @Test
+    void getTechnicianReportSubmissions_NullCustomer() {
+        // Act
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportSubmissions("SUBMITTED", null);
+
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Customer cannot be null"));
+
+        // Verify no repository interactions
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void getTechnicianReportSubmissions_EmptyReportsList() {
+        // Arrange
+        String status = "SUBMITTED";
+        when(technicianReportRepository.findAllByStatus(status))
+                .thenReturn(Collections.emptyList());
+
+        // Act
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportSubmissions(status, customer);
+
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertEquals("No technician report submissions found", response.getMessage());
+
+        // Verify repository interactions
+        verify(technicianReportRepository).findAllByStatus(status);
+    }
+
+    @Test
+    void getTechnicianReportSubmissions_DatabaseException() {
+        // Arrange
+        String status = "SUBMITTED";
+        when(technicianReportRepository.findAllByStatus(anyString()))
+                .thenThrow(mock(DataAccessException.class));
+
+        // Act & Assert
+        assertThrows(DatabaseException.class, () ->
+                technicianReportService.getTechnicianReportSubmissions(status, customer));
+
+        // Verify repository interactions
+        verify(technicianReportRepository).findAllByStatus(status);
     }
 }
