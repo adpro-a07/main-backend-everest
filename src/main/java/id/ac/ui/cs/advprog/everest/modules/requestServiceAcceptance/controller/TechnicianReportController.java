@@ -68,6 +68,28 @@ public class TechnicianReportController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    @PostMapping("/technician-reports/{reportId}/start")
+    public ResponseEntity<?> startWork(
+            @PathVariable String reportId,
+            @CurrentUser AuthenticatedUser user
+    ) {
+        GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
+                .startWork(reportId, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    @PostMapping("/technician-reports/{reportId}/complete")
+    public ResponseEntity<?> completeWork(
+            @PathVariable String reportId,
+            @CurrentUser AuthenticatedUser user
+    ) {
+        GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
+                .completeWork(reportId, user);
+        return ResponseEntity.ok(response);
+    }
+
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/technician-reports/submissions")
     public ResponseEntity<?> getTechnicianReportSubmissions(

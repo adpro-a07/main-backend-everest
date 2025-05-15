@@ -36,6 +36,16 @@ public interface TechnicianReportService {
             AuthenticatedUser technician
     );
 
+    GenericResponse<TechnicianReportDraftResponse> startWork(
+            String technicianReportDraftId,
+            AuthenticatedUser technician
+    );
+
+    GenericResponse<TechnicianReportDraftResponse> completeWork(
+            String technicianReportDraftId,
+            AuthenticatedUser technician
+    );
+
     // User
     GenericResponse<Void> acceptTechnicianReportSubmit(
             String technicianReportDraftId,
@@ -51,5 +61,4 @@ public interface TechnicianReportService {
             String status,
             AuthenticatedUser customer
     );
-
 }

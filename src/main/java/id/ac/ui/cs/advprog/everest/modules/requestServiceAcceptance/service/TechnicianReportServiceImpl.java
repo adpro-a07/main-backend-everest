@@ -174,6 +174,79 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
     }
 
     @Override
+    public GenericResponse<TechnicianReportDraftResponse> startWork(
+            String technicianReportDraftId,
+            AuthenticatedUser technician) {
+
+        if (technicianReportDraftId == null || technician == null) {
+            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
+        }
+
+        try {
+            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
+                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
+
+            // Verify the report belongs to this technician
+            if (!technicianReport.getTechnicianId().equals(technician.id())) {
+                throw new InvalidTechnicianReportStateException("You are not authorized to start work on this report");
+            }
+
+            // Verify report is in APPROVED state
+            if (!"APPROVED".equals(technicianReport.getStatus())) {
+                throw new InvalidTechnicianReportStateException("Only report Approved one can be started");
+            }
+
+            // Change the state to IN_PROGRESS
+            technicianReport.startWork();
+            // Save updated report
+            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
+            // Create and return response
+            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
+            return new GenericResponse<>(true, "Technician report draft started successfully", response);
+        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
+                 IllegalStateTransitionException ex) {
+            return new GenericResponse<>(false, ex.getMessage(), null);
+        }
+    }
+
+    @Override
+    public GenericResponse<TechnicianReportDraftResponse> completeWork(
+            String technicianReportDraftId,
+            AuthenticatedUser technician) {
+
+        if (technicianReportDraftId == null || technician == null) {
+            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
+        }
+
+        try {
+            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
+                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
+
+            // Verify the report belongs to this technician
+            if (!technicianReport.getTechnicianId().equals(technician.id())) {
+                throw new InvalidTechnicianReportStateException("You are not authorized to complete work on this report");
+            }
+
+            // Verify report is in IN_PROGRESS state
+            if (!"IN_PROGRESS".equals(technicianReport.getStatus())) {
+                throw new InvalidTechnicianReportStateException("Only report in progress can be completed");
+            }
+
+            // Change the state
+            technicianReport.complete();
+            // Save updated report
+            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
+            // Create and return response
+            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
+            return new GenericResponse<>(true, "Technician report draft completed successfully", response);
+        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
+                 IllegalStateTransitionException ex) {
+            return new GenericResponse<>(false, ex.getMessage(), null);
+        }
+    }
+
+
+    @Override
     public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportSubmissions(String status, AuthenticatedUser customer) {
         if (customer == null) {
             return new GenericResponse<>(false, "Customer cannot be null", null);
