@@ -24,6 +24,11 @@ public interface TechnicianReportService {
             AuthenticatedUser technician
     );
 
+    GenericResponse<TechnicianReportDraftResponse> submitTechnicianReportDraft(
+            String technicianReportDraftId,
+            AuthenticatedUser technician
+    );
+
     // User
     GenericResponse<Void> acceptTechnicianReportDraft(
             String technicianReportDraftId,

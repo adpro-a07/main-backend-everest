@@ -234,6 +234,8 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
     }
 
+
+
     // Helper method to build response DTO
     private TechnicianReportDraftResponse buildTechnicianReportDraftResponse(TechnicianReport report) {
         return TechnicianReportDraftResponse.builder()

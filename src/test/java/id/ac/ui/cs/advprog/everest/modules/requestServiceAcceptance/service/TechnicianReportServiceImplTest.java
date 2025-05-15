@@ -383,4 +383,120 @@ class TechnicianReportServiceImplTest {
 
         verify(technicianReportRepository).findAllByTechnicianIdAndStatus(any(UUID.class), eq("DRAFT"));
     }
+
+    @Test
+    void submitTechnicianReportDraft_Success() {
+        // Arrange
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+        when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(mockTechnicianReport);
+
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician);
+
+        // Assert
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+        assertEquals("SUBMITTED", mockTechnicianReport.getStatus());
+
+        // Verify repository interactions
+        verify(technicianReportRepository).findByReportId(reportId);
+        verify(technicianReportRepository).save(mockTechnicianReport);
+    }
+
+    @Test
+    void submitTechnicianReportDraft_NullReportId_ThrowsException() {
+        // Act & Assert
+        assertThrows(InvalidTechnicianReportStateException.class,
+                () -> technicianReportService.submitTechnicianReportDraft(null, technician));
+
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void submitTechnicianReportDraft_NullTechnician_ThrowsException() {
+        // Act & Assert
+        assertThrows(InvalidTechnicianReportStateException.class,
+                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), null));
+
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void submitTechnicianReportDraft_InvalidReportIdFormat_ThrowsException() {
+        // Act & Assert
+        assertThrows(InvalidTechnicianReportStateException.class,
+                () -> technicianReportService.submitTechnicianReportDraft("invalid-uuid", technician));
+
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void submitTechnicianReportDraft_ReportNotFound_ThrowsException() {
+        // Arrange
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(InvalidTechnicianReportStateException.class,
+                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician));
+
+        verify(technicianReportRepository).findByReportId(reportId);
+    }
+
+    @Test
+    void submitTechnicianReportDraft_UnauthorizedTechnician_ThrowsException() {
+        // Arrange
+        UUID differentTechnicianId = UUID.randomUUID();
+        AuthenticatedUser differentTechnician = new AuthenticatedUser(
+                differentTechnicianId,
+                "another@example.com",
+                "Another Technician",
+                UserRole.TECHNICIAN,
+                "98765432101",
+                Instant.now(),
+                Instant.now(),
+                "Bandung",
+                null,
+                0,
+                0L
+        );
+
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        // Act & Assert
+        assertThrows(InvalidTechnicianReportStateException.class,
+                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), differentTechnician));
+
+        verify(technicianReportRepository).findByReportId(reportId);
+        verify(technicianReportRepository, never()).save(any(TechnicianReport.class));
+    }
+
+    @Test
+    void submitTechnicianReportDraft_NotInDraftState_ThrowsException() {
+        // Arrange
+        mockTechnicianReport.submit(); // Already in SUBMITTED state
+
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        // Act & Assert
+        assertThrows(InvalidTechnicianReportStateException.class,
+                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician));
+
+        verify(technicianReportRepository).findByReportId(reportId);
+        verify(technicianReportRepository, never()).save(any(TechnicianReport.class));
+    }
+
+    @Test
+    void submitTechnicianReportDraft_DatabaseException_ThrowsException() {
+        // Arrange
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+        when(technicianReportRepository.save(any(TechnicianReport.class))).thenThrow(mock(DataAccessException.class));
+
+        // Act & Assert
+        assertThrows(DatabaseException.class,
+                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician));
+
+        verify(technicianReportRepository).findByReportId(reportId);
+        verify(technicianReportRepository).save(any(TechnicianReport.class));
+    }
 }
