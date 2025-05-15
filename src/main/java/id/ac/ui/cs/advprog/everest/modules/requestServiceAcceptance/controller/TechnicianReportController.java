@@ -76,4 +76,15 @@ public class TechnicianReportController {
                 .rejectTechnicianReportDraft(reportId, user);
         return ResponseEntity.ok(response);
     }
+
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    @PostMapping("/technician-reports/{reportId}/submit")
+    public ResponseEntity<?> submitTechnicianReportDraft(
+            @PathVariable String reportId,
+            @CurrentUser AuthenticatedUser technician
+    ) {
+        GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
+                .submitTechnicianReportDraft(reportId, technician);
+        return ResponseEntity.ok(response);
+    }
 }
