@@ -234,7 +234,42 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
     }
 
+    @Override
+    public GenericResponse<TechnicianReportDraftResponse> submitTechnicianReportDraft(
+            String technicianReportDraftId,
+            AuthenticatedUser technician) {
 
+        if (technicianReportDraftId == null || technician == null) {
+            throw new InvalidTechnicianReportStateException("Report ID or technician cannot be null");
+        }
+
+        try {
+            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
+                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
+
+            // Verify the report belongs to this technician
+            if (!technicianReport.getTechnicianId().equals(technician.id())) {
+                throw new InvalidTechnicianReportStateException("You are not authorized to submit this report");
+            }
+
+            // Verify report is in DRAFT state
+            if (!"DRAFT".equals(technicianReport.getStatus())) {
+                throw new InvalidTechnicianReportStateException("Only report drafts can be submitted");
+            }
+
+            // Change the state to SUBMITTED
+            technicianReport.submit();
+            // Save updated report
+            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
+            // Create and return response
+            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
+            return new GenericResponse<>(true, "Technician report draft submitted successfully", response);
+        } catch (IllegalArgumentException ex) {
+            throw new InvalidTechnicianReportStateException("Invalid report ID format", ex);
+        } catch (DataAccessException ex) {
+            throw new DatabaseException("Failed to update technician report", ex);
+        }
+        }
 
     // Helper method to build response DTO
     private TechnicianReportDraftResponse buildTechnicianReportDraftResponse(TechnicianReport report) {
