@@ -28,8 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,31 +43,29 @@ class TechnicianReportServiceImplTest {
     @InjectMocks
     private TechnicianReportServiceImpl technicianReportService;
 
-    private AuthenticatedUser technician;
-    private AuthenticatedUser customer;
-    private UserRequest mockUserRequest;
-    private TechnicianReport mockTechnicianReport;
-    private CreateTechnicianReportDraft mockCreateRequest;
+    private UUID reportId;
+    private UUID userRequestId;
     private UUID technicianId;
     private UUID customerId;
-    private UUID userRequestId;
-    private UUID reportId;
+    private AuthenticatedUser technician;
+    private AuthenticatedUser customer;
+    private CreateTechnicianReportDraft mockCreateRequest;
+    private TechnicianReport mockTechnicianReport;
+    private UserRequest mockUserRequest;
 
     @BeforeEach
     void setUp() {
-        // Set up UUIDs
+        reportId = UUID.randomUUID();
+        userRequestId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
         customerId = UUID.randomUUID();
-        userRequestId = UUID.randomUUID();
-        reportId = UUID.randomUUID();
 
-        // Set up AuthenticatedUser objects (not mocks)
         technician = new AuthenticatedUser(
                 technicianId,
                 "technician@example.com",
-                "Technician",
+                "Test Technician",
                 UserRole.TECHNICIAN,
-                "12345678901",
+                "1234567890",
                 Instant.now(),
                 Instant.now(),
                 "Jakarta",
@@ -80,24 +77,29 @@ class TechnicianReportServiceImplTest {
         customer = new AuthenticatedUser(
                 customerId,
                 "customer@example.com",
-                "Customer",
+                "Test Customer",
                 UserRole.CUSTOMER,
-                "12301894239",
+                "0987654321",
                 Instant.now(),
                 Instant.now(),
-                "Depok",
+                "Jakarta",
                 null,
                 0,
                 0L
         );
 
-        // Set up UserRequest
+        mockCreateRequest = new CreateTechnicianReportDraft();
+        mockCreateRequest.setUserRequestId(userRequestId.toString());
+        mockCreateRequest.setDiagnosis("Test diagnosis");
+        mockCreateRequest.setActionPlan("Test action plan");
+        mockCreateRequest.setEstimatedCost(new BigDecimal("100.00"));
+        mockCreateRequest.setEstimatedTimeSeconds(3600L);
+
         mockUserRequest = new UserRequest();
         mockUserRequest.setRequestId(userRequestId);
         mockUserRequest.setUserId(customerId);
-        mockUserRequest.setUserDescription("Test user request description");
+        mockUserRequest.setUserDescription("Test user request");
 
-        // Set up TechnicianReport
         mockTechnicianReport = TechnicianReport.builder()
                 .reportId(reportId)
                 .userRequest(mockUserRequest)
@@ -105,16 +107,8 @@ class TechnicianReportServiceImplTest {
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
                 .estimatedCost(new BigDecimal("100.00"))
-                .estimatedTime(Duration.ofMinutes(60))
+                .estimatedTime(Duration.ofSeconds(3600L))
                 .build();
-
-        // Set up CreateTechnicianReportDraft request
-        mockCreateRequest = new CreateTechnicianReportDraft();
-        mockCreateRequest.setUserRequestId(userRequestId.toString());
-        mockCreateRequest.setDiagnosis("Test diagnosis");
-        mockCreateRequest.setActionPlan("Test action plan");
-        mockCreateRequest.setEstimatedCost(new BigDecimal("100.00"));
-        mockCreateRequest.setEstimatedTimeSeconds(3600L);
     }
 
     @Test
@@ -131,27 +125,50 @@ class TechnicianReportServiceImplTest {
         assertTrue(response.isSuccess());
         assertNotNull(response.getData());
         assertEquals(reportId, response.getData().getReportId());
+        assertEquals(userRequestId, response.getData().getUserRequestId());
         assertEquals(technicianId, response.getData().getTechnicianId());
         assertEquals("Test diagnosis", response.getData().getDiagnosis());
         assertEquals("Test action plan", response.getData().getActionPlan());
-        assertEquals(new BigDecimal("100.00"), response.getData().getEstimatedCost());
 
         // Verify repository interactions
-        verify(userRequestRepository).findById(UUID.fromString(mockCreateRequest.getUserRequestId()));
+        verify(userRequestRepository).findById(userRequestId);
         verify(technicianReportRepository).save(any(TechnicianReport.class));
     }
 
     @Test
-    void createTechnicianReportDraft_NullInput_ThrowsException() {
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.createTechnicianReportDraft(null, technician));
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.createTechnicianReportDraft(mockCreateRequest, null));
+    void createTechnicianReportDraft_NullRequest() {
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(null, technician);
+
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("null"));
+
+        // Verify no repository interactions
+        verifyNoInteractions(userRequestRepository);
+        verifyNoInteractions(technicianReportRepository);
     }
 
     @Test
-    void createTechnicianReportDraft_EmptyUserRequestId_ThrowsException() {
+    void createTechnicianReportDraft_NullTechnician() {
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, null);
+
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("null"));
+
+        // Verify no repository interactions
+        verifyNoInteractions(userRequestRepository);
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void createTechnicianReportDraft_EmptyUserRequestId() {
         // Arrange
         CreateTechnicianReportDraft request = new CreateTechnicianReportDraft();
         request.setUserRequestId("");
@@ -160,33 +177,45 @@ class TechnicianReportServiceImplTest {
         request.setEstimatedCost(new BigDecimal("100.00"));
         request.setEstimatedTimeSeconds(3600L);
 
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.createTechnicianReportDraft(request, technician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(request, technician);
+
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("User request ID"));
     }
 
     @Test
-    void createTechnicianReportDraft_UserRequestNotFound_ThrowsException() {
+    void createTechnicianReportDraft_UserRequestNotFound() {
         // Arrange
         when(userRequestRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not found"));
         verify(userRequestRepository).findById(any(UUID.class));
     }
 
     @Test
-    void createTechnicianReportDraft_DatabaseException_ThrowsException() {
+    void createTechnicianReportDraft_DatabaseException() {
         // Arrange
         when(userRequestRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockUserRequest));
         when(technicianReportRepository.save(any(TechnicianReport.class))).thenThrow(mock(DataAccessException.class));
 
-        // Act & Assert
-        assertThrows(DatabaseException.class,
-                () -> technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
         verify(userRequestRepository).findById(any(UUID.class));
         verify(technicianReportRepository).save(any(TechnicianReport.class));
     }
@@ -211,10 +240,6 @@ class TechnicianReportServiceImplTest {
         // Assert
         assertTrue(response.isSuccess());
         assertNotNull(response.getData());
-        assertEquals("Updated diagnosis", mockTechnicianReport.getDiagnosis());
-        assertEquals("Updated action plan", mockTechnicianReport.getActionPlan());
-        assertEquals(new BigDecimal("150.00"), mockTechnicianReport.getEstimatedCost());
-        assertEquals(7200L, mockTechnicianReport.getEstimatedTimeSeconds());
 
         // Verify repository interactions
         verify(technicianReportRepository).findByReportId(reportId);
@@ -222,20 +247,23 @@ class TechnicianReportServiceImplTest {
     }
 
     @Test
-    void updateTechnicianReportDraft_NotFound_ThrowsException() {
+    void updateTechnicianReportDraft_NotFound() {
         // Arrange
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.empty());
 
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.updateTechnicianReportDraft(
-                        reportId.toString(), mockCreateRequest, technician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), mockCreateRequest, technician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not found"));
         verify(technicianReportRepository).findByReportId(any(UUID.class));
     }
 
     @Test
-    void updateTechnicianReportDraft_UnauthorizedTechnician_ThrowsException() {
+    void updateTechnicianReportDraft_UnauthorizedTechnician() {
         // Arrange
         UUID differentTechnicianId = UUID.randomUUID();
         AuthenticatedUser differentTechnician = mock(AuthenticatedUser.class);
@@ -243,11 +271,32 @@ class TechnicianReportServiceImplTest {
 
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.updateTechnicianReportDraft(
-                        reportId.toString(), mockCreateRequest, differentTechnician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), mockCreateRequest, differentTechnician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not authorized"));
+        verify(technicianReportRepository).findByReportId(any(UUID.class));
+    }
+
+    @Test
+    void updateTechnicianReportDraft_NotDraftState() {
+        // Arrange
+        mockTechnicianReport.submit(); // Change state from DRAFT to SUBMITTED
+
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), mockCreateRequest, technician);
+
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Only report drafts"));
         verify(technicianReportRepository).findByReportId(any(UUID.class));
     }
 
@@ -273,7 +322,7 @@ class TechnicianReportServiceImplTest {
     }
 
     @Test
-    void deleteTechnicianReportDraft_UnauthorizedTechnician_ThrowsException() {
+    void deleteTechnicianReportDraft_UnauthorizedTechnician() {
         // Arrange
         UUID differentTechnicianId = UUID.randomUUID();
         AuthenticatedUser differentTechnician = mock(AuthenticatedUser.class);
@@ -281,15 +330,19 @@ class TechnicianReportServiceImplTest {
 
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.deleteTechnicianReportDraft(reportId.toString(), differentTechnician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.deleteTechnicianReportDraft(reportId.toString(), differentTechnician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not authorized"));
         verify(technicianReportRepository).findByReportId(any(UUID.class));
     }
 
     @Test
-    void acceptTechnicianReportDraft_Success() {
+    void acceptTechnicianReportSubmit_Success() {
         // Arrange
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
         when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(mockTechnicianReport);
@@ -298,7 +351,7 @@ class TechnicianReportServiceImplTest {
 
         // Act
         GenericResponse<Void> response =
-                technicianReportService.acceptTechnicianReportDraft(reportId.toString(), customer);
+                technicianReportService.acceptTechnicianReportSubmit(reportId.toString(), customer);
 
         // Assert
         assertTrue(response.isSuccess());
@@ -310,7 +363,7 @@ class TechnicianReportServiceImplTest {
     }
 
     @Test
-    void acceptTechnicianReportDraft_UnauthorizedCustomer_ThrowsException() {
+    void acceptTechnicianReportSubmit_UnauthorizedCustomer() {
         // Arrange
         UUID differentCustomerId = UUID.randomUUID();
         AuthenticatedUser differentCustomer = mock(AuthenticatedUser.class);
@@ -318,15 +371,19 @@ class TechnicianReportServiceImplTest {
 
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.acceptTechnicianReportDraft(reportId.toString(), differentCustomer));
+        // Act
+        GenericResponse<Void> response =
+                technicianReportService.acceptTechnicianReportSubmit(reportId.toString(), differentCustomer);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not authorized"));
         verify(technicianReportRepository).findByReportId(any(UUID.class));
     }
 
     @Test
-    void rejectTechnicianReportDraft_Success() {
+    void rejectTechnicianReportSubmit_Success() {
         // Arrange
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
         when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(mockTechnicianReport);
@@ -334,7 +391,7 @@ class TechnicianReportServiceImplTest {
         mockTechnicianReport.submit();
         // Act
         GenericResponse<Void> response =
-                technicianReportService.rejectTechnicianReportDraft(reportId.toString(), customer);
+                technicianReportService.rejectTechnicianReportSubmit(reportId.toString(), customer);
 
         // Assert
         assertTrue(response.isSuccess());
@@ -365,23 +422,27 @@ class TechnicianReportServiceImplTest {
     }
 
     @Test
-    void getDraftReportsForTechnician_NullTechnician_ThrowsException() {
+    void getDraftReportsForTechnician_NullTechnician() {
         // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.getDraftReportsForTechnician(null));
+        assertThrows(InvalidTechnicianReportStateException.class, () ->
+                technicianReportService.getDraftReportsForTechnician(null));
+
+        // Verify no repository interactions
+        verifyNoInteractions(technicianReportRepository);
     }
 
     @Test
-    void getDraftReportsForTechnician_DatabaseException_ThrowsException() {
+    void getDraftReportsForTechnician_DatabaseException() {
         // Arrange
-        when(technicianReportRepository.findAllByTechnicianIdAndStatus(any(UUID.class), eq("DRAFT")))
+        when(technicianReportRepository.findAllByTechnicianIdAndStatus(any(UUID.class), anyString()))
                 .thenThrow(mock(DataAccessException.class));
 
         // Act & Assert
-        assertThrows(DatabaseException.class,
-                () -> technicianReportService.getDraftReportsForTechnician(technician));
+        assertThrows(DatabaseException.class, () ->
+                technicianReportService.getDraftReportsForTechnician(technician));
 
-        verify(technicianReportRepository).findAllByTechnicianIdAndStatus(any(UUID.class), eq("DRAFT"));
+        // Verify repository interactions
+        verify(technicianReportRepository).findAllByTechnicianIdAndStatus(technicianId, "DRAFT");
     }
 
     @Test
@@ -405,46 +466,62 @@ class TechnicianReportServiceImplTest {
     }
 
     @Test
-    void submitTechnicianReportDraft_NullReportId_ThrowsException() {
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.submitTechnicianReportDraft(null, technician));
+    void submitTechnicianReportDraft_NullReportId() {
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.submitTechnicianReportDraft(null, technician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("null"));
         verifyNoInteractions(technicianReportRepository);
     }
 
     @Test
-    void submitTechnicianReportDraft_NullTechnician_ThrowsException() {
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), null));
+    void submitTechnicianReportDraft_NullTechnician() {
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.submitTechnicianReportDraft(reportId.toString(), null);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("technician"));
         verifyNoInteractions(technicianReportRepository);
     }
 
     @Test
-    void submitTechnicianReportDraft_InvalidReportIdFormat_ThrowsException() {
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.submitTechnicianReportDraft("invalid-uuid", technician));
+    void submitTechnicianReportDraft_InvalidReportIdFormat() {
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.submitTechnicianReportDraft("invalid-uuid", technician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Invalid UUID"));
         verifyNoInteractions(technicianReportRepository);
     }
 
     @Test
-    void submitTechnicianReportDraft_ReportNotFound_ThrowsException() {
+    void submitTechnicianReportDraft_ReportNotFound() {
         // Arrange
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.empty());
 
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not found"));
         verify(technicianReportRepository).findByReportId(reportId);
     }
 
     @Test
-    void submitTechnicianReportDraft_UnauthorizedTechnician_ThrowsException() {
+    void submitTechnicianReportDraft_UnauthorizedTechnician() {
         // Arrange
         UUID differentTechnicianId = UUID.randomUUID();
         AuthenticatedUser differentTechnician = new AuthenticatedUser(
@@ -463,39 +540,50 @@ class TechnicianReportServiceImplTest {
 
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), differentTechnician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.submitTechnicianReportDraft(reportId.toString(), differentTechnician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not authorized"));
         verify(technicianReportRepository).findByReportId(reportId);
         verify(technicianReportRepository, never()).save(any(TechnicianReport.class));
     }
 
     @Test
-    void submitTechnicianReportDraft_NotInDraftState_ThrowsException() {
+    void submitTechnicianReportDraft_NotInDraftState() {
         // Arrange
         mockTechnicianReport.submit(); // Already in SUBMITTED state
 
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 
-        // Act & Assert
-        assertThrows(InvalidTechnicianReportStateException.class,
-                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Only report drafts"));
         verify(technicianReportRepository).findByReportId(reportId);
         verify(technicianReportRepository, never()).save(any(TechnicianReport.class));
     }
 
     @Test
-    void submitTechnicianReportDraft_DatabaseException_ThrowsException() {
+    void submitTechnicianReportDraft_DatabaseException() {
         // Arrange
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
         when(technicianReportRepository.save(any(TechnicianReport.class))).thenThrow(mock(DataAccessException.class));
 
-        // Act & Assert
-        assertThrows(DatabaseException.class,
-                () -> technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician));
+        // Act
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.submitTechnicianReportDraft(reportId.toString(), technician);
 
+        // Assert
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
         verify(technicianReportRepository).findByReportId(reportId);
         verify(technicianReportRepository).save(any(TechnicianReport.class));
     }

@@ -62,7 +62,7 @@ public class TechnicianReportController {
             @CurrentUser AuthenticatedUser user
     ) {
         GenericResponse<Void> response = technicianReportService
-                .acceptTechnicianReportDraft(reportId, user);
+                .acceptTechnicianReportSubmit(reportId, user);
         return ResponseEntity.ok(response);
     }
 
@@ -73,7 +73,7 @@ public class TechnicianReportController {
             @CurrentUser AuthenticatedUser user
     ) {
         GenericResponse<Void> response = technicianReportService
-                .rejectTechnicianReportDraft(reportId, user);
+                .rejectTechnicianReportSubmit(reportId, user);
         return ResponseEntity.ok(response);
     }
 

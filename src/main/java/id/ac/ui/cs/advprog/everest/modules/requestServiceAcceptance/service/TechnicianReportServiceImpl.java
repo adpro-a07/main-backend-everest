@@ -38,12 +38,12 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             AuthenticatedUser technician) {
 
         if (createTechnicianReportDraft == null || technician == null) {
-            throw new InvalidTechnicianReportStateException("Report data or technician cannot be null");
+            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
         }
 
         String userRequestId = createTechnicianReportDraft.getUserRequestId();
         if (userRequestId == null || userRequestId.isEmpty()) {
-            throw new InvalidTechnicianReportStateException("User request ID cannot be null or empty");
+            return new GenericResponse<>(false, "User request ID cannot be null or empty", null);
         }
 
         try {
@@ -82,7 +82,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             AuthenticatedUser technician) {
 
         if (technicianReportDraftId == null || createTechnicianReportDraft == null || technician == null) {
-            throw new InvalidTechnicianReportStateException("Report ID, data, or technician cannot be null");
+            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
         }
 
         try {
@@ -124,7 +124,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             AuthenticatedUser technician) {
 
         if (technicianReportDraftId == null || technician == null) {
-            throw new InvalidTechnicianReportStateException("Report ID or technician cannot be null");
+            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
         }
 
         try {
@@ -155,12 +155,12 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
     }
 
     @Override
-    public GenericResponse<Void> acceptTechnicianReportDraft(
+    public GenericResponse<Void> acceptTechnicianReportSubmit(
             String technicianReportDraftId,
             AuthenticatedUser customer) {
 
         if (technicianReportDraftId == null || customer == null) {
-            throw new InvalidTechnicianReportStateException("Report ID or customer cannot be null");
+            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
         }
 
         try {
@@ -193,12 +193,12 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
     }
 
     @Override
-    public GenericResponse<Void> rejectTechnicianReportDraft(
+    public GenericResponse<Void> rejectTechnicianReportSubmit(
             String technicianReportDraftId,
             AuthenticatedUser customer) {
 
         if (technicianReportDraftId == null || customer == null) {
-            throw new InvalidTechnicianReportStateException("Report ID or customer cannot be null");
+            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
         }
 
         try {
@@ -236,7 +236,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             AuthenticatedUser technician) {
 
         if (technicianReportDraftId == null || technician == null) {
-            throw new InvalidTechnicianReportStateException("Report ID or technician cannot be null");
+            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
         }
 
         try {

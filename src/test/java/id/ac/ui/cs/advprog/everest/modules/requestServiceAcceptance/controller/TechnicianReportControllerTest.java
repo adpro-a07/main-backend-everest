@@ -10,9 +10,6 @@ import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.service.Tech
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -181,7 +178,7 @@ public class TechnicianReportControllerTest {
                 null
         );
 
-        when(technicianReportService.acceptTechnicianReportDraft(anyString(), any()))
+        when(technicianReportService.acceptTechnicianReportSubmit(anyString(), any()))
                 .thenReturn(response);
 
         // Act
@@ -190,7 +187,7 @@ public class TechnicianReportControllerTest {
         // Assert
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertNotNull(result.getBody());
-        verify(technicianReportService).acceptTechnicianReportDraft(eq(reportId), eq(user));
+        verify(technicianReportService).acceptTechnicianReportSubmit(eq(reportId), eq(user));
     }
 
     @Test
@@ -202,7 +199,7 @@ public class TechnicianReportControllerTest {
                 null
         );
 
-        when(technicianReportService.rejectTechnicianReportDraft(anyString(), any()))
+        when(technicianReportService.rejectTechnicianReportSubmit(anyString(), any()))
                 .thenReturn(response);
 
         // Act
@@ -211,13 +208,13 @@ public class TechnicianReportControllerTest {
         // Assert
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertNotNull(result.getBody());
-        verify(technicianReportService).rejectTechnicianReportDraft(eq(reportId), eq(user));
+        verify(technicianReportService).rejectTechnicianReportSubmit(eq(reportId), eq(user));
     }
 
     @Test
     void testAcceptTechnicianReport_ServiceThrowsException() {
         // Arrange
-        when(technicianReportService.acceptTechnicianReportDraft(anyString(), any()))
+        when(technicianReportService.acceptTechnicianReportSubmit(anyString(), any()))
                 .thenThrow(new DatabaseException("Database error", new RuntimeException()));
 
         // Act & Assert
@@ -227,13 +224,13 @@ public class TechnicianReportControllerTest {
             assertEquals("Database error", e.getMessage());
         }
 
-        verify(technicianReportService).acceptTechnicianReportDraft(eq(reportId), eq(user));
+        verify(technicianReportService).acceptTechnicianReportSubmit(eq(reportId), eq(user));
     }
 
     @Test
     void testRejectTechnicianReport_ServiceThrowsException() {
         // Arrange
-        when(technicianReportService.rejectTechnicianReportDraft(anyString(), any()))
+        when(technicianReportService.rejectTechnicianReportSubmit(anyString(), any()))
                 .thenThrow(new InvalidTechnicianReportStateException("Cannot reject report"));
 
         // Act & Assert
@@ -243,6 +240,6 @@ public class TechnicianReportControllerTest {
             assertEquals("Cannot reject report", e.getMessage());
         }
 
-        verify(technicianReportService).rejectTechnicianReportDraft(eq(reportId), eq(user));
+        verify(technicianReportService).rejectTechnicianReportSubmit(eq(reportId), eq(user));
     }
 }

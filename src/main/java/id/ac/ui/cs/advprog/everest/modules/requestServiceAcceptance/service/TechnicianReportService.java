@@ -4,7 +4,6 @@ import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.CreateTechnicianReportDraft;
 import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.dto.TechnicianReportDraftResponse;
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model.TechnicianReport;
 
 public interface TechnicianReportService {
     // Technician
@@ -30,12 +29,12 @@ public interface TechnicianReportService {
     );
 
     // User
-    GenericResponse<Void> acceptTechnicianReportDraft(
+    GenericResponse<Void> acceptTechnicianReportSubmit(
             String technicianReportDraftId,
             AuthenticatedUser customer
     );
 
-    GenericResponse<Void> rejectTechnicianReportDraft(
+    GenericResponse<Void> rejectTechnicianReportSubmit(
             String technicianReportDraftId,
             AuthenticatedUser customer
     );
