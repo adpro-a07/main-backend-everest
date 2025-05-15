@@ -151,7 +151,6 @@ public class UserRequestServiceImpl implements UserRequestService {
 
     private ViewUserRequestResponse buildUserRequestResponse(UserRequest userRequest) {
         return ViewUserRequestResponse.builder()
-                .requestId(userRequest.getRequestId())
                 .userId(userRequest.getUserId())
                 .userDescription(userRequest.getUserDescription())
                 .createdAt(LocalDateTime.now()) // Note: You should add these fields to the entity

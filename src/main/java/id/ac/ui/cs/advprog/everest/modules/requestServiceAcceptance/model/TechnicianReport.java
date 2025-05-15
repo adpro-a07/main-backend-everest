@@ -41,8 +41,8 @@ public class TechnicianReport {
     @Column(name = "status")
     private String status = "DRAFT";
 
-    @Column(name = "customer_feedback", length = 500)
-    private String customerFeedback;
+//    @Column(name = "customer_feedback", length = 500)
+//    private String customerFeedback;
 
     @Column(name = "last_updated_at")
     private LocalDateTime lastUpdatedAt;
@@ -71,9 +71,9 @@ public class TechnicianReport {
     }
 
     // Setter for customer feedback
-    void setCustomerFeedback(String feedback) {
-        this.customerFeedback = feedback;
-    }
+//    void setCustomerFeedback(String feedback) {
+//        this.customerFeedback = feedback;
+//    }
 
     // State transition methods
     public void submit() {
