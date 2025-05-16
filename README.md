@@ -47,6 +47,8 @@ PerbaikiinAja is a repair service management system with a backend codenamed "Ev
   ![image](https://github.com/user-attachments/assets/f4cb258b-e046-40a8-8acd-68eb6fad8ec9)
 
 - Code Diagram
+  ![image](https://github.com/user-attachments/assets/8aad545f-9eb6-47d1-b661-916b540abd5a)
+
 
 #### Accept and Confirm Repair Orders
 *Developed by: Danniel*
