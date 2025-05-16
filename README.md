@@ -14,6 +14,7 @@
     - [Manage Reviews and Ratings](#manage-reviews-and-ratings)
     - [View Reports and Manage Coupons](#view-reports-and-manage-coupons)
     - [Manage Payment Methods](#manage-payment-methods)
+- [Future Architecture](#future-architecture)
 
 ## About the Project
 PerbaikiinAja is a repair service management system with a backend codenamed "Everest". This platform facilitates repair orders, service provider management, customer reviews, and payment processing.
@@ -71,3 +72,22 @@ PerbaikiinAja is a repair service management system with a backend codenamed "Ev
 *Developed by: Arditheus Immanuel Hanfree*
 - Component Diagram
 - Code Diagram
+
+## Future Architecture
+
+### Future Architecture
+
+Untuk mempersiapkan sistem yang lebih modular dan maintainable, arsitektur aplikasi PerbaikiinAja dirancang ulang dengan pendekatan container-based. Perubahan utama yang dilakukan antara lain:
+
+- **API Gateway:** Ditambahkan sebagai pintu masuk utama untuk semua request dari client, memudahkan routing dan security management
+- **Containerization:** Frontend, Auth Service, dan Main Resource Service dijalankan dalam Docker container terpisah yang dikelola oleh Docker Compose
+- **RabbitMQ:** Dipersiapkan untuk menangani komunikasi asynchronous untuk fitur notifikasi di masa depan
+- **Persistent Storage:** Volume terpisah untuk data persistensi setiap service
+
+### Keuntungan dari Arsitektur Ini:
+
+- **Modularitas Sederhana:** Pemisahan layanan dalam container memudahkan pengelolaan tanpa berlebihan kompleks
+- **Kemudahan Deployment:** Docker Compose memungkinkan deployment yang konsisten dan mudah direplikasi
+- **Fleksibilitas Scaling:** Setiap container dapat di-scale secara independen sesuai kebutuhan
+- **Persiapan untuk Fitur Baru:** RabbitMQ siap digunakan ketika fitur notifikasi diimplementasikan
+- **Isolasi yang Jelas:** Setiap layanan memiliki batas dan tanggung jawab yang jelas
