@@ -82,7 +82,11 @@ PerbaikiinAja is a repair service management system with a backend codenamed "Ev
 
 ## Future Architecture
 
-### Future Architecture
+#### Future Context Diagram
+![Context Diagram](src/main/resources/diagram/assets/future_context_diagram.jpg)
+
+#### Future Deployment Diagram
+![image](src/main/resources/diagram/assets/future_deployment_diagram.jpg)
 
 Untuk mempersiapkan sistem yang lebih modular dan maintainable, arsitektur aplikasi PerbaikiinAja dirancang ulang dengan pendekatan container-based. Perubahan utama yang dilakukan antara lain:
 
