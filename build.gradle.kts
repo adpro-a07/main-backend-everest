@@ -19,11 +19,11 @@ java {
 }
 
 sonar {
-  properties {
-    property("sonar.projectKey", "adpro-a07_everest")
-    property("sonar.organization", "adpro-a07")
-    property("sonar.host.url", "https://sonarcloud.io")
-  }
+    properties {
+        property("sonar.projectKey", "adpro-a07_everest")
+        property("sonar.organization", "adpro-a07")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
 
 configurations {
