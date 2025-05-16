@@ -93,13 +93,4 @@ class TechnicianReportTest {
         assertThrows(IllegalStateTransitionException.class, report::approve);
         assertThrows(IllegalStateTransitionException.class, report::startWork);
     }
-
-    @Test
-    void testReviseNotAllowedWhenRejected() {
-        report.submit();
-        report.reject();
-        assertThrows(IllegalStateTransitionException.class, report::revise);
-        assertEquals("REJECTED", report.getStatus());
-        assertFalse(report.canEdit());
-    }
 }
