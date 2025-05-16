@@ -229,6 +229,10 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
 
         try {
+            if ("DRAFT".equals(status)) {
+                throw new InvalidTechnicianReportStateException("Only report above Draft can be seen by Customer");
+            }
+
             List<TechnicianReport> reports = technicianReportRepository.findAllByStatus(status);
             if (reports.isEmpty()) {
                 return new GenericResponse<>(false, "No technician report submissions found", null);
