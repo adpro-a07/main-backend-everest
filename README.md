@@ -34,10 +34,10 @@ PerbaikiinAja is a repair service management system with a backend codenamed "Ev
 ![Context Diagram](https://github.com/user-attachments/assets/94235161-6a3a-4ee9-9308-36c018654e5d)
 
 #### Container Diagram
-![image](https://github.com/user-attachments/assets/cc702093-30be-41dd-b3ec-0eaa3d440f1f)
+![image](https://github.com/user-attachments/assets/0d706f9e-faab-4c3d-b4d0-e52867db3fd4)
 
 #### Deployment Diagram
-*Deployment diagram will be displayed here*
+![image](https://github.com/user-attachments/assets/875fac09-9715-4f3a-8a45-032fbc3fc031)
 
 ### Feature-Specific Diagrams
 
