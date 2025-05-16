@@ -287,4 +287,4 @@ class UserRequestControllerTest {
         assertEquals("You are not authorized to delete this request", ex.getMessage());
         verify(userRequestService).deleteUserRequest(requestId, differentCustomer);
     }
-}ƒ
+}
