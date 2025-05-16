@@ -59,6 +59,7 @@ PerbaikiinAja is a repair service management system with a backend codenamed "Ev
 *Developed by: Khansa Khairunisa*
 - Component Diagram
 - Code Diagram
+  ![Rating Code Diagram](src/main/resources/diagram/assets/rating_code_diagram.png)
 
 #### View Reports and Manage Coupons
 *Developed by: Muhammad Farid Hasabi*
