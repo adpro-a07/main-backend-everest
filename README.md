@@ -66,8 +66,14 @@ PerbaikiinAja is a repair service management system with a backend codenamed "Ev
 
 #### View Reports and Manage Coupons
 *Developed by: Muhammad Farid Hasabi*
-- Component Diagram
+- Component Diagram 
+  ![Image](src/main/resources/diagram/assets/coupon_report_component_diagram.jpg)
+
 - Code Diagram
+  - Coupon
+    ![Coupon Diagram](src/main/resources/diagram/assets/coupon_code_diagram.png)
+  - Report  
+    ![Report Diagram](src/main/resources/diagram/assets/report_code_diagram.png)
 
 #### Manage Payment Methods
 *Developed by: Arditheus Immanuel Hanfree*
