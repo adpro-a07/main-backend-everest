@@ -81,9 +81,7 @@ PerbaikiinAja is a repair service management system with a backend codenamed "Ev
 #### Manage Payment Methods
 *Developed by: Arditheus Immanuel Hanfree*
 - Component Diagram
-  ![PaymentMethod_Component_Diagram.png](src/main/resources/diagram/assets/payment_method_component_diagram.png)
 - Code Diagram
-  ![PaymentMethod_Code_Diagram.png](src/main/resources/diagram/assets/paymentmethod_code_diagram.png)
 
 ## Future Architecture
 
