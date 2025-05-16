@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianReport.repository;
 
-import id.ac.ui.cs.advprog.everest.modules.requestServiceAcceptance.model.UserRequest;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
