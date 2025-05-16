@@ -83,7 +83,10 @@ PerbaikiinAja is a repair service management system with a backend codenamed "Ev
 ## Future Architecture
 
 #### Future Context Diagram
-![Context Diagram](src/main/resources/diagram/assets/future_context_diagram.jpg)
+![Future Context Diagram](src/main/resources/diagram/assets/future_context_diagram.jpg)
+
+#### Future Container Diagram
+![Future Container Diagram](src/main/resources/diagram/assets/future_container_diagram.jpg)
 
 #### Future Deployment Diagram
 ![image](src/main/resources/diagram/assets/future_deployment_diagram.jpg)
