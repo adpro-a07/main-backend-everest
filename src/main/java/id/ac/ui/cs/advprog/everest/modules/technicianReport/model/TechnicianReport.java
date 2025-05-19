@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianReport.model;
 
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.state.*;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +21,8 @@ public class TechnicianReport {
     private UUID reportId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id", nullable = false)
-    private UserRequest userRequest;
+    @JoinColumn(name = "repair_orders", nullable = false)
+    private RepairOrder repairOrder;
 
     @Column(name = "technician_id", nullable = false)
     private UUID technicianId;
@@ -48,11 +49,11 @@ public class TechnicianReport {
     @Transient
     private ReportState state = new DraftState();
 
-    public TechnicianReport(UUID reportId, UserRequest userRequest, UUID technicianId,
+    public TechnicianReport(UUID reportId, RepairOrder repairOrder, UUID technicianId,
                             String diagnosis, String actionPlan,
                             BigDecimal estimatedCost, Duration estimatedTime) {
         this.reportId = reportId;
-        this.userRequest = userRequest;
+        this.repairOrder = repairOrder;
         this.technicianId = technicianId;
         this.diagnosis = diagnosis;
         this.actionPlan = actionPlan;
@@ -125,7 +126,7 @@ public class TechnicianReport {
 
     public static class Builder {
         private UUID reportId;
-        private UserRequest userRequest;
+        private RepairOrder repairOrder;
         private UUID technicianId;
         private String diagnosis;
         private String actionPlan;
@@ -137,14 +138,10 @@ public class TechnicianReport {
             return this;
         }
 
-        public Builder userRequest(UserRequest userRequest) {
-            this.userRequest = userRequest;
+        public Builder repairOrder(RepairOrder repairOrder) {
+            this.repairOrder = repairOrder;
             return this;
         }
-
-//        public Builder UserRequest(UserRequest userRequest) {
-//            return userRequest(userRequest);
-//        }
 
         public Builder technicianId(UUID technicianId) {
             this.technicianId = technicianId;
@@ -172,7 +169,7 @@ public class TechnicianReport {
         }
 
         public TechnicianReport build() {
-            return new TechnicianReport(reportId, userRequest, technicianId,
+            return new TechnicianReport(reportId, repairOrder, technicianId,
                     diagnosis, actionPlan, estimatedCost, estimatedTime);
         }
     }

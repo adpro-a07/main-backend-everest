@@ -1,7 +1,10 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianReport.repository;
 
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.*;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -9,8 +12,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
-import java.sql.SQLOutput;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,19 +33,65 @@ class TechnicianReportRepositoryTest {
     @Autowired
     private TechnicianReportRepository technicianReportRepository;
 
+    private UUID technicianId;
+    private UUID otherTechnicianId;
+    private RepairOrder repairOrder1;
+    private RepairOrder repairOrder2;
+    private RepairOrder repairOrder3;
+
+    private TechnicianReport report1;
+    private TechnicianReport report2;
+    private TechnicianReport report3;
+
+    @BeforeEach
+    void setUp() {
+        this.technicianId = UUID.randomUUID();
+        this.otherTechnicianId = UUID.randomUUID();
+
+        this.repairOrder1 = RepairOrder.builder()
+                .customerId(UUID.randomUUID())
+                .technicianId(technicianId)
+                .itemName("Refrigerator")
+                .itemCondition("Broken")
+                .issueDescription("Not cooling")
+                .desiredServiceDate(LocalDate.now())
+                .status(RepairOrderStatus.PENDING_CONFIRMATION)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        this.repairOrder2 = RepairOrder.builder()
+                .customerId(UUID.randomUUID())
+                .technicianId(otherTechnicianId)
+                .itemName("AC")
+                .itemCondition("Broken")
+                .issueDescription("Not cooling")
+                .desiredServiceDate(LocalDate.now())
+                .status(RepairOrderStatus.PENDING_CONFIRMATION)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        this.repairOrder3 = RepairOrder.builder()
+                .customerId(UUID.randomUUID())
+                .technicianId(technicianId)
+                .itemName("Washing Machine")
+                .itemCondition("Broken")
+                .issueDescription("Not spinning")
+                .desiredServiceDate(LocalDate.now())
+                .status(RepairOrderStatus.PENDING_CONFIRMATION)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        this.report1 = createReport(technicianId, repairOrder1, "DRAFT");
+        this.report2 = createReport(otherTechnicianId, repairOrder2, "DRAFT");
+        this.report3 = createReport(technicianId, repairOrder3, "DRAFT");
+    }
+
     @Test
     void findAllByTechnicianId_shouldReturnReportsByTechnician() {
-        UUID technicianId = UUID.randomUUID();
-        UUID otherTechnicianId = UUID.randomUUID();
-
-        UserRequest userRequest1 = new UserRequest(UUID.randomUUID(), "Fix refrigerator");
-        UserRequest userRequest2 = new UserRequest(UUID.randomUUID(), "Fix AC");
-        entityManager.persist(userRequest1);
-        entityManager.persist(userRequest2);
-
-        TechnicianReport report1 = createReport(technicianId, userRequest1, "DRAFT");
-        TechnicianReport report2 = createReport(technicianId, userRequest2, "SUBMITTED");
-        TechnicianReport report3 = createReport(otherTechnicianId, userRequest1, "DRAFT");
+        entityManager.persist(repairOrder1);
+        entityManager.persist(repairOrder2);
+        entityManager.persist(repairOrder3);
 
         entityManager.persist(report1);
         entityManager.persist(report2);
@@ -52,18 +102,17 @@ class TechnicianReportRepositoryTest {
 
         assertEquals(2, reports.size());
         assertTrue(reports.contains(report1));
-        assertTrue(reports.contains(report2));
-        assertFalse(reports.contains(report3));
+        assertFalse(reports.contains(report2));
+        assertTrue(reports.contains(report3));
     }
 
     @Test
     void findByReportId_shouldReturnCorrectReport() {
-        UUID reportId = UUID.randomUUID();
-        UserRequest userRequest = new UserRequest(UUID.randomUUID(), "Fix refrigerator");
-        entityManager.persist(userRequest);
+        entityManager.persist(repairOrder1);
+        TechnicianReport report = report1;
+        UUID reportId = report.getReportId();
 
-        TechnicianReport report = createReport(UUID.randomUUID(), userRequest, "DRAFT");
-        report.setReportId(reportId);
+        report1.setReportId(reportId);
         entityManager.persist(report);
         entityManager.flush();
 
@@ -77,12 +126,11 @@ class TechnicianReportRepositoryTest {
 
     @Test
     void findAllByStatus_shouldReturnReportsWithMatchingStatus() {
-        UserRequest userRequest = new UserRequest(UUID.randomUUID(), "Fix refrigerator");
-        entityManager.persist(userRequest);
+        entityManager.persist(repairOrder1);
 
-        TechnicianReport draftReport = createReport(UUID.randomUUID(), userRequest, "DRAFT");
-        TechnicianReport submittedReport1 = createReport(UUID.randomUUID(), userRequest, "SUBMITTED");
-        TechnicianReport submittedReport2 = createReport(UUID.randomUUID(), userRequest, "SUBMITTED");
+        TechnicianReport draftReport = createReport(technicianId, repairOrder1, "DRAFT");
+        TechnicianReport submittedReport1 = createReport(technicianId, repairOrder1, "SUBMITTED");
+        TechnicianReport submittedReport2 = createReport(technicianId, repairOrder1, "SUBMITTED");
 
         entityManager.persist(draftReport);
         entityManager.persist(submittedReport1);
@@ -99,51 +147,15 @@ class TechnicianReportRepositoryTest {
     }
 
     @Test
-    void findAllByUserRequestRequestId_shouldReturnReportsForRequest() {
-        UUID userId = UUID.randomUUID();
-        UUID requestId1 = UUID.randomUUID();
-        UUID requestId2 = UUID.randomUUID();
-
-        UserRequest userRequest1 = new UserRequest(userId, "Fix refrigerator");
-        UserRequest userRequest2 = new UserRequest(userId, "Fix AC");
-        userRequest1.setRequestId(requestId1);
-        userRequest2.setRequestId(requestId2);
-        entityManager.persist(userRequest1);
-        entityManager.persist(userRequest2);
-
-        TechnicianReport report1 = createReport(UUID.randomUUID(), userRequest1, "DRAFT");
-        TechnicianReport report2 = createReport(UUID.randomUUID(), userRequest1, "SUBMITTED");
-        TechnicianReport report3 = createReport(UUID.randomUUID(), userRequest2, "DRAFT");
-
-        entityManager.persist(report1);
-        entityManager.persist(report2);
-        entityManager.persist(report3);
-        entityManager.flush();
-
-        // Debug to check if relationship is set correctly
-        System.out.println("Report1 UserRequest: " +
-                (report1.getUserRequest() != null ? report1.getUserRequest().getRequestId() : "null"));
-        System.out.println("Report2 UserRequest: " +
-                (report2.getUserRequest() != null ? report2.getUserRequest().getRequestId() : "null"));
-        System.out.println("RequestId1: " + requestId1);
-
-        List<TechnicianReport> reportsForRequest1 = technicianReportRepository.findAllByUserRequestRequestId(requestId1);
-
-        assertEquals(2, reportsForRequest1.size());
-    }
-
-    @Test
     void findAllByTechnicianIdAndStatus_shouldReturnFilteredReports() {
-        // Arrange
         UUID technicianId = UUID.randomUUID();
 
-        UserRequest userRequest = new UserRequest(UUID.randomUUID(), "Fix refrigerator");
-        entityManager.persist(userRequest);
+        entityManager.persist(repairOrder1);
 
-        TechnicianReport report1 = createReport(technicianId, userRequest, "DRAFT");
-        TechnicianReport report2 = createReport(technicianId, userRequest, "SUBMITTED");
-        TechnicianReport report3 = createReport(technicianId, userRequest, "DRAFT");
-        TechnicianReport report4 = createReport(UUID.randomUUID(), userRequest, "DRAFT");
+        TechnicianReport report1 = createReport(technicianId, repairOrder1, "DRAFT");
+        TechnicianReport report2 = createReport(technicianId, repairOrder1, "SUBMITTED");
+        TechnicianReport report3 = createReport(technicianId, repairOrder1, "DRAFT");
+        TechnicianReport report4 = createReport(UUID.randomUUID(), repairOrder1, "DRAFT");
 
         entityManager.persist(report1);
         entityManager.persist(report2);
@@ -160,11 +172,11 @@ class TechnicianReportRepositoryTest {
         ));
     }
 
-    private TechnicianReport createReport(UUID technicianId, UserRequest userRequest, String status) {
+    private TechnicianReport createReport(UUID technicianId, RepairOrder repairOrder, String status) {
         TechnicianReport report = TechnicianReport.builder()
                 .reportId(UUID.randomUUID())
                 .technicianId(technicianId)
-                .userRequest(userRequest)
+                .repairOrder(repairOrder)
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
                 .estimatedCost(new BigDecimal("100.00"))
