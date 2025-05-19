@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianReport.model;
 
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.state.*;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.IllegalStateTransitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +11,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TechnicianReportTest {
-
     private TechnicianReport report;
     private UUID reportId;
     private UUID technicianId;
@@ -92,5 +90,81 @@ class TechnicianReportTest {
     void testInvalidTransitionThrowsException() {
         assertThrows(IllegalStateTransitionException.class, report::approve);
         assertThrows(IllegalStateTransitionException.class, report::startWork);
+    }
+
+    @Test
+    void testOnCreateGeneratesReportId() {
+        TechnicianReport report = new TechnicianReport();
+        report.setReportId(null);
+
+        report.onCreate();
+
+        assertNotNull(report.getReportId());
+    }
+
+    @Test
+    void testInitializeStateWithNullStatus() {
+        TechnicianReport report = new TechnicianReport();
+        report.setStatus(null);
+
+        report.initializeState(); // Make this method package-private instead of private
+
+        assertTrue(report.getState() instanceof DraftState);
+    }
+
+    @Test
+    void testInitializeStateWithAllStatuses() {
+        TechnicianReport report = new TechnicianReport();
+
+        report.setStatus("DRAFT");
+        report.initializeState();
+        assertTrue(report.getState() instanceof DraftState);
+
+        report.setStatus("SUBMITTED");
+        report.initializeState();
+        assertTrue(report.getState() instanceof SubmittedState);
+
+        report.setStatus("APPROVED");
+        report.initializeState();
+        assertTrue(report.getState() instanceof ApprovedState);
+
+        report.setStatus("REJECTED");
+        report.initializeState();
+        assertTrue(report.getState() instanceof RejectedState);
+
+        report.setStatus("IN_PROGRESS");
+        report.initializeState();
+        assertTrue(report.getState() instanceof InProgressState);
+
+        report.setStatus("COMPLETED");
+        report.initializeState();
+        assertTrue(report.getState() instanceof CompletedState);
+    }
+
+    @Test
+    void testInitializeStateWithInvalidStatus() {
+        TechnicianReport report = new TechnicianReport();
+        report.setStatus("INVALID_STATUS");
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> report.initializeState());
+        assertTrue(exception.getMessage().contains("Unknown status: INVALID_STATUS"));
+    }
+
+    @Test
+    void testOnCreateInitializesLastUpdatedAt() {
+        TechnicianReport report = new TechnicianReport();
+        report.setLastUpdatedAt(null);
+
+        report.onCreate();
+
+        assertNotNull(report.getLastUpdatedAt());
+    }
+
+    @Test
+    void testGetEstimatedTimeWithNull() {
+        TechnicianReport report = new TechnicianReport();
+        report.setEstimatedTimeSeconds(null);
+
+        assertNull(report.getEstimatedTime());
     }
 }

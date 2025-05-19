@@ -4,8 +4,6 @@ import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateAndUpdateUserRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.ViewUserRequestResponse;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.DatabaseException;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.InvalidUserRequestStateException;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.UserRequestRepository;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;

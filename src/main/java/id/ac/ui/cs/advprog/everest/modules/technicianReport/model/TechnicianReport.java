@@ -98,7 +98,7 @@ public class TechnicianReport {
     }
 
     @PostLoad
-    private void initializeState() {
+    void initializeState() {
         if (status == null) {
             this.state = new DraftState();
             return;
@@ -142,9 +142,9 @@ public class TechnicianReport {
             return this;
         }
 
-        public Builder UserRequest(UserRequest userRequest) {
-            return userRequest(userRequest);
-        }
+//        public Builder UserRequest(UserRequest userRequest) {
+//            return userRequest(userRequest);
+//        }
 
         public Builder technicianId(UUID technicianId) {
             this.technicianId = technicianId;
