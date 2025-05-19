@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateAndUpdateUserRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.ViewUserRequestResponse;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.InvalidUserRequestStateException;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.service.UserRequestService;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;

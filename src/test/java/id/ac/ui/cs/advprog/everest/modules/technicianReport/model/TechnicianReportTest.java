@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianReport.model;
 
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.IllegalStateTransitionException;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.state.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

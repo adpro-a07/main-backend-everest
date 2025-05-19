@@ -4,6 +4,8 @@ import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.DatabaseException;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.InvalidTechnicianReportStateException;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.TechnicianReportRepository;
@@ -618,4 +620,88 @@ class TechnicianReportServiceImplTest {
 
         verify(technicianReportRepository).findAllByStatus(status);
     }
+
+    @Test
+    void startWorkTechnicianReportAccepted() {
+        mockTechnicianReport.submit(); // Change state from DRAFT to SUBMITTED
+        mockTechnicianReport.approve(); // Change state from SUBMITTED to ACCEPTED
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+        when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(mockTechnicianReport);
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.startWork(reportId.toString(), technician);
+
+        assertTrue(response.isSuccess());
+        assertEquals("IN_PROGRESS", mockTechnicianReport.getStatus());
+
+        verify(technicianReportRepository).findByReportId(reportId);
+        verify(technicianReportRepository).save(mockTechnicianReport);
+    }
+
+    @Test
+    void startWorkTechnicianReportWithoutApproval() {
+        mockTechnicianReport.submit(); // Change state from DRAFT to SUBMITTED
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.startWork(reportId.toString(), technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Only report Approved one can be started"));
+
+        verify(technicianReportRepository).findByReportId(reportId);
+        verify(technicianReportRepository, never()).save(any(TechnicianReport.class));
+    }
+
+    @Test
+    void startWorkTechnicianReportWithReportIdNull() {
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.startWork(null, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Report data or technician cannot be null"));
+
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void startWorkTechnicianReportWithTechnicianNull() {
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.startWork(reportId.toString(), null);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Report data or technician cannot be null"));
+
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void startWorkTechnicianReportButTechnicianNotAuthorized() {
+        UUID differentTechnicianId = UUID.randomUUID();
+        AuthenticatedUser differentTechnician = new AuthenticatedUser(
+                differentTechnicianId,
+                "danniel@gmail.com",
+                "Danniel",
+                UserRole.TECHNICIAN,
+                "1234567890",
+                Instant.now(),
+                Instant.now(),
+                "Jakarta",
+                null,
+                0,
+                0L
+        );
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.startWork(reportId.toString(), differentTechnician);
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not authorized"));
+        verify(technicianReportRepository).findByReportId(reportId);
+        verify(technicianReportRepository, never()).save(any(TechnicianReport.class));
+    }
+
 }
