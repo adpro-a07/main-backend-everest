@@ -24,14 +24,7 @@ class TechnicianReportTest {
     void setUp() {
         reportId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
-        repairOrder = RepairOrder.builder()
-                .customerId(UUID.randomUUID())
-                .technicianId(technicianId)
-                .itemName("Item Name")
-                .itemCondition("Item Condition")
-                .issueDescription("Issue Description")
-                .status(RepairOrderStatus.PENDING_CONFIRMATION)
-                .build();
+        repairOrder = new RepairOrder(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Item Name", "Item Condition", "Issue Description", LocalDate.now(), RepairOrderStatus.PENDING_CONFIRMATION, null, null);
         report = TechnicianReport.builder()
                 .reportId(reportId)
                 .repairOrder(repairOrder)
@@ -39,7 +32,7 @@ class TechnicianReportTest {
                 .diagnosis("Compressor issue")
                 .actionPlan("Replace compressor")
                 .estimatedCost(new BigDecimal("300.00"))
-                .estimatedTimeSeconds(3600L)
+                .estimatedTime(Duration.ofHours(2))
                 .build();
     }
 

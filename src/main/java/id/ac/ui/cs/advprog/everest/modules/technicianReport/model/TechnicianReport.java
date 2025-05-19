@@ -12,10 +12,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "technician_reports")
-@Builder
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class TechnicianReport {
     @Id
@@ -41,16 +39,29 @@ public class TechnicianReport {
     @Column(name = "estimated_time_seconds")
     private Long estimatedTimeSeconds;
 
-    @Builder.Default
     @Column(name = "status")
     private String status = "DRAFT";
+
 
     @Column(name = "last_updated_at")
     private LocalDateTime lastUpdatedAt;
 
-    @Builder.Default
     @Transient
     private ReportState state = new DraftState();
+
+    public TechnicianReport(UUID reportId, RepairOrder repairOrder, UUID technicianId,
+                            String diagnosis, String actionPlan,
+                            BigDecimal estimatedCost, Duration estimatedTime) {
+        this.reportId = reportId;
+        this.repairOrder = repairOrder;
+        this.technicianId = technicianId;
+        this.diagnosis = diagnosis;
+        this.actionPlan = actionPlan;
+        this.estimatedCost = estimatedCost;
+        this.estimatedTimeSeconds = estimatedTime != null ? estimatedTime.getSeconds() : null;
+        this.status = "DRAFT";
+        this.state = new DraftState();
+    }
 
     public Duration getEstimatedTime() {
         return estimatedTimeSeconds != null ? Duration.ofSeconds(estimatedTimeSeconds) : null;
@@ -107,6 +118,60 @@ public class TechnicianReport {
 
     public boolean canEdit() {
         return state.canEdit();
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private UUID reportId;
+        private RepairOrder repairOrder;
+        private UUID technicianId;
+        private String diagnosis;
+        private String actionPlan;
+        private BigDecimal estimatedCost;
+        private Duration estimatedTime;
+
+        public Builder reportId(UUID reportId) {
+            this.reportId = reportId;
+            return this;
+        }
+
+        public Builder repairOrder(RepairOrder repairOrder) {
+            this.repairOrder = repairOrder;
+            return this;
+        }
+
+        public Builder technicianId(UUID technicianId) {
+            this.technicianId = technicianId;
+            return this;
+        }
+
+        public Builder diagnosis(String diagnosis) {
+            this.diagnosis = diagnosis;
+            return this;
+        }
+
+        public Builder actionPlan(String actionPlan) {
+            this.actionPlan = actionPlan;
+            return this;
+        }
+
+        public Builder estimatedCost(BigDecimal estimatedCost) {
+            this.estimatedCost = estimatedCost;
+            return this;
+        }
+
+        public Builder estimatedTime(Duration estimatedTime) {
+            this.estimatedTime = estimatedTime;
+            return this;
+        }
+
+        public TechnicianReport build() {
+            return new TechnicianReport(reportId, repairOrder, technicianId,
+                    diagnosis, actionPlan, estimatedCost, estimatedTime);
+        }
     }
 
     @PrePersist
