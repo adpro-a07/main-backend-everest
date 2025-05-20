@@ -19,4 +19,5 @@ public class TechnicianReportDraftResponse {
     private String actionPlan;
     private BigDecimal estimatedCost;
     private Long estimatedTimeSeconds;
+    private String status;
 }
