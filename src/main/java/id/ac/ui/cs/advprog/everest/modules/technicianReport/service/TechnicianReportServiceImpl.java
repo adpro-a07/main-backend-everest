@@ -102,7 +102,59 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
     }
 
+    @Override
+    public GenericResponse<TechnicianReportDraftResponse> updateTechnicianReportDraft(
+            String technicianReportDraftId,
+            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
+            AuthenticatedUser technician) {
 
+        try {
+            if (technicianReportDraftId == null || createTechnicianReportDraft == null || technician == null)
+                throw new InvalidDataTechnicianReport("Report data or technician cannot be null");
+
+            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
+                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
+
+            if (!technicianReport.getTechnicianId().equals(technician.id())) {
+                throw new InvalidTechnicianReportStateException("You are not authorized to update this report");
+            }
+
+            if (!"DRAFT".equals(technicianReport.getStatus())) {
+                throw new InvalidTechnicianReportStateException("Only report drafts can be updated");
+            }
+
+            Long estimatedTimeSeconds = createTechnicianReportDraft.getEstimatedTimeSeconds();
+            if (estimatedTimeSeconds == null || estimatedTimeSeconds < 0) {
+                throw new InvalidDataTechnicianReport("Estimated time cannot be less than 0");
+            }
+
+            BigDecimal estimatedCost = createTechnicianReportDraft.getEstimatedCost();
+            if (estimatedCost == null || estimatedCost.compareTo(BigDecimal.ZERO) < 0) {
+                throw new InvalidDataTechnicianReport("Estimated cost cannot be less than 0");
+            }
+
+            if (createTechnicianReportDraft.getDiagnosis() == null || createTechnicianReportDraft.getDiagnosis().isEmpty()) {
+                throw new InvalidDataTechnicianReport("Diagnosis cannot be null or empty");
+            }
+
+            if (createTechnicianReportDraft.getActionPlan() == null || createTechnicianReportDraft.getActionPlan().isEmpty()) {
+                throw new InvalidDataTechnicianReport("Action plan cannot be null or empty");
+            }
+
+            technicianReport.setDiagnosis(createTechnicianReportDraft.getDiagnosis());
+            technicianReport.setActionPlan(createTechnicianReportDraft.getActionPlan());
+            technicianReport.setEstimatedCost(createTechnicianReportDraft.getEstimatedCost());
+            technicianReport.setEstimatedTimeSeconds(createTechnicianReportDraft.getEstimatedTimeSeconds());
+
+            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
+
+            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
+
+            return new GenericResponse<>(true, "Technician report draft updated successfully", response);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
 
 
 
