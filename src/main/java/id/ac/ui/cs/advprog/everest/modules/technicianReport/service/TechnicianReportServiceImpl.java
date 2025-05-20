@@ -347,6 +347,8 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
     }
 
+
+
 //    @Override
 //    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(String status, AuthenticatedUser technician) {
 //        if (technician == null) return new GenericResponse<>(false, "Technician cannot be null", null);
@@ -362,69 +364,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
 //        }
 //    }
 
-//    @Override
-//    public GenericResponse<TechnicianReportDraftResponse> startWork(
-//            String technicianReportDraftId,
-//            AuthenticatedUser technician) {
-//
-//        if (technicianReportDraftId == null || technician == null) {
-//            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-//        }
-//
-//        try {
-//            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
-//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
-//
-//            if (!technicianReport.getTechnicianId().equals(technician.id())) {
-//                throw new InvalidTechnicianReportStateException("You are not authorized to start work on this report");
-//            }
-//
-//            if (!"APPROVED".equals(technicianReport.getStatus())) {
-//                throw new InvalidTechnicianReportStateException("Only report Approved one can be started");
-//            }
-//
-//            technicianReport.startWork();
-//            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
-//            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
-//            return new GenericResponse<>(true, "Technician report draft started successfully", response);
-//        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-//                 IllegalStateTransitionException ex) {
-//            return new GenericResponse<>(false, ex.getMessage(), null);
-//        }
-//    }
-//
-//    @Override
-//    public GenericResponse<TechnicianReportDraftResponse> completeWork(
-//            String technicianReportDraftId,
-//            AuthenticatedUser technician) {
-//
-//        if (technicianReportDraftId == null || technician == null) {
-//            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-//        }
-//
-//        try {
-//            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
-//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
-//
-//            if (!technicianReport.getTechnicianId().equals(technician.id())) {
-//                throw new InvalidTechnicianReportStateException("You are not authorized to complete work on this report");
-//            }
-//
-//            if (!"IN_PROGRESS".equals(technicianReport.getStatus())) {
-//                throw new InvalidTechnicianReportStateException("Only report in progress can be completed");
-//            }
-//
-//            technicianReport.complete();
-//            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
-//            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
-//            return new GenericResponse<>(true, "Technician report draft completed successfully", response);
-//        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-//                 IllegalStateTransitionException ex) {
-//            return new GenericResponse<>(false, ex.getMessage(), null);
-//        }
-//    }
-//
-//
+
 //    @Override
 //    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForCustomer(String status, AuthenticatedUser customer) {
 //        if (customer == null) {
@@ -451,103 +391,6 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
 //            return new GenericResponse<>(true, "Technician report submissions retrieved successfully", response);
 //        } catch (DataAccessException ex) {
 //            throw new DatabaseException("Failed to retrieve technician report submissions", ex);
-//        }
-//    }
-//
-//    @Override
-//    public GenericResponse<Void> acceptTechnicianReportSubmit(
-//            String technicianReportDraftId,
-//            AuthenticatedUser customer) {
-//
-//        if (technicianReportDraftId == null || customer == null) {
-//            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-//        }
-//
-//        try {
-//            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
-//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report draft not found"));
-//
-//            RepairOrder repairOrder = technicianReport.getRepairOrder();
-//            if (!repairOrder.getCustomerId().equals(customer.id())) {
-//                throw new InvalidTechnicianReportStateException("You are not authorized to accept this report");
-//            }
-//
-//            if (!"SUBMITTED".equals(technicianReport.getStatus())) {
-//                throw new InvalidTechnicianReportStateException("This report is not in draft state");
-//            }
-//
-//            technicianReport.approve();
-//
-//            technicianReportRepository.save(technicianReport);
-//
-//            return new GenericResponse<>(true, "Technician report draft accepted successfully", null);
-//        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-//                 IllegalStateTransitionException ex) {
-//            return new GenericResponse<>(false, ex.getMessage(), null);
-//        }
-//    }
-//
-//    @Override
-//    public GenericResponse<Void> rejectTechnicianReportSubmit(
-//            String technicianReportDraftId,
-//            AuthenticatedUser customer) {
-//
-//        if (technicianReportDraftId == null || customer == null) {
-//            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-//        }
-//
-//        try {
-//            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
-//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report draft not found"));
-//
-//            RepairOrder repairOrder = technicianReport.getRepairOrder();
-//            if (!repairOrder.getCustomerId().equals(customer.id())) {
-//                throw new InvalidTechnicianReportStateException("You are not authorized to reject this report");
-//            }
-//
-//            if (!"SUBMITTED".equals(technicianReport.getStatus())) {
-//                throw new InvalidTechnicianReportStateException("This report is not in draft state");
-//            }
-//
-//            technicianReport.reject();
-//
-//            technicianReportRepository.save(technicianReport);
-//
-//            return new GenericResponse<>(true, "Technician report draft rejected successfully", null);
-//        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-//                 IllegalStateTransitionException ex) {
-//            return new GenericResponse<>(false, ex.getMessage(), null);
-//        }
-//    }
-//
-//    @Override
-//    public GenericResponse<TechnicianReportDraftResponse> submitTechnicianReportDraft(
-//            String technicianReportDraftId,
-//            AuthenticatedUser technician) {
-//
-//        if (technicianReportDraftId == null || technician == null) {
-//            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-//        }
-//
-//        try {
-//            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
-//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
-//
-//            if (!technicianReport.getTechnicianId().equals(technician.id())) {
-//                throw new InvalidTechnicianReportStateException("You are not authorized to submit this report");
-//            }
-//
-//            if (!"DRAFT".equals(technicianReport.getStatus())) {
-//                throw new InvalidTechnicianReportStateException("Only report drafts can be submitted");
-//            }
-//
-//            technicianReport.submit();
-//            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
-//            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
-//            return new GenericResponse<>(true, "Technician report draft submitted successfully", response);
-//        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-//                 IllegalStateTransitionException ex) {
-//            return new GenericResponse<>(false, ex.getMessage(), null);
 //        }
 //    }
 
