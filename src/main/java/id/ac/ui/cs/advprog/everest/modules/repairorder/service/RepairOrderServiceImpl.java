@@ -3,6 +3,10 @@ package id.ac.ui.cs.advprog.everest.modules.repairorder.service;
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
 import id.ac.ui.cs.advprog.everest.common.service.UserServiceGrpcClient;
+import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
+import id.ac.ui.cs.advprog.everest.modules.coupon.repository.CouponRepository;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.PaymentMethod;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.repository.PaymentMethodRepository;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.dto.CreateAndUpdateRepairOrderRequest;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.dto.ViewRepairOrderResponse;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.exception.DatabaseException;
@@ -21,17 +25,27 @@ import java.util.UUID;
 
 @Service
 public class RepairOrderServiceImpl implements RepairOrderService {
+
     private final UserServiceGrpcClient userServiceGrpcClient;
     private final RepairOrderRepository repairOrderRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
+    private final CouponRepository couponRepository;
 
-    public RepairOrderServiceImpl(UserServiceGrpcClient userServiceGrpcClient, RepairOrderRepository repairOrderRepository) {
+    public RepairOrderServiceImpl(
+            UserServiceGrpcClient userServiceGrpcClient,
+            RepairOrderRepository repairOrderRepository,
+            PaymentMethodRepository paymentMethodRepository,
+            CouponRepository couponRepository
+    ) {
         this.userServiceGrpcClient = userServiceGrpcClient;
         this.repairOrderRepository = repairOrderRepository;
+        this.paymentMethodRepository = paymentMethodRepository;
+        this.couponRepository = couponRepository;
     }
 
     @Override
     public GenericResponse<ViewRepairOrderResponse> createRepairOrder(CreateAndUpdateRepairOrderRequest request,
-                                                   AuthenticatedUser customer) {
+                                                                      AuthenticatedUser customer) {
         if (request == null || customer == null) {
             throw new InvalidRepairOrderStateException("Request or customer cannot be null");
         }
@@ -45,6 +59,15 @@ public class RepairOrderServiceImpl implements RepairOrderService {
 
             UserData technician = response.getTechnician();
 
+            PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())
+                    .orElseThrow(() -> new InvalidRepairOrderStateException("Invalid payment method"));
+
+            Coupon coupon = null;
+            if (request.getCouponId() != null) {
+                coupon = couponRepository.findById(request.getCouponId())
+                        .orElseThrow(() -> new InvalidRepairOrderStateException("Invalid coupon"));
+            }
+
             RepairOrder repairOrder = RepairOrder.builder()
                     .customerId(customer.id())
                     .technicianId(UUID.fromString(technician.getIdentity().getId()))
@@ -53,6 +76,8 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                     .itemCondition(request.getItemCondition())
                     .issueDescription(request.getIssueDescription())
                     .desiredServiceDate(request.getDesiredServiceDate())
+                    .paymentMethod(paymentMethod)
+                    .coupon(coupon)
                     .build();
 
             RepairOrder savedRepairOrder = repairOrderRepository.save(repairOrder);
@@ -77,6 +102,8 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                 .itemCondition(repairOrder.getItemCondition())
                 .issueDescription(repairOrder.getIssueDescription())
                 .desiredServiceDate(repairOrder.getDesiredServiceDate())
+                .paymentMethodId(repairOrder.getPaymentMethod() != null ? repairOrder.getPaymentMethod().getId() : null)
+                .couponId(repairOrder.getCoupon() != null ? repairOrder.getCoupon().getId() : null)
                 .createdAt(repairOrder.getCreatedAt())
                 .updatedAt(repairOrder.getUpdatedAt())
                 .build();
@@ -105,10 +132,10 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     @Override
     public GenericResponse<ViewRepairOrderResponse> updateRepairOrder(
             String repairOrderId,
-            CreateAndUpdateRepairOrderRequest createAndUpdateRepairOrderRequest,
+            CreateAndUpdateRepairOrderRequest request,
             AuthenticatedUser customer
     ) {
-        if (repairOrderId == null || createAndUpdateRepairOrderRequest == null || customer == null) {
+        if (repairOrderId == null || request == null || customer == null) {
             throw new InvalidRepairOrderStateException("Repair order ID, request, or customer cannot be null");
         }
 
@@ -120,15 +147,25 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                 throw new InvalidRepairOrderStateException("You are not authorized to update this repair order");
             }
 
-            // Make sure repair order is still pending confirmation
             if (repairOrder.getStatus() != RepairOrderStatus.PENDING_CONFIRMATION) {
                 throw new InvalidRepairOrderStateException("Repair order cannot be updated");
             }
 
-            repairOrder.setItemName(createAndUpdateRepairOrderRequest.getItemName());
-            repairOrder.setItemCondition(createAndUpdateRepairOrderRequest.getItemCondition());
-            repairOrder.setIssueDescription(createAndUpdateRepairOrderRequest.getIssueDescription());
-            repairOrder.setDesiredServiceDate(createAndUpdateRepairOrderRequest.getDesiredServiceDate());
+            PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())
+                    .orElseThrow(() -> new InvalidRepairOrderStateException("Invalid payment method"));
+
+            Coupon coupon = null;
+            if (request.getCouponId() != null) {
+                coupon = couponRepository.findById(request.getCouponId())
+                        .orElseThrow(() -> new InvalidRepairOrderStateException("Invalid coupon"));
+            }
+
+            repairOrder.setItemName(request.getItemName());
+            repairOrder.setItemCondition(request.getItemCondition());
+            repairOrder.setIssueDescription(request.getIssueDescription());
+            repairOrder.setDesiredServiceDate(request.getDesiredServiceDate());
+            repairOrder.setPaymentMethod(paymentMethod);
+            repairOrder.setCoupon(coupon);
 
             RepairOrder updatedRepairOrder = repairOrderRepository.save(repairOrder);
 
@@ -157,7 +194,6 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                 throw new InvalidRepairOrderStateException("You are not authorized to delete this repair order");
             }
 
-            // Make sure repair order is still pending confirmation
             if (repairOrder.getStatus() != RepairOrderStatus.PENDING_CONFIRMATION) {
                 throw new InvalidRepairOrderStateException("Repair order cannot be deleted");
             }
