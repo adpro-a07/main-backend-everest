@@ -32,7 +32,7 @@ class TechnicianReportTest {
                 .diagnosis("Compressor issue")
                 .actionPlan("Replace compressor")
                 .estimatedCost(new BigDecimal("300.00"))
-                .estimatedTime(Duration.ofHours(2))
+                .estimatedTimeSeconds(3600L)
                 .build();
     }
 

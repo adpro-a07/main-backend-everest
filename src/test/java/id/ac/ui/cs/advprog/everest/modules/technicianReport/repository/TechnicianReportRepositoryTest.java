@@ -180,7 +180,7 @@ class TechnicianReportRepositoryTest {
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
                 .estimatedCost(new BigDecimal("100.00"))
-                .estimatedTime(Duration.ofHours(2))
+                .estimatedTimeSeconds(3600L)
                 .build();
 
         switch(status) {
