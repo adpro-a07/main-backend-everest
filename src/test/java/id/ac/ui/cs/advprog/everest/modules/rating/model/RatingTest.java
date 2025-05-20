@@ -67,21 +67,23 @@ class RatingTest {
         UUID technicianId = UUID.randomUUID();
         UUID repairOrderId = UUID.randomUUID();
 
-        assertThrows(IllegalArgumentException.class, () -> Rating.builder()
+        Rating.RatingBuilder builder = Rating.builder()
                 .userId(userId)
                 .technicianId(technicianId)
                 .repairOrderId(repairOrderId)
                 .comment("Buruk")
-                .score(0)
-                .build());
+                .score(0);
 
-        assertThrows(IllegalArgumentException.class, () -> Rating.builder()
+        assertThrows(IllegalArgumentException.class, builder::build);
+
+        Rating.RatingBuilder builder2 = Rating.builder()
                 .userId(userId)
                 .technicianId(technicianId)
                 .repairOrderId(repairOrderId)
                 .comment("Buruk")
-                .score(6)
-                .build());
+                .score(6);
+
+        assertThrows(IllegalArgumentException.class, builder2::build);
     }
 
     @Test
@@ -90,26 +92,29 @@ class RatingTest {
         UUID technicianId = UUID.randomUUID();
         UUID repairOrderId = UUID.randomUUID();
 
-        assertThrows(IllegalArgumentException.class, () -> Rating.builder()
+        Rating.RatingBuilder builder = Rating.builder()
                 .technicianId(technicianId)
                 .repairOrderId(repairOrderId)
                 .comment("Lumayan")
-                .score(3)
-                .build());
+                .score(3);
 
-        assertThrows(IllegalArgumentException.class, () -> Rating.builder()
+        assertThrows(IllegalArgumentException.class, builder::build);
+
+        Rating.RatingBuilder builder2 = Rating.builder()
                 .userId(userId)
                 .repairOrderId(repairOrderId)
                 .comment("Lumayan")
-                .score(3)
-                .build());
+                .score(3);
 
-        assertThrows(IllegalArgumentException.class, () -> Rating.builder()
+        assertThrows(IllegalArgumentException.class, builder2::build);
+
+        Rating.RatingBuilder builder3 = Rating.builder()
                 .userId(userId)
                 .technicianId(technicianId)
                 .comment("Lumayan")
-                .score(3)
-                .build());
+                .score(3);
+
+        assertThrows(IllegalArgumentException.class, builder3::build);
     }
 
     @Test
@@ -156,13 +161,14 @@ class RatingTest {
         UUID technicianId = UUID.randomUUID();
         UUID repairOrderId = UUID.randomUUID();
 
-        assertThrows(IllegalArgumentException.class, () -> Rating.builder()
+        Rating.RatingBuilder builder = Rating.builder()
                 .userId(userId)
                 .technicianId(technicianId)
                 .repairOrderId(repairOrderId)
                 .comment("   ")
-                .score(4)
-                .build());
+                .score(4);
+
+        assertThrows(IllegalArgumentException.class, builder::build);
     }
 
     @Test

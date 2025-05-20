@@ -238,8 +238,6 @@ class RatingServiceImplTest {
 
     @Test
     void testCreateRatingFailsIfAlreadyRated() {
-        UUID repairOrderId = UUID.randomUUID();
-
         when(ratingRepository.existsByUserIdAndRepairOrderId(user.id(), repairOrderId))
                 .thenReturn(true);
 
