@@ -1,137 +1,344 @@
-//package id.ac.ui.cs.advprog.everest.modules.technicianReport.service;
-//
-//import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
-//import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-//import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
-//import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
-//import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.DatabaseException;
-//import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.InvalidTechnicianReportStateException;
-//import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
-//import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
-//import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.TechnicianReportRepository;
-//import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.UserRequestRepository;
-//import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//import org.springframework.dao.DataAccessException;
-//
-//import java.math.BigDecimal;
-//import java.time.Duration;
-//import java.time.Instant;
-//import java.util.*;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//import static org.mockito.ArgumentMatchers.*;
-//import static org.mockito.Mockito.*;
-//
-//@ExtendWith(MockitoExtension.class)
-//class TechnicianReportServiceImplTest {
-//
-//    @Mock
-//    private TechnicianReportRepository technicianReportRepository;
-//
-//    @Mock
-//    private UserRequestRepository userRequestRepository;
-//
-//    @InjectMocks
-//    private TechnicianReportServiceImpl technicianReportService;
-//
-//    private UUID reportId;
-//    private UUID userRequestId;
-//    private UUID technicianId;
-//    private UUID customerId;
-//    private AuthenticatedUser technician;
-//    private AuthenticatedUser customer;
-//    private CreateTechnicianReportDraft mockCreateRequest;
-//    private TechnicianReport mockTechnicianReport;
-//    private UserRequest mockUserRequest;
-//
-//    @BeforeEach
-//    void setUp() {
-//        reportId = UUID.randomUUID();
-//        userRequestId = UUID.randomUUID();
-//        technicianId = UUID.randomUUID();
-//        customerId = UUID.randomUUID();
-//
-//        technician = new AuthenticatedUser(
-//                technicianId,
-//                "technician@example.com",
-//                "Test Technician",
-//                UserRole.TECHNICIAN,
-//                "1234567890",
-//                Instant.now(),
-//                Instant.now(),
-//                "Jakarta",
-//                null,
-//                0,
-//                0L
-//        );
-//
-//        customer = new AuthenticatedUser(
-//                customerId,
-//                "customer@example.com",
-//                "Test Customer",
-//                UserRole.CUSTOMER,
-//                "0987654321",
-//                Instant.now(),
-//                Instant.now(),
-//                "Jakarta",
-//                null,
-//                0,
-//                0L
-//        );
-//
-//        mockCreateRequest = new CreateTechnicianReportDraft();
-//        mockCreateRequest.setUserRequestId(userRequestId.toString());
-//        mockCreateRequest.setDiagnosis("Test diagnosis");
-//        mockCreateRequest.setActionPlan("Test action plan");
-//        mockCreateRequest.setEstimatedCost(new BigDecimal("100.00"));
-//        mockCreateRequest.setEstimatedTimeSeconds(3600L);
-//
-//        mockUserRequest = new UserRequest();
-//        mockUserRequest.setRequestId(userRequestId);
-//        mockUserRequest.setUserId(customerId);
-//        mockUserRequest.setUserDescription("Test user request");
-//
-//        mockTechnicianReport = TechnicianReport.builder()
-//                .reportId(reportId)
-//                .userRequest(mockUserRequest)
-//                .technicianId(technicianId)
-//                .diagnosis("Test diagnosis")
-//                .actionPlan("Test action plan")
-//                .estimatedCost(new BigDecimal("100.00"))
-//                .estimatedTime(Duration.ofSeconds(3600L))
-//                .build();
-//    }
+package id.ac.ui.cs.advprog.everest.modules.technicianReport.service;
+
+import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
+import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.*;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraftRequest;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.DatabaseException;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.InvalidTechnicianReportStateException;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.TechnicianReportRepository;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.UserRequestRepository;
+import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessException;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class TechnicianReportServiceImplTest {
+
+    @Mock
+    private TechnicianReportRepository technicianReportRepository;
+
+    @Mock
+    private RepairOrderRepository repairOrderRepository;
+
+    @InjectMocks
+    private TechnicianReportServiceImpl technicianReportService;
+
+    private UUID reportId;
+    private UUID repairOrderId;
+    private UUID technicianId;
+    private UUID customerId;
+    private AuthenticatedUser technician;
+    private AuthenticatedUser customer;
+    private CreateTechnicianReportDraftRequest mockCreateRequest;
+    private TechnicianReport mockTechnicianReport;
+    private RepairOrder mockRepairOrder;
+
+    @BeforeEach
+    void setUp() {
+        reportId = UUID.randomUUID();
+        repairOrderId = UUID.randomUUID();
+        technicianId = UUID.randomUUID();
+        customerId = UUID.randomUUID();
+
+        technician = new AuthenticatedUser(
+                technicianId,
+                "technician@example.com",
+                "Test Technician",
+                UserRole.TECHNICIAN,
+                "1234567890",
+                Instant.now(),
+                Instant.now(),
+                "Jakarta",
+                null,
+                0,
+                0L
+        );
+
+        customer = new AuthenticatedUser(
+                customerId,
+                "customer@example.com",
+                "Test Customer",
+                UserRole.CUSTOMER,
+                "0987654321",
+                Instant.now(),
+                Instant.now(),
+                "Jakarta",
+                null,
+                0,
+                0L
+        );
+
+        mockCreateRequest = CreateTechnicianReportDraftRequest.builder().
+                repairOrderId(repairOrderId.toString())
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTimeSeconds(3600L)
+                .build();
+
+        mockRepairOrder = RepairOrder.builder()
+                .id(repairOrderId)
+                .customerId(customerId)
+                .technicianId(technicianId)
+                .itemName("Test item")
+                .itemCondition("Test condition")
+                .issueDescription("Test issue")
+                .createdAt(LocalDateTime.now())
+                .status(RepairOrderStatus.PENDING_CONFIRMATION)
+                .build();
+
+        mockTechnicianReport = TechnicianReport.builder()
+                .reportId(reportId)
+                .repairOrder(mockRepairOrder)
+                .technicianId(technicianId)
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTimeSeconds(3600L)
+                .build();
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Success() {
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
+        when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(mockTechnicianReport);
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
+
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+        assertEquals(reportId, response.getData().getReportId());
+        assertEquals(repairOrderId, response.getData().getRepairOrderId());
+        assertEquals(technicianId, response.getData().getTechnicianId());
+        assertEquals("Test diagnosis", response.getData().getDiagnosis());
+        assertEquals("Test action plan", response.getData().getActionPlan());
+
+        verify(repairOrderRepository).findById(repairOrderId);
+        verify(technicianReportRepository).save(any(TechnicianReport.class));
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_RepairOrderNotFound() {
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not found"));
+
+        verify(repairOrderRepository).findById(repairOrderId);
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_DatabaseException() {
+        when(repairOrderRepository.findById(any(UUID.class))).thenThrow(mock(DataAccessException.class));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+
+        verify(repairOrderRepository).findById(repairOrderId);
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_RepairOrderNotAssignedToTechnician() {
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, customer);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not authorized"));
+
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_TechnicianIdNull() {
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, null);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("technician cannot be null"));
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_NullRequest() {
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(null, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().toLowerCase().contains("cannot be null"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_EmptyRepairOrderId() {
+        CreateTechnicianReportDraftRequest request = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId("")
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTimeSeconds(3600L)
+                .build();
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(request, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().toLowerCase().contains("cannot be null or empty"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_RepairOrderNotInPendingConfirmation() {
+        RepairOrder notPending = RepairOrder.builder()
+                .id(repairOrderId)
+                .customerId(customerId)
+                .technicianId(technicianId)
+                .status(RepairOrderStatus.IN_PROGRESS)
+                .build();
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(notPending));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not in progress"));
+        verify(repairOrderRepository).findById(repairOrderId);
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_NegativeEstimatedTime() {
+        CreateTechnicianReportDraftRequest request = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId(repairOrderId.toString())
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTimeSeconds(-1L)
+                .build();
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(request, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Estimated time cannot be less than 0"));
+        verify(repairOrderRepository).findById(repairOrderId);
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_NegativeEstimatedCost() {
+        CreateTechnicianReportDraftRequest request = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId(repairOrderId.toString())
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("-1.00"))
+                .estimatedTimeSeconds(3600L)
+                .build();
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(request, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Estimated cost cannot be less than 0"));
+        verify(repairOrderRepository).findById(repairOrderId);
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_EmptyDiagnosis() {
+        CreateTechnicianReportDraftRequest request = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId(repairOrderId.toString())
+                .diagnosis("")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTimeSeconds(3600L)
+                .build();
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(request, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Diagnosis cannot be null or empty"));
+        verify(repairOrderRepository).findById(repairOrderId);
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_EmptyActionPlan() {
+        CreateTechnicianReportDraftRequest request = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId(repairOrderId.toString())
+                .diagnosis("Test diagnosis")
+                .actionPlan("")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTimeSeconds(3600L)
+                .build();
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(request, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Action plan cannot be null or empty"));
+        verify(repairOrderRepository).findById(repairOrderId);
+    }
+
+    @Test
+    void CreateTechnicianReportDraftRequest_Failed_ReportAlreadyExists() {
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
+        when(technicianReportRepository.findByRepairOrderId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Report already exists"));
+        verify(repairOrderRepository).findById(repairOrderId);
+        verify(technicianReportRepository).findByRepairOrderId(repairOrderId);
+    }
+
+
 //
 //    @Test
-//    void createTechnicianReportDraft_Success() {
-//        when(userRequestRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockUserRequest));
-//        when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(mockTechnicianReport);
-//
+//    void CreateTechnicianReportDraftRequest_NullRequest() {
 //        GenericResponse<TechnicianReportDraftResponse> response =
-//                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
-//
-//        assertTrue(response.isSuccess());
-//        assertNotNull(response.getData());
-//        assertEquals(reportId, response.getData().getReportId());
-//        assertEquals(userRequestId, response.getData().getUserRequestId());
-//        assertEquals(technicianId, response.getData().getTechnicianId());
-//        assertEquals("Test diagnosis", response.getData().getDiagnosis());
-//        assertEquals("Test action plan", response.getData().getActionPlan());
-//
-//        verify(userRequestRepository).findById(userRequestId);
-//        verify(technicianReportRepository).save(any(TechnicianReport.class));
-//    }
-//
-//    @Test
-//    void createTechnicianReportDraft_NullRequest() {
-//        GenericResponse<TechnicianReportDraftResponse> response =
-//                technicianReportService.createTechnicianReportDraft(null, technician);
+//                technicianReportService.CreateTechnicianReportDraftRequest(null, technician);
 //
 //        assertFalse(response.isSuccess());
 //        assertNull(response.getData());
@@ -142,9 +349,9 @@
 //    }
 //
 //    @Test
-//    void createTechnicianReportDraft_NullTechnician() {
+//    void CreateTechnicianReportDraftRequest_NullTechnician() {
 //        GenericResponse<TechnicianReportDraftResponse> response =
-//                technicianReportService.createTechnicianReportDraft(mockCreateRequest, null);
+//                technicianReportService.CreateTechnicianReportDraftRequest(mockCreateRequest, null);
 //
 //        assertFalse(response.isSuccess());
 //        assertNull(response.getData());
@@ -155,8 +362,8 @@
 //    }
 //
 //    @Test
-//    void createTechnicianReportDraft_EmptyUserRequestId() {
-//        CreateTechnicianReportDraft request = new CreateTechnicianReportDraft();
+//    void CreateTechnicianReportDraftRequest_EmptyUserRequestId() {
+//        CreateTechnicianReportDraftRequest request = new CreateTechnicianReportDraftRequest();
 //        request.setUserRequestId("");
 //        request.setDiagnosis("Test diagnosis");
 //        request.setActionPlan("Test action plan");
@@ -164,7 +371,7 @@
 //        request.setEstimatedTimeSeconds(3600L);
 //
 //        GenericResponse<TechnicianReportDraftResponse> response =
-//                technicianReportService.createTechnicianReportDraft(request, technician);
+//                technicianReportService.CreateTechnicianReportDraftRequest(request, technician);
 //
 //        assertFalse(response.isSuccess());
 //        assertNull(response.getData());
@@ -172,11 +379,11 @@
 //    }
 //
 //    @Test
-//    void createTechnicianReportDraft_UserRequestNotFound() {
+//    void CreateTechnicianReportDraftRequest_UserRequestNotFound() {
 //        when(userRequestRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 //
 //        GenericResponse<TechnicianReportDraftResponse> response =
-//                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
+//                technicianReportService.CreateTechnicianReportDraftRequest(mockCreateRequest, technician);
 //
 //        assertFalse(response.isSuccess());
 //        assertNull(response.getData());
@@ -185,12 +392,12 @@
 //    }
 //
 //    @Test
-//    void createTechnicianReportDraft_DatabaseException() {
+//    void CreateTechnicianReportDraftRequest_DatabaseException() {
 //        when(userRequestRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockUserRequest));
 //        when(technicianReportRepository.save(any(TechnicianReport.class))).thenThrow(mock(DataAccessException.class));
 //
 //        GenericResponse<TechnicianReportDraftResponse> response =
-//                technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
+//                technicianReportService.CreateTechnicianReportDraftRequest(mockCreateRequest, technician);
 //
 //        assertFalse(response.isSuccess());
 //        assertNull(response.getData());
@@ -203,7 +410,7 @@
 //        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 //        when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(mockTechnicianReport);
 //
-//        CreateTechnicianReportDraft updateRequest = new CreateTechnicianReportDraft();
+//        CreateTechnicianReportDraftRequest updateRequest = new CreateTechnicianReportDraftRequest();
 //        updateRequest.setDiagnosis("Updated diagnosis");
 //        updateRequest.setActionPlan("Updated action plan");
 //        updateRequest.setEstimatedCost(new BigDecimal("150.00"));
@@ -504,14 +711,14 @@
 //    }
 //
 //    @Test
-//    void getTechnicianReportByStatus_Success() {
+//    void getTechnicianReportByStatusForTechnician_Success() {
 //        String status = "DRAFT";
 //        List<TechnicianReport> mockReports = Arrays.asList(mockTechnicianReport);
 //        when(technicianReportRepository.findAllByTechnicianIdAndStatus(technicianId, status))
 //                .thenReturn(mockReports);
 //
 //        GenericResponse<List<TechnicianReportDraftResponse>> response =
-//                technicianReportService.getTechnicianReportByStatus(status, technician);
+//                technicianReportService.getTechnicianReportByStatusForTechnician(status, technician);
 //
 //        assertTrue(response.isSuccess());
 //        assertNotNull(response.getData());
@@ -523,9 +730,9 @@
 //    }
 //
 //    @Test
-//    void getTechnicianReportByStatus_NullTechnician() {
+//    void getTechnicianReportByStatusForTechnician_NullTechnician() {
 //        GenericResponse<List<TechnicianReportDraftResponse>> response =
-//                technicianReportService.getTechnicianReportByStatus("DRAFT", null);
+//                technicianReportService.getTechnicianReportByStatusForTechnician("DRAFT", null);
 //
 //        assertFalse(response.isSuccess());
 //        assertNull(response.getData());
@@ -535,13 +742,13 @@
 //    }
 //
 //    @Test
-//    void getTechnicianReportByStatus_EmptyReportsList() {
+//    void getTechnicianReportByStatusForTechnician_EmptyReportsList() {
 //        String status = "DRAFT";
 //        when(technicianReportRepository.findAllByTechnicianIdAndStatus(technicianId, status))
 //                .thenReturn(Collections.emptyList());
 //
 //        GenericResponse<List<TechnicianReportDraftResponse>> response =
-//                technicianReportService.getTechnicianReportByStatus(status, technician);
+//                technicianReportService.getTechnicianReportByStatusForTechnician(status, technician);
 //
 //        assertTrue(response.isSuccess());
 //        assertEquals(response.getData(), Collections.emptyList());
@@ -551,13 +758,13 @@
 //    }
 //
 //    @Test
-//    void getTechnicianReportByStatus_DatabaseException() {
+//    void getTechnicianReportByStatusForTechnician_DatabaseException() {
 //        String status = "DRAFT";
 //        when(technicianReportRepository.findAllByTechnicianIdAndStatus(any(UUID.class), anyString()))
 //                .thenThrow(mock(DataAccessException.class));
 //
 //        assertThrows(DatabaseException.class, () ->
-//                technicianReportService.getTechnicianReportByStatus(status, technician));
+//                technicianReportService.getTechnicianReportByStatusForTechnician(status, technician));
 //
 //        verify(technicianReportRepository).findAllByTechnicianIdAndStatus(technicianId, status);
 //    }
@@ -703,5 +910,5 @@
 //        verify(technicianReportRepository).findByReportId(reportId);
 //        verify(technicianReportRepository, never()).save(any(TechnicianReport.class));
 //    }
-//
-//}
+
+}

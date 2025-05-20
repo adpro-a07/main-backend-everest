@@ -13,49 +13,49 @@ public interface TechnicianReportService {
             AuthenticatedUser technician
     );
 
-    GenericResponse<TechnicianReportDraftResponse> updateTechnicianReportDraft(
-            String technicianReportDraftId,
-            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
-            AuthenticatedUser technician
-    );
-
-    GenericResponse<TechnicianReportDraftResponse> deleteTechnicianReportDraft(
-            String technicianReportDraftId,
-            AuthenticatedUser technician
-    );
-
-    GenericResponse<TechnicianReportDraftResponse> submitTechnicianReportDraft(
-            String technicianReportDraftId,
-            AuthenticatedUser technician
-    );
-
-    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(
-            String status,
-            AuthenticatedUser technician
-    );
-
-    GenericResponse<TechnicianReportDraftResponse> startWork(
-            String technicianReportDraftId,
-            AuthenticatedUser technician
-    );
-
-    GenericResponse<TechnicianReportDraftResponse> completeWork(
-            String technicianReportDraftId,
-            AuthenticatedUser technician
-    );
-
-    GenericResponse<Void> acceptTechnicianReportSubmit(
-            String technicianReportDraftId,
-            AuthenticatedUser customer
-    );
-
-    GenericResponse<Void> rejectTechnicianReportSubmit(
-            String technicianReportDraftId,
-            AuthenticatedUser customer
-    );
-
-    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForCustomer(
-            String status,
-            AuthenticatedUser customer
-    );
+//    GenericResponse<TechnicianReportDraftResponse> updateTechnicianReportDraft(
+//            String technicianReportDraftId,
+//            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
+//            AuthenticatedUser technician
+//    );
+//
+//    GenericResponse<TechnicianReportDraftResponse> deleteTechnicianReportDraft(
+//            String technicianReportDraftId,
+//            AuthenticatedUser technician
+//    );
+//
+//    GenericResponse<TechnicianReportDraftResponse> submitTechnicianReportDraft(
+//            String technicianReportDraftId,
+//            AuthenticatedUser technician
+//    );
+//
+//    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(
+//            String status,
+//            AuthenticatedUser technician
+//    );
+//
+//    GenericResponse<TechnicianReportDraftResponse> startWork(
+//            String technicianReportDraftId,
+//            AuthenticatedUser technician
+//    );
+//
+//    GenericResponse<TechnicianReportDraftResponse> completeWork(
+//            String technicianReportDraftId,
+//            AuthenticatedUser technician
+//    );
+//
+//    GenericResponse<Void> acceptTechnicianReportSubmit(
+//            String technicianReportDraftId,
+//            AuthenticatedUser customer
+//    );
+//
+//    GenericResponse<Void> rejectTechnicianReportSubmit(
+//            String technicianReportDraftId,
+//            AuthenticatedUser customer
+//    );
+//
+//    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForCustomer(
+//            String status,
+//            AuthenticatedUser customer
+//    );
 }
