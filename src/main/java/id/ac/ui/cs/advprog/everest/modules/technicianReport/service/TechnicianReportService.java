@@ -49,25 +49,14 @@ public interface TechnicianReportService {
             AuthenticatedUser technician
     );
 
-//    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(
-//            String status,
-//            AuthenticatedUser technician
-//    );
-//
-//
-//
-//    GenericResponse<Void> acceptTechnicianReportSubmit(
-//            String technicianReportDraftId,
-//            AuthenticatedUser customer
-//    );
-//
-//    GenericResponse<Void> rejectTechnicianReportSubmit(
-//            String technicianReportDraftId,
-//            AuthenticatedUser customer
-//    );
-//
-//    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForCustomer(
-//            String status,
-//            AuthenticatedUser customer
-//    );
+    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(
+            String status,
+            AuthenticatedUser technician
+    );
+
+
+    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForCustomer(
+            String status,
+            AuthenticatedUser customer
+    );
 }

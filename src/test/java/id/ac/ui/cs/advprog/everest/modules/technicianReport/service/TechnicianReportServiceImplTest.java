@@ -1141,6 +1141,102 @@ class TechnicianReportServiceImplTest {
         verify(technicianReportRepository).save(mockTechnicianReport);
     }
 
+    @Test
+    void getTechnicianReportByStatusForTechnician_Success() {
+        List<TechnicianReport> reports = List.of(mockTechnicianReport);
+        when(technicianReportRepository.findAllByTechnicianIdAndStatus(eq(technicianId), anyString()))
+                .thenReturn(reports);
+
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatusForTechnician("DRAFT", technician);
+
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+        assertEquals(1, response.getData().size());
+        assertEquals(reportId, response.getData().get(0).getReportId());
+        verify(technicianReportRepository).findAllByTechnicianIdAndStatus(technicianId, "DRAFT");
+    }
+
+    @Test
+    void getTechnicianReportByStatusForTechnician_Failed_NullTechnician() {
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatusForTechnician("DRAFT", null);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Technician cannot be null"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void getTechnicianReportByStatusForTechnician_Failed_DatabaseException() {
+        when(technicianReportRepository.findAllByTechnicianIdAndStatus(any(), anyString()))
+                .thenThrow(mock(DataAccessException.class));
+
+        assertThrows(DatabaseException.class, () ->
+                technicianReportService.getTechnicianReportByStatusForTechnician("DRAFT", technician));
+        verify(technicianReportRepository).findAllByTechnicianIdAndStatus(technicianId, "DRAFT");
+    }
+
+    @Test
+    void getTechnicianReportByStatusForCustomer_Success() {
+        List<TechnicianReport> reports = List.of(mockTechnicianReport);
+        when(technicianReportRepository.findAllByStatus(anyString())).thenReturn(reports);
+
+        mockTechnicianReport.submit();
+        mockTechnicianReport.approve();
+
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatusForCustomer("SUBMITTED", customer);
+
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+        assertEquals(1, response.getData().size());
+        assertEquals(reportId, response.getData().get(0).getReportId());
+        verify(technicianReportRepository).findAllByStatus("SUBMITTED");
+    }
+
+    @Test
+    void getTechnicianReportByStatusForCustomer_Failed_NullCustomer() {
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatusForCustomer("SUBMITTED", null);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Customer cannot be null"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void getTechnicianReportByStatusForCustomer_Failed_DraftStatus() {
+        assertThrows(InvalidTechnicianReportStateException.class, () ->
+                technicianReportService.getTechnicianReportByStatusForCustomer("DRAFT", customer));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void getTechnicianReportByStatusForCustomer_Failed_NoReportsFound() {
+        when(technicianReportRepository.findAllByStatus(anyString())).thenReturn(List.of());
+
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatusForCustomer("SUBMITTED", customer);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("No technician report submissions found"));
+        verify(technicianReportRepository).findAllByStatus("SUBMITTED");
+    }
+
+    @Test
+    void getTechnicianReportByStatusForCustomer_Failed_DatabaseException() {
+        when(technicianReportRepository.findAllByStatus(anyString()))
+                .thenThrow(mock(DataAccessException.class));
+
+        assertThrows(DatabaseException.class, () ->
+                technicianReportService.getTechnicianReportByStatusForCustomer("SUBMITTED", customer));
+        verify(technicianReportRepository).findAllByStatus("SUBMITTED");
+    }
+
 //
 //    @Test
 //    void CreateTechnicianReportDraftRequest_NullRequest() {
