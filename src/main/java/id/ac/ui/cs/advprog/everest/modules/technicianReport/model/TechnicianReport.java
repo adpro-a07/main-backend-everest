@@ -15,6 +15,7 @@ import java.util.UUID;
 @Builder
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
 public class TechnicianReport {
     @Id
@@ -40,29 +41,16 @@ public class TechnicianReport {
     @Column(name = "estimated_time_seconds")
     private Long estimatedTimeSeconds;
 
+    @Builder.Default
     @Column(name = "status")
     private String status = "DRAFT";
-
 
     @Column(name = "last_updated_at")
     private LocalDateTime lastUpdatedAt;
 
+    @Builder.Default
     @Transient
     private ReportState state = new DraftState();
-
-    public TechnicianReport(UUID reportId, RepairOrder repairOrder, UUID technicianId,
-                            String diagnosis, String actionPlan,
-                            BigDecimal estimatedCost, Duration estimatedTime) {
-        this.reportId = reportId;
-        this.repairOrder = repairOrder;
-        this.technicianId = technicianId;
-        this.diagnosis = diagnosis;
-        this.actionPlan = actionPlan;
-        this.estimatedCost = estimatedCost;
-        this.estimatedTimeSeconds = estimatedTime != null ? estimatedTime.getSeconds() : null;
-        this.status = "DRAFT";
-        this.state = new DraftState();
-    }
 
     public Duration getEstimatedTime() {
         return estimatedTimeSeconds != null ? Duration.ofSeconds(estimatedTimeSeconds) : null;

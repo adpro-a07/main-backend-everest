@@ -2,7 +2,9 @@
 //
 //import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 //import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-//import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
+//import id.ac.ui.cs.advprog.everest.modules.repairorder.model.RepairOrder;
+//import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
+//import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraftRequest;
 //import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
 //import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.DatabaseException;
 //import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.IllegalStateTransitionException;
@@ -25,19 +27,19 @@
 //
 //    private final TechnicianReportRepository technicianReportRepository;
 //    private final UserRequestRepository userRequestRepository;
+//    private final RepairOrderRepository repairOrderRepository;
 //
 //    public TechnicianReportServiceImpl(
 //            TechnicianReportRepository technicianReportRepository,
-//            UserRequestRepository userRequestRepository) {
+//            UserRequestRepository userRequestRepository, RepairOrderRepository repairOrderRepository) {
 //        this.technicianReportRepository = technicianReportRepository;
 //        this.userRequestRepository = userRequestRepository;
+//        this.repairOrderRepository = repairOrderRepository;
 //    }
 //
 //    @Override
-//    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatus(String status, AuthenticatedUser technician) {
-//        if (technician == null) {
-//            return new GenericResponse<>(false, "Technician cannot be null", null);
-//        }
+//    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(String status, AuthenticatedUser technician) {
+//        if (technician == null) return new GenericResponse<>(false, "Technician cannot be null", null);
 //
 //        try {
 //            List<TechnicianReport> reports = technicianReportRepository.findAllByTechnicianIdAndStatus(technician.id(), upperCase(status));
@@ -52,30 +54,34 @@
 //
 //    @Override
 //    public GenericResponse<TechnicianReportDraftResponse> createTechnicianReportDraft(
-//            CreateTechnicianReportDraft createTechnicianReportDraft,
+//            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
 //            AuthenticatedUser technician) {
 //
-//        if (createTechnicianReportDraft == null || technician == null) {
+//        if (createTechnicianReportDraft == null || technician == null)
 //            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-//        }
 //
-//        String userRequestId = createTechnicianReportDraft.getUserRequestId();
-//        if (userRequestId == null || userRequestId.isEmpty()) {
-//            return new GenericResponse<>(false, "User request ID cannot be null or empty", null);
+//        String repairOrderId = createTechnicianReportDraft.getRepairOrderId();
+//        if (repairOrderId == null || repairOrderId.isEmpty())
+//            return new GenericResponse<>(false, "Repair Order ID cannot be null or empty", null);
+//
+//        TechnicianReport existedReport = technicianReportRepository.findByRepairOrderId(UUID.fromString(repairOrderId))
+//                .orElse(null);
+//        if (existedReport != null) {
+//            return new GenericResponse<>(false, "Report already exists", null);
 //        }
 //
 //        try {
-//            UserRequest userRequest = userRequestRepository.findById(UUID.fromString(userRequestId))
-//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("User request not found"));
+//            RepairOrder repairOrder = repairOrderRepository.findById(UUID.fromString(repairOrderId))
+//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Repair order not found"));
 //
 //            TechnicianReport technicianReport = TechnicianReport.builder()
 //                    .reportId(UUID.randomUUID())
-//                    .userRequest(userRequest)
+//                    .repairOrder(repairOrder)
 //                    .technicianId(technician.id())
 //                    .diagnosis(createTechnicianReportDraft.getDiagnosis())
 //                    .actionPlan(createTechnicianReportDraft.getActionPlan())
 //                    .estimatedCost(createTechnicianReportDraft.getEstimatedCost())
-//                    .estimatedTime(Duration.ofSeconds(createTechnicianReportDraft.getEstimatedTimeSeconds()))
+//                    .estimatedTimeSeconds(Duration.ofSeconds(createTechnicianReportDraft.getEstimatedTimeSeconds()))
 //                    .build();
 //
 //            TechnicianReport savedReport = technicianReportRepository.save(technicianReport);
@@ -92,7 +98,7 @@
 //    @Override
 //    public GenericResponse<TechnicianReportDraftResponse> updateTechnicianReportDraft(
 //            String technicianReportDraftId,
-//            CreateTechnicianReportDraft createTechnicianReportDraft,
+//            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
 //            AuthenticatedUser technician) {
 //
 //        if (technicianReportDraftId == null || createTechnicianReportDraft == null || technician == null) {
