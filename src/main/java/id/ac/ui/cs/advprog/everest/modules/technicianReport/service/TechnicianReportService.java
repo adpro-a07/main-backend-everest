@@ -24,11 +24,11 @@ public interface TechnicianReportService {
             AuthenticatedUser technician
     );
 
-//    GenericResponse<TechnicianReportDraftResponse> submitTechnicianReportDraft(
-//            String technicianReportDraftId,
-//            AuthenticatedUser technician
-//    );
-//
+    GenericResponse<TechnicianReportDraftResponse> submitTechnicianReportDraft(
+            String technicianReportDraftId,
+            AuthenticatedUser technician
+    );
+
 //    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(
 //            String status,
 //            AuthenticatedUser technician
