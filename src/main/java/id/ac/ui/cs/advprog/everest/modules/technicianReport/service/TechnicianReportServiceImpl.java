@@ -36,72 +36,71 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         this.repairOrderRepository = repairOrderRepository;
     }
 
+    @Override
+    public GenericResponse<TechnicianReportDraftResponse> createTechnicianReportDraft(
+            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
+            AuthenticatedUser technician) {
 
-//    @Override
-//    public GenericResponse<TechnicianReportDraftResponse> createTechnicianReportDraft(
-//            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
-//            AuthenticatedUser technician) {
-//
-//        try {
-//            if (createTechnicianReportDraft == null || technician == null)
-//                throw new InvalidDataTechnicianReport("Report data or technician cannot be null");
-//
-//            String repairOrderId = createTechnicianReportDraft.getRepairOrderId();
-//            if (repairOrderId == null || repairOrderId.isEmpty())
-//                throw new InvalidDataTechnicianReport("Report data or technician cannot be null or empty");
-//
-//            RepairOrder repairOrder = repairOrderRepository.findById(UUID.fromString(repairOrderId))
-//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Repair order not found"));
-//
-//            if (repairOrder.getTechnicianId() != technician.id()){
-//                throw new IllegalAccessTechnicianReport("Technician is not authorized to this repair order");
-//            }
-//
-//            if (repairOrder.getStatus() != RepairOrderStatus.PENDING_CONFIRMATION) {
-//                throw new InvalidTechnicianReportStateException("Repair order is not in progress");
-//            }
-//
-//            if (createTechnicianReportDraft.getEstimatedTimeSeconds() == null || createTechnicianReportDraft.getEstimatedTimeSeconds() < 0) {
-//                throw new InvalidDataTechnicianReport("Estimated time cannot be less than 0");
-//            }
-//
-//            if (createTechnicianReportDraft.getEstimatedCost() == null || createTechnicianReportDraft.getEstimatedCost().compareTo(BigDecimal.ZERO) < 0) {
-//                throw new InvalidDataTechnicianReport("Estimated cost cannot be less than 0");
-//            }
-//
-//            if (createTechnicianReportDraft.getDiagnosis() == null || createTechnicianReportDraft.getDiagnosis().isEmpty()) {
-//                throw new InvalidDataTechnicianReport("Diagnosis cannot be null or empty");
-//            }
-//
-//            if (createTechnicianReportDraft.getActionPlan() == null || createTechnicianReportDraft.getActionPlan().isEmpty()) {
-//                throw new InvalidDataTechnicianReport("Action plan cannot be null or empty");
-//            }
-//
-//            TechnicianReport existedReport = technicianReportRepository.findByRepairOrderId(UUID.fromString(repairOrderId))
-//                    .orElse(null);
-//            if (existedReport != null) {
-//                throw new DatabaseException("Report already exists");
-//            }
-//
-//            TechnicianReport technicianReport = TechnicianReport.builder()
-//                    .reportId(UUID.randomUUID())
-//                    .repairOrder(repairOrder)
-//                    .technicianId(technician.id())
-//                    .diagnosis(createTechnicianReportDraft.getDiagnosis())
-//                    .actionPlan(createTechnicianReportDraft.getActionPlan())
-//                    .estimatedCost(createTechnicianReportDraft.getEstimatedCost())
-//                    .estimatedTimeSeconds(createTechnicianReportDraft.getEstimatedTimeSeconds())
-//                    .build();
-//
-//            TechnicianReport savedReport = technicianReportRepository.save(technicianReport);
-//
-//            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(savedReport);
-//
-//            return new GenericResponse<>(true, "Technician report draft created successfully", response);
-//        } catch (Exception ex) {
-//            return handleException(ex);
-//        }
-//    }
+        try {
+            if (createTechnicianReportDraft == null || technician == null)
+                throw new InvalidDataTechnicianReport("Report data or technician cannot be null");
+
+            String repairOrderId = createTechnicianReportDraft.getRepairOrderId();
+            if (repairOrderId == null || repairOrderId.isEmpty())
+                throw new InvalidDataTechnicianReport("Report data or technician cannot be null or empty");
+
+            RepairOrder repairOrder = repairOrderRepository.findById(UUID.fromString(repairOrderId))
+                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Repair order not found"));
+
+            if (repairOrder.getTechnicianId() != technician.id()){
+                throw new IllegalAccessTechnicianReport("Technician is not authorized to this repair order");
+            }
+
+            if (repairOrder.getStatus() != RepairOrderStatus.PENDING_CONFIRMATION) {
+                throw new InvalidTechnicianReportStateException("Repair order is not in progress");
+            }
+
+            if (createTechnicianReportDraft.getEstimatedTimeSeconds() == null || createTechnicianReportDraft.getEstimatedTimeSeconds() < 0) {
+                throw new InvalidDataTechnicianReport("Estimated time cannot be less than 0");
+            }
+
+            if (createTechnicianReportDraft.getEstimatedCost() == null || createTechnicianReportDraft.getEstimatedCost().compareTo(BigDecimal.ZERO) < 0) {
+                throw new InvalidDataTechnicianReport("Estimated cost cannot be less than 0");
+            }
+
+            if (createTechnicianReportDraft.getDiagnosis() == null || createTechnicianReportDraft.getDiagnosis().isEmpty()) {
+                throw new InvalidDataTechnicianReport("Diagnosis cannot be null or empty");
+            }
+
+            if (createTechnicianReportDraft.getActionPlan() == null || createTechnicianReportDraft.getActionPlan().isEmpty()) {
+                throw new InvalidDataTechnicianReport("Action plan cannot be null or empty");
+            }
+
+            TechnicianReport existedReport = technicianReportRepository.findByRepairOrderId(UUID.fromString(repairOrderId))
+                    .orElse(null);
+            if (existedReport != null) {
+                throw new DatabaseException("Report already exists");
+            }
+
+            TechnicianReport technicianReport = TechnicianReport.builder()
+                    .reportId(UUID.randomUUID())
+                    .repairOrder(repairOrder)
+                    .technicianId(technician.id())
+                    .diagnosis(createTechnicianReportDraft.getDiagnosis())
+                    .actionPlan(createTechnicianReportDraft.getActionPlan())
+                    .estimatedCost(createTechnicianReportDraft.getEstimatedCost())
+                    .estimatedTimeSeconds(createTechnicianReportDraft.getEstimatedTimeSeconds())
+                    .build();
+
+            TechnicianReport savedReport = technicianReportRepository.save(technicianReport);
+
+            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(savedReport);
+
+            return new GenericResponse<>(true, "Technician report draft created successfully", response);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
 
 //    @Override
 //    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(String status, AuthenticatedUser technician) {
