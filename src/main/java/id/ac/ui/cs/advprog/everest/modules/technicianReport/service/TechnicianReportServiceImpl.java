@@ -218,6 +218,8 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
     }
 
+
+
 //    @Override
 //    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(String status, AuthenticatedUser technician) {
 //        if (technician == null) return new GenericResponse<>(false, "Technician cannot be null", null);

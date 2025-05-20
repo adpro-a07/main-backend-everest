@@ -29,6 +29,21 @@ public interface TechnicianReportService {
             AuthenticatedUser technician
     );
 
+    GenericResponse<Void> acceptTechnicianReportSubmit(
+            String technicianReportDraftId,
+            AuthenticatedUser customer
+    );
+
+    GenericResponse<Void> rejectTechnicianReportSubmit(
+            String technicianReportDraftId,
+            AuthenticatedUser customer
+    );
+
+//        GenericResponse<TechnicianReportDraftResponse> startWork(
+//            String technicianReportDraftId,
+//            AuthenticatedUser technician
+//    );
+
 //    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(
 //            String status,
 //            AuthenticatedUser technician
