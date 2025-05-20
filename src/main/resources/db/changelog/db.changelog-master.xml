@@ -15,4 +15,6 @@
     <include file="db/changelog/2025/05/09-01-add-notnull-constraint-for-coupon.xml"/>
     <include file="db/changelog/2025/05/11-01-add-order-id-field-and-change-rating-field-name-to-score.xml"/>
     <include file="db/changelog/2025/05/11-01-remove-unnecessary-constraint.xml"/>
+    <include file="db/changelog/2025/05/12-01-init-user-request.xml"/>
+    <include file="db/changelog/2025/05/12-01-init-technician-report.xml"/>
 </databaseChangeLog>
