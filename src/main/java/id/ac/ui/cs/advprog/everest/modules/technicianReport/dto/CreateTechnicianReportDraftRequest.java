@@ -7,8 +7,8 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class CreateTechnicianReportDraft {
-    private String userRequestId;
+public class CreateTechnicianReportDraftRequest {
+    private String repairOrderId;
     private String diagnosis;
     private String actionPlan;
     private BigDecimal estimatedCost;
