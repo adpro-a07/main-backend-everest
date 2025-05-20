@@ -393,51 +393,6 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
     }
 
-//    @Override
-//    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(String status, AuthenticatedUser technician) {
-//        if (technician == null) return new GenericResponse<>(false, "Technician cannot be null", null);
-//
-//        try {
-//            List<TechnicianReport> reports = technicianReportRepository.findAllByTechnicianIdAndStatus(technician.id(), upperCase(status));
-//            List<TechnicianReportDraftResponse> response = reports.stream()
-//                    .map(this::buildTechnicianReportDraftResponse)
-//                    .toList();
-//            return new GenericResponse<>(true, "Technician reports retrieved successfully", response);
-//        } catch (DataAccessException ex) {
-//            throw new DatabaseException("Failed to retrieve technician reports", ex);
-//        }
-//    }
-
-
-//    @Override
-//    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForCustomer(String status, AuthenticatedUser customer) {
-//        if (customer == null) {
-//            return new GenericResponse<>(false, "Customer cannot be null", null);
-//        }
-//
-//        try {
-//            if ("DRAFT".equals(status)) {
-//                throw new InvalidTechnicianReportStateException("Only report above Draft can be seen by Customer");
-//            }
-//
-//            List<TechnicianReport> reports = technicianReportRepository.findAllByStatus(status);
-//            if (reports.isEmpty()) {
-//                return new GenericResponse<>(false, "No technician report submissions found", null);
-//            }
-//            reports = reports.stream()
-//                    .filter(report -> report.getRepairOrder().getCustomerId().equals(customer.id()))
-//                    .filter(report -> !report.getStatus().equals("DRAFT"))
-//                    .toList();
-//
-//            List<TechnicianReportDraftResponse> response = reports.stream()
-//                    .map(this::buildTechnicianReportDraftResponse)
-//                    .toList();
-//            return new GenericResponse<>(true, "Technician report submissions retrieved successfully", response);
-//        } catch (DataAccessException ex) {
-//            throw new DatabaseException("Failed to retrieve technician report submissions", ex);
-//        }
-//    }
-
     private TechnicianReportDraftResponse buildTechnicianReportDraftResponse(TechnicianReport report) {
         return TechnicianReportDraftResponse.builder()
                 .reportId(report.getReportId())
