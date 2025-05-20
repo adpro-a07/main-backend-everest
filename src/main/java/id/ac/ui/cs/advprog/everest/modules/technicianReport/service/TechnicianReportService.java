@@ -39,25 +39,22 @@ public interface TechnicianReportService {
             AuthenticatedUser customer
     );
 
-//        GenericResponse<TechnicianReportDraftResponse> startWork(
-//            String technicianReportDraftId,
-//            AuthenticatedUser technician
-//    );
+    GenericResponse<TechnicianReportDraftResponse> startWork(
+            String technicianReportDraftId,
+            AuthenticatedUser technician
+    );
+
+    GenericResponse<TechnicianReportDraftResponse> completeWork(
+            String technicianReportDraftId,
+            AuthenticatedUser technician
+    );
 
 //    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(
 //            String status,
 //            AuthenticatedUser technician
 //    );
 //
-//    GenericResponse<TechnicianReportDraftResponse> startWork(
-//            String technicianReportDraftId,
-//            AuthenticatedUser technician
-//    );
 //
-//    GenericResponse<TechnicianReportDraftResponse> completeWork(
-//            String technicianReportDraftId,
-//            AuthenticatedUser technician
-//    );
 //
 //    GenericResponse<Void> acceptTechnicianReportSubmit(
 //            String technicianReportDraftId,

@@ -76,9 +76,11 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                 throw new InvalidDataTechnicianReport("Action plan cannot be null or empty");
             }
 
-            TechnicianReport existedReport = technicianReportRepository.findByRepairOrderId(UUID.fromString(repairOrderId))
-                    .orElse(null);
-            if (existedReport != null) {
+            boolean hasNonRejectedReport = technicianReportRepository
+                    .findAllByRepairOrderId(UUID.fromString(repairOrderId))
+                    .stream()
+                    .anyMatch(report -> !"REJECTED".equals(report.getStatus()));
+            if (hasNonRejectedReport) {
                 throw new DatabaseException("Report already exists");
             }
 
@@ -212,9 +214,8 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
             return new GenericResponse<>(true, "Technician report draft submitted successfully", response);
-        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-                 IllegalStateTransitionException ex) {
-            return new GenericResponse<>(false, ex.getMessage(), null);
+        } catch (Exception ex) {
+            return handleException(ex);
         }
     }
 
@@ -244,9 +245,8 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReportRepository.save(technicianReport);
 
             return new GenericResponse<>(true, "Technician report draft accepted successfully", null);
-        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-                 IllegalStateTransitionException ex) {
-            return new GenericResponse<>(false, ex.getMessage(), null);
+        } catch (Exception ex) {
+            return handleException(ex);
         }
     }
 
@@ -276,11 +276,12 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReportRepository.save(technicianReport);
 
             return new GenericResponse<>(true, "Technician report draft rejected successfully", null);
-        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-                 IllegalStateTransitionException ex) {
-            return new GenericResponse<>(false, ex.getMessage(), null);
+        } catch (Exception ex) {
+            return handleException(ex);
         }
     }
+
+
 
 //    @Override
 //    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(String status, AuthenticatedUser technician) {
