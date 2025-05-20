@@ -156,7 +156,36 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
     }
 
+    @Override
+    public GenericResponse<TechnicianReportDraftResponse> deleteTechnicianReportDraft(
+            String technicianReportDraftId,
+            AuthenticatedUser technician) {
 
+        if (technicianReportDraftId == null || technician == null) {
+            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
+        }
+
+        try {
+            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
+                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
+
+            if (!technicianReport.getTechnicianId().equals(technician.id())) {
+                throw new InvalidTechnicianReportStateException("You are not authorized to delete this report");
+            }
+
+            if (!"DRAFT".equals(technicianReport.getStatus())) {
+                throw new InvalidTechnicianReportStateException("Only report drafts can be deleted");
+            }
+
+            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(technicianReport);
+
+            technicianReportRepository.delete(technicianReport);
+
+            return new GenericResponse<>(true, "Technician report draft deleted successfully", response);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
 
 //    @Override
 //    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(String status, AuthenticatedUser technician) {
