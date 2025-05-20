@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "technician_reports")
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
@@ -118,60 +119,6 @@ public class TechnicianReport {
 
     public boolean canEdit() {
         return state.canEdit();
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private UUID reportId;
-        private RepairOrder repairOrder;
-        private UUID technicianId;
-        private String diagnosis;
-        private String actionPlan;
-        private BigDecimal estimatedCost;
-        private Duration estimatedTime;
-
-        public Builder reportId(UUID reportId) {
-            this.reportId = reportId;
-            return this;
-        }
-
-        public Builder repairOrder(RepairOrder repairOrder) {
-            this.repairOrder = repairOrder;
-            return this;
-        }
-
-        public Builder technicianId(UUID technicianId) {
-            this.technicianId = technicianId;
-            return this;
-        }
-
-        public Builder diagnosis(String diagnosis) {
-            this.diagnosis = diagnosis;
-            return this;
-        }
-
-        public Builder actionPlan(String actionPlan) {
-            this.actionPlan = actionPlan;
-            return this;
-        }
-
-        public Builder estimatedCost(BigDecimal estimatedCost) {
-            this.estimatedCost = estimatedCost;
-            return this;
-        }
-
-        public Builder estimatedTime(Duration estimatedTime) {
-            this.estimatedTime = estimatedTime;
-            return this;
-        }
-
-        public TechnicianReport build() {
-            return new TechnicianReport(reportId, repairOrder, technicianId,
-                    diagnosis, actionPlan, estimatedCost, estimatedTime);
-        }
     }
 
     @PrePersist
