@@ -24,7 +24,14 @@ class TechnicianReportTest {
     void setUp() {
         reportId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
-        repairOrder = new RepairOrder(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Item Name", "Item Condition", "Issue Description", LocalDate.now(), RepairOrderStatus.PENDING_CONFIRMATION, null, null);
+        repairOrder = RepairOrder.builder()
+                .customerId(UUID.randomUUID())
+                .technicianId(technicianId)
+                .itemName("Item Name")
+                .itemCondition("Item Condition")
+                .issueDescription("Issue Description")
+                .status(RepairOrderStatus.PENDING_CONFIRMATION)
+                .build();
         report = TechnicianReport.builder()
                 .reportId(reportId)
                 .repairOrder(repairOrder)
