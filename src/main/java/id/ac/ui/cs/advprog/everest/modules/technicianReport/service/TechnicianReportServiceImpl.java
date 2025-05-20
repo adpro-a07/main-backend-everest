@@ -102,6 +102,10 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
     }
 
+
+
+
+
 //    @Override
 //    public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(String status, AuthenticatedUser technician) {
 //        if (technician == null) return new GenericResponse<>(false, "Technician cannot be null", null);
@@ -117,75 +121,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
 //        }
 //    }
 
-//    @Override
-//    public GenericResponse<TechnicianReportDraftResponse> updateTechnicianReportDraft(
-//            String technicianReportDraftId,
-//            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
-//            AuthenticatedUser technician) {
 //
-//        if (technicianReportDraftId == null || createTechnicianReportDraft == null || technician == null) {
-//            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-//        }
-//
-//        try {
-//            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
-//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
-//
-//            if (!technicianReport.getTechnicianId().equals(technician.id())) {
-//                throw new InvalidTechnicianReportStateException("You are not authorized to update this report");
-//            }
-//
-//            if (!"DRAFT".equals(technicianReport.getStatus())) {
-//                throw new InvalidTechnicianReportStateException("Only report drafts can be updated");
-//            }
-//
-//            technicianReport.setDiagnosis(createTechnicianReportDraft.getDiagnosis());
-//            technicianReport.setActionPlan(createTechnicianReportDraft.getActionPlan());
-//            technicianReport.setEstimatedCost(createTechnicianReportDraft.getEstimatedCost());
-//            technicianReport.setEstimatedTimeSeconds(createTechnicianReportDraft.getEstimatedTimeSeconds());
-//
-//            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
-//
-//            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
-//
-//            return new GenericResponse<>(true, "Technician report draft updated successfully", response);
-//        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-//                 IllegalStateTransitionException ex) {
-//            return new GenericResponse<>(false, ex.getMessage(), null);
-//        }
-//    }
-//
-//    @Override
-//    public GenericResponse<TechnicianReportDraftResponse> deleteTechnicianReportDraft(
-//            String technicianReportDraftId,
-//            AuthenticatedUser technician) {
-//
-//        if (technicianReportDraftId == null || technician == null) {
-//            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-//        }
-//
-//        try {
-//            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
-//                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
-//
-//            if (!technicianReport.getTechnicianId().equals(technician.id())) {
-//                throw new InvalidTechnicianReportStateException("You are not authorized to delete this report");
-//            }
-//
-//            if (!"DRAFT".equals(technicianReport.getStatus())) {
-//                throw new InvalidTechnicianReportStateException("Only report drafts can be deleted");
-//            }
-//
-//            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(technicianReport);
-//
-//            technicianReportRepository.delete(technicianReport);
-//
-//            return new GenericResponse<>(true, "Technician report draft deleted successfully", response);
-//        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-//                 IllegalStateTransitionException ex) {
-//            return new GenericResponse<>(false, ex.getMessage(), null);
-//        }
-//    }
 //
 //    @Override
 //    public GenericResponse<TechnicianReportDraftResponse> startWork(
