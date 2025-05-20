@@ -82,7 +82,7 @@ public class PaymentMethodServiceTest {
 
         assertTrue(response.isSuccess());
         assertEquals(1, response.getData().size());
-        assertEquals("Transfer BCA", response.getData().get(0).getName());
+        assertEquals("Transfer BCA", response.getData().getFirst().getName());
     }
 
     @Test
@@ -137,6 +137,7 @@ public class PaymentMethodServiceTest {
 
     @Test
     void testDeletePaymentMethod_Success() {
+        when(repository.existsById(id)).thenReturn(true);
         doNothing().when(repository).deleteById(id);
 
         GenericResponse<Void> response = service.delete(id);
@@ -144,5 +145,16 @@ public class PaymentMethodServiceTest {
         assertTrue(response.isSuccess());
         assertNull(response.getData());
         verify(repository).deleteById(id);
+    }
+
+    @Test
+    void testDeletePaymentMethod_NotFound() {
+        when(repository.existsById(id)).thenReturn(false);
+
+        GenericResponse<Void> response = service.delete(id);
+
+        assertFalse(response.isSuccess());
+        assertEquals("Payment method not found", response.getMessage());
+        verify(repository, never()).deleteById(id);
     }
 }
