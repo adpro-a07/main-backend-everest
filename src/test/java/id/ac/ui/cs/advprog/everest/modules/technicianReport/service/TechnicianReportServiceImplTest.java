@@ -333,6 +333,203 @@ class TechnicianReportServiceImplTest {
         verify(technicianReportRepository).findByRepairOrderId(repairOrderId);
     }
 
+    @Test
+    void updateTechnicianReportDraft_Success() {
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+        when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(mockTechnicianReport);
+
+        CreateTechnicianReportDraftRequest updateRequest = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId(repairOrderId.toString())
+                .diagnosis("Updated diagnosis")
+                .actionPlan("Updated action plan")
+                .estimatedCost(new BigDecimal("150.00"))
+                .estimatedTimeSeconds(7200L)
+                .build();
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), updateRequest, technician);
+
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+        assertEquals("Updated diagnosis", response.getData().getDiagnosis());
+        assertEquals("Updated action plan", response.getData().getActionPlan());
+        assertEquals(new BigDecimal("150.00"), response.getData().getEstimatedCost());
+        assertEquals(7200L, response.getData().getEstimatedTimeSeconds());
+
+        verify(technicianReportRepository).findByReportId(reportId);
+        verify(technicianReportRepository).save(mockTechnicianReport);
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_ReportIdNull() {
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(null, mockCreateRequest, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().toLowerCase().contains("cannot be null"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_RequestNull() {
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), null, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().toLowerCase().contains("cannot be null"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_TechnicianNull() {
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), mockCreateRequest, null);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().toLowerCase().contains("cannot be null"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_ReportNotFound() {
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.empty());
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), mockCreateRequest, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not found"));
+        verify(technicianReportRepository).findByReportId(any(UUID.class));
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_UnauthorizedTechnician() {
+        UUID differentTechnicianId = UUID.randomUUID();
+        AuthenticatedUser differentTechnician = mock(AuthenticatedUser.class);
+        when(differentTechnician.id()).thenReturn(differentTechnicianId);
+
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), mockCreateRequest, differentTechnician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not authorized"));
+        verify(technicianReportRepository).findByReportId(any(UUID.class));
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_NotDraftState() {
+        mockTechnicianReport.submit(); // Change state from DRAFT to SUBMITTED
+
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), mockCreateRequest, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Only report drafts"));
+        verify(technicianReportRepository).findByReportId(any(UUID.class));
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_NegativeEstimatedTime() {
+        CreateTechnicianReportDraftRequest request = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId(repairOrderId.toString())
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTimeSeconds(-1L)
+                .build();
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), request, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Estimated time cannot be less than 0"));
+        verify(technicianReportRepository).findByReportId(any(UUID.class));
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_NegativeEstimatedCost() {
+        CreateTechnicianReportDraftRequest request = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId(repairOrderId.toString())
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("-1.00"))
+                .estimatedTimeSeconds(3600L)
+                .build();
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), request, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Estimated cost cannot be less than 0"));
+        verify(technicianReportRepository).findByReportId(any(UUID.class));
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_EmptyDiagnosis() {
+        CreateTechnicianReportDraftRequest request = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId(repairOrderId.toString())
+                .diagnosis("")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTimeSeconds(3600L)
+                .build();
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), request, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Diagnosis cannot be null or empty"));
+        verify(technicianReportRepository).findByReportId(any(UUID.class));
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_EmptyActionPlan() {
+        CreateTechnicianReportDraftRequest request = CreateTechnicianReportDraftRequest.builder()
+                .repairOrderId(repairOrderId.toString())
+                .diagnosis("Test diagnosis")
+                .actionPlan("")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTimeSeconds(3600L)
+                .build();
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), request, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Action plan cannot be null or empty"));
+        verify(technicianReportRepository).findByReportId(any(UUID.class));
+    }
+
+    @Test
+    void updateTechnicianReportDraft_Failed_DatabaseException() {
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenThrow(mock(DataAccessException.class));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.updateTechnicianReportDraft(reportId.toString(), mockCreateRequest, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        verify(technicianReportRepository).findByReportId(any(UUID.class));
+    }
+
 
 //
 //    @Test

@@ -13,17 +13,17 @@ public interface TechnicianReportService {
             AuthenticatedUser technician
     );
 
-//    GenericResponse<TechnicianReportDraftResponse> updateTechnicianReportDraft(
-//            String technicianReportDraftId,
-//            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
-//            AuthenticatedUser technician
-//    );
-//
-//    GenericResponse<TechnicianReportDraftResponse> deleteTechnicianReportDraft(
-//            String technicianReportDraftId,
-//            AuthenticatedUser technician
-//    );
-//
+    GenericResponse<TechnicianReportDraftResponse> updateTechnicianReportDraft(
+            String technicianReportDraftId,
+            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
+            AuthenticatedUser technician
+    );
+
+    GenericResponse<TechnicianReportDraftResponse> deleteTechnicianReportDraft(
+            String technicianReportDraftId,
+            AuthenticatedUser technician
+    );
+
 //    GenericResponse<TechnicianReportDraftResponse> submitTechnicianReportDraft(
 //            String technicianReportDraftId,
 //            AuthenticatedUser technician
