@@ -530,6 +530,101 @@ class TechnicianReportServiceImplTest {
         verify(technicianReportRepository).findByReportId(any(UUID.class));
     }
 
+    @Test
+    void deleteTechnicianReportDraft_Success() {
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+        doNothing().when(technicianReportRepository).delete(any(TechnicianReport.class));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.deleteTechnicianReportDraft(reportId.toString(), technician);
+
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+        assertEquals(reportId, response.getData().getReportId());
+        assertEquals(technicianId, response.getData().getTechnicianId());
+
+        verify(technicianReportRepository).findByReportId(reportId);
+        verify(technicianReportRepository).delete(mockTechnicianReport);
+    }
+
+    @Test
+    void deleteTechnicianReportDraft_Failed_NullReportId() {
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.deleteTechnicianReportDraft(null, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("cannot be null"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void deleteTechnicianReportDraft_Failed_NullTechnician() {
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.deleteTechnicianReportDraft(reportId.toString(), null);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("cannot be null"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void deleteTechnicianReportDraft_Failed_ReportNotFound() {
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.empty());
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.deleteTechnicianReportDraft(reportId.toString(), technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not found"));
+        verify(technicianReportRepository).findByReportId(reportId);
+    }
+
+    @Test
+    void deleteTechnicianReportDraft_Failed_UnauthorizedTechnician() {
+        UUID differentTechnicianId = UUID.randomUUID();
+        AuthenticatedUser differentTechnician = mock(AuthenticatedUser.class);
+        when(differentTechnician.id()).thenReturn(differentTechnicianId);
+
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.deleteTechnicianReportDraft(reportId.toString(), differentTechnician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not authorized"));
+        verify(technicianReportRepository).findByReportId(reportId);
+    }
+
+    @Test
+    void deleteTechnicianReportDraft_Failed_NotDraftState() {
+        mockTechnicianReport.submit(); // Change state from DRAFT to SUBMITTED
+
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.deleteTechnicianReportDraft(reportId.toString(), technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("Only report drafts"));
+        verify(technicianReportRepository).findByReportId(reportId);
+    }
+
+    @Test
+    void deleteTechnicianReportDraft_Failed_DatabaseException() {
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenThrow(mock(DataAccessException.class));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.deleteTechnicianReportDraft(reportId.toString(), technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        verify(technicianReportRepository).findByReportId(reportId);
+    }
 
 //
 //    @Test
