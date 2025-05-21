@@ -20,7 +20,7 @@ public class TechnicianReport {
     @Column(name = "report_id", nullable = false, updatable = false)
     private UUID reportId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "repair_orders", nullable = false)
     private RepairOrder repairOrder;
 
@@ -107,11 +107,11 @@ public class TechnicianReport {
 
         this.state = switch (status) {
             case "DRAFT" -> new DraftState();
-            case "SUBMITTED" -> new SubmittedState();
-            case "APPROVED" -> new ApprovedState();
-            case "REJECTED" -> new RejectedState();
+            case "SUBMITTED" -> new SubmittedState(); // Report selesai dibuat oleh Teknisi dan siap dilihat oleh Customer
+            case "APPROVED" -> new ApprovedState(); // Report sudah disetujui oleh Customer
+            case "REJECTED" -> new RejectedState(); // Report sudah ditolak oleh Customer
             case "IN_PROGRESS" -> new InProgressState();
-            case "COMPLETED" -> new CompletedState();
+            case "COMPLETED" -> new CompletedState(); // Report dibuat -> Disetujui -> dimulai -> Report sudah selesai dikerjakan oleh Teknisi
             default -> throw new IllegalStateException("Unknown status: " + status);
         };
     }
