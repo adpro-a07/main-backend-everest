@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1747636357379-1" author="ryuun1corn">
+        <addColumn tableName="repair_orders">
+            <column name="payment_method_id" type="UUID"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1747636357379-2" author="ryuun1corn">
+        <addNotNullConstraint columnName="payment_method_id" tableName="repair_orders"/>
+    </changeSet>
+    <changeSet id="1747636357379-3" author="ryuun1corn">
+        <addForeignKeyConstraint baseColumnNames="payment_method_id" baseTableName="repair_orders"
+                                 constraintName="FK_REPAIR_ORDERS_ON_PAYMENT_METHOD" referencedColumnNames="id"
+                                 referencedTableName="payment_methods"/>
+    </changeSet>
+
+</databaseChangeLog>

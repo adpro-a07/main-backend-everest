@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.everest.modules.repairorder.model;
 
+import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
+import id.ac.ui.cs.advprog.everest.modules.paymentmethod.model.PaymentMethod;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -65,8 +67,13 @@ public class RepairOrder {
     @Column(nullable = false)
     private RepairOrderStatus status;
 
-    // TODO: Add chosen payment method column
-    // TODO: Add optional coupon column
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_method_id", nullable = false)
+    private PaymentMethod paymentMethod;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

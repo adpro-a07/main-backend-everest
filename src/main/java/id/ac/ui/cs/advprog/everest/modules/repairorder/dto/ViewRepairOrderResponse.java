@@ -23,4 +23,6 @@ public class ViewRepairOrderResponse {
     private LocalDate desiredServiceDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UUID paymentMethodId;
+    private UUID couponId;
 }
