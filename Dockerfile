@@ -24,7 +24,7 @@ USER ${USER_NAME}
 WORKDIR /opt/everest
 COPY --from=builder --chown=${USER_UID}:${USER_GID} /src/everest/build/libs/*.jar app.jar
 
-EXPOSE 3000
+EXPOSE 8080
 
 ENTRYPOINT ["java"]
-CMD ["-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar", "--server.port=3000"]
+CMD ["-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar", "--server.port=8080"]
