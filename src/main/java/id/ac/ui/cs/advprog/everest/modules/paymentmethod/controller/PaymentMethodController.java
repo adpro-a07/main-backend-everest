@@ -16,6 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/payment-methods")
+// TODO: getAll ga cuma admin
 @PreAuthorize("hasRole('ADMIN')")
 public class PaymentMethodController {
 
