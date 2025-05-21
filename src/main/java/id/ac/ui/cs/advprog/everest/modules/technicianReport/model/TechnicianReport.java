@@ -22,7 +22,7 @@ public class TechnicianReport {
     @Column(name = "report_id", nullable = false, updatable = false)
     private UUID reportId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "repair_orders", nullable = false)
     private RepairOrder repairOrder;
 
