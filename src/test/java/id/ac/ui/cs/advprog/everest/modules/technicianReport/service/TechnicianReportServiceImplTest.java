@@ -1173,9 +1173,10 @@ class TechnicianReportServiceImplTest {
         when(technicianReportRepository.findAllByTechnicianIdAndStatus(any(), anyString()))
                 .thenThrow(mock(DataAccessException.class));
 
-        assertThrows(DatabaseException.class, () ->
-                technicianReportService.getTechnicianReportByStatusForTechnician("DRAFT", technician));
-        verify(technicianReportRepository).findAllByTechnicianIdAndStatus(technicianId, "DRAFT");
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatusForTechnician("DRAFT", technician);
+
+        assertFalse(response.isSuccess());
     }
 
     @Test
@@ -1232,8 +1233,9 @@ class TechnicianReportServiceImplTest {
         when(technicianReportRepository.findAllByStatus(anyString()))
                 .thenThrow(mock(DataAccessException.class));
 
-        assertThrows(DatabaseException.class, () ->
-                technicianReportService.getTechnicianReportByStatusForCustomer("SUBMITTED", customer));
-        verify(technicianReportRepository).findAllByStatus("SUBMITTED");
+        GenericResponse<List<TechnicianReportDraftResponse>> response =
+                technicianReportService.getTechnicianReportByStatusForCustomer("SUBMITTED", customer);
+
+        assertFalse(response.isSuccess());
     }
 }

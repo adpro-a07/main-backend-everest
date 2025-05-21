@@ -6,9 +6,6 @@ import id.ac.ui.cs.advprog.everest.modules.repairorder.model.RepairOrder;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraftRequest;
-import id.ac.ui.cs.advprog.everest.messaging.events.RepairOrderCompletedEvent;
-import id.ac.ui.cs.advprog.everest.messaging.RepairEventPublisher;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.*;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
@@ -21,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,16 +28,12 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
 
     private final TechnicianReportRepository technicianReportRepository;
     private final RepairOrderRepository repairOrderRepository;
-    private final RepairEventPublisher repairEventPublisher;
 
     public TechnicianReportServiceImpl(
             TechnicianReportRepository technicianReportRepository,
-            RepairOrderRepository repairOrderRepository,
-            RepairEventPublisher repairEventPublisher
-    ) {
+            RepairOrderRepository repairOrderRepository) {
         this.technicianReportRepository = technicianReportRepository;
         this.repairOrderRepository = repairOrderRepository;
-        this.repairEventPublisher = repairEventPublisher;
     }
 
     @Override
@@ -60,7 +52,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             RepairOrder repairOrder = repairOrderRepository.findById(UUID.fromString(repairOrderId))
                     .orElseThrow(() -> new InvalidTechnicianReportStateException("Repair order not found"));
 
-            if (repairOrder.getTechnicianId() != technician.id()){
+            if (!repairOrder.getTechnicianId().toString().equals(technician.id().toString())){
                 throw new IllegalAccessTechnicianReport("Technician is not authorized to this repair order");
             }
 
@@ -84,6 +76,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                 throw new InvalidDataTechnicianReport("Action plan cannot be null or empty");
             }
 
+            // TODO: Please refactor this code to use a more appropriate method for checking if a report already exists
             boolean hasNonRejectedReport = technicianReportRepository
                     .findAllByRepairOrderId(UUID.fromString(repairOrderId))
                     .stream()
@@ -247,23 +240,14 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
 
             if (!"SUBMITTED".equals(technicianReport.getStatus())) {
                 throw new InvalidTechnicianReportStateException("This report is not in submitted state");
-              
-            RepairOrderCompletedEvent repairOrderCompletedEvent = RepairOrderCompletedEvent.builder()
-                    .repairOrderId(technicianReport.getUserRequest().getRequestId())
-                    .technicianId(technicianReport.getTechnicianId())
-                    .amount(technicianReport.getEstimatedCost().longValue())
-                    .completedAt(Instant.now())
-                    .build();
+            }
 
-            repairEventPublisher.publishRepairCompleted(repairOrderCompletedEvent);
+            technicianReport.approve();
+            technicianReportRepository.save(technicianReport);
 
-            technicianReport.complete();
-            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
-            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
-            return new GenericResponse<>(true, "Technician report draft completed successfully", response);
-        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-                 IllegalStateTransitionException ex) {
-            return new GenericResponse<>(false, ex.getMessage(), null);
+            return new GenericResponse<>(true, "Technician report draft accepted successfully", null);
+        } catch (Exception ex) {
+            return handleException(ex);
         }
     }
 
@@ -377,7 +361,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                     .toList();
             return new GenericResponse<>(true, "Technician reports retrieved successfully", response);
         } catch (DataAccessException ex) {
-            throw new DatabaseException("Failed to retrieve technician reports", ex);
+            return handleException(ex);
         }
     }
 
@@ -406,7 +390,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                     .toList();
             return new GenericResponse<>(true, "Technician report submissions retrieved successfully", response);
         } catch (DataAccessException ex) {
-            throw new DatabaseException("Failed to retrieve technician report submissions", ex);
+            return handleException(ex);
         }
     }
 
