@@ -45,7 +45,7 @@ public class ReportController {
         return ResponseEntity.ok(reports);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TECHNICIAN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ReportResponse> getReportDetailById(
             @PathVariable UUID id,
