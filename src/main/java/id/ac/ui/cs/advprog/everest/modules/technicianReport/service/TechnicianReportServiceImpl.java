@@ -2,6 +2,8 @@ package id.ac.ui.cs.advprog.everest.modules.technicianReport.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
+import id.ac.ui.cs.advprog.everest.messaging.RepairEventPublisher;
+import id.ac.ui.cs.advprog.everest.messaging.events.RepairOrderCompletedEvent;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.RepairOrder;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
@@ -13,6 +15,7 @@ import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.Technicia
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,12 +26,14 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
 
     private final TechnicianReportRepository technicianReportRepository;
     private final RepairOrderRepository repairOrderRepository;
+    private final RepairEventPublisher repairEventPublisher;
 
     public TechnicianReportServiceImpl(
             TechnicianReportRepository technicianReportRepository,
-            RepairOrderRepository repairOrderRepository) {
+            RepairOrderRepository repairOrderRepository, RepairEventPublisher repairEventPublisher) {
         this.technicianReportRepository = technicianReportRepository;
         this.repairOrderRepository = repairOrderRepository;
+        this.repairEventPublisher = repairEventPublisher;
     }
 
     @Override
@@ -289,8 +294,15 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             if (!"IN_PROGRESS".equals(technicianReport.getStatus())) {
                 throw new InvalidTechnicianReportStateException("Only reports in progress can be completed");
             }
+            RepairOrderCompletedEvent repairOrderCompletedEvent = RepairOrderCompletedEvent.builder()
+                    .repairOrderId(technicianReport.getReportId())
+                    .technicianId(technicianReport.getTechnicianId())
+                    .amount(technicianReport.getEstimatedCost())
+                    .completedAt(Instant.now())
+                    .build();
 
-             technicianReport.getRepairOrder().setStatus(RepairOrderStatus.COMPLETED);
+            technicianReport.getRepairOrder().setStatus(RepairOrderStatus.COMPLETED);
+            repairEventPublisher.publishRepairCompleted(repairOrderCompletedEvent);
 
             technicianReport.complete();
             TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
