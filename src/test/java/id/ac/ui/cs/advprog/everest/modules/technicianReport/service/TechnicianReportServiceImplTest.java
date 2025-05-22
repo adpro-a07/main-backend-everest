@@ -2,6 +2,8 @@ package id.ac.ui.cs.advprog.everest.modules.technicianReport.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
+import id.ac.ui.cs.advprog.everest.messaging.RepairEventPublisher;
+import id.ac.ui.cs.advprog.everest.messaging.events.RepairOrderCompletedEvent;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.*;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
@@ -36,6 +38,9 @@ class TechnicianReportServiceImplTest {
     @Mock
     private RepairOrderRepository repairOrderRepository;
 
+    @Mock
+    private RepairEventPublisher repairEventPublisher;
+
     @InjectMocks
     private TechnicianReportServiceImpl technicianReportService;
 
@@ -48,6 +53,7 @@ class TechnicianReportServiceImplTest {
     private CreateTechnicianReportDraftRequest mockCreateRequest;
     private TechnicianReport mockTechnicianReport;
     private RepairOrder mockRepairOrder;
+    private RepairOrderCompletedEvent mockRepairOrderCompletedEvent;
 
     @BeforeEach
     void setUp() {
@@ -112,6 +118,13 @@ class TechnicianReportServiceImplTest {
                 .estimatedCost(100L)
                 .estimatedTimeSeconds(3600L)
                 .build();
+
+        mockRepairOrderCompletedEvent = RepairOrderCompletedEvent.builder()
+                .repairOrderId(repairOrderId)
+                .technicianId(technicianId)
+                .amount(100L)
+                .build();
+
     }
 
     @Test
@@ -948,7 +961,7 @@ class TechnicianReportServiceImplTest {
         mockTechnicianReport.startWork(); // Set status to IN_PROGRESS
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
         when(technicianReportRepository.save(any(TechnicianReport.class))).thenReturn(mockTechnicianReport);
-
+        doNothing().when(repairEventPublisher).publishRepairCompleted(any(RepairOrderCompletedEvent.class));
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.completeWork(reportId.toString(), technician);
 
@@ -1107,4 +1120,71 @@ class TechnicianReportServiceImplTest {
 
         assertFalse(response.isSuccess());
     }
+
+    @Test
+    void getTechnicianReportById_Success_Technician() {
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.getTechnicianReportById(reportId.toString(), technician);
+
+        assertTrue(response.isSuccess());
+        assertNotNull(response.getData());
+        assertEquals(reportId, response.getData().getReportId());
+        verify(technicianReportRepository).findByReportId(reportId);
+    }
+
+    @Test
+    void getTechnicianReportById_Failed_NullReportId() {
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.getTechnicianReportById(null, technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("cannot be null"));
+        verifyNoInteractions(technicianReportRepository);
+    }
+
+    @Test
+    void getTechnicianReportById_Failed_ReportNotFound() {
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.empty());
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.getTechnicianReportById(reportId.toString(), technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not found"));
+        verify(technicianReportRepository).findByReportId(reportId);
+    }
+
+    @Test
+    void getTechnicianReportById_Failed_UnauthorizedTechnician() {
+        UUID differentTechnicianId = UUID.randomUUID();
+        AuthenticatedUser differentTechnician = mock(AuthenticatedUser.class);
+        when(differentTechnician.id()).thenReturn(differentTechnicianId);
+        when(differentTechnician.role()).thenReturn(UserRole.TECHNICIAN);
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.getTechnicianReportById(reportId.toString(), differentTechnician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        assertTrue(response.getMessage().contains("not authorized"));
+        verify(technicianReportRepository).findByReportId(reportId);
+    }
+
+    @Test
+    void getTechnicianReportById_Failed_DatabaseException() {
+        when(technicianReportRepository.findByReportId(any(UUID.class))).thenThrow(mock(DataAccessException.class));
+
+        GenericResponse<TechnicianReportDraftResponse> response =
+                technicianReportService.getTechnicianReportById(reportId.toString(), technician);
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getData());
+        verify(technicianReportRepository).findByReportId(reportId);
+    }
+
 }

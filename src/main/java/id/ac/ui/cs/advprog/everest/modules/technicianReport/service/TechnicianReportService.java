@@ -54,9 +54,13 @@ public interface TechnicianReportService {
             AuthenticatedUser technician
     );
 
-
     GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForCustomer(
             String status,
             AuthenticatedUser customer
+    );
+
+    GenericResponse<TechnicianReportDraftResponse> getTechnicianReportById(
+            String technicianReportDraftId,
+            AuthenticatedUser user
     );
 }
