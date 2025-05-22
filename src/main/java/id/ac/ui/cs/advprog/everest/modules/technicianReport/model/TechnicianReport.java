@@ -105,8 +105,12 @@ public class TechnicianReport {
         };
     }
 
-    public boolean canEdit() {
-        return state.canEdit();
+    public boolean technicianCanModify() {
+        return state.technicianCanModify();
+    }
+
+    public boolean customerCanSee() {
+        return state.customerCanSee();
     }
 
     @PrePersist

@@ -5,9 +5,4 @@ public class RejectedState extends AbstractReportState {
     public String getName() {
         return "REJECTED";
     }
-
-    @Override
-    public boolean canEdit() {
-        return false;
-    }
 }
