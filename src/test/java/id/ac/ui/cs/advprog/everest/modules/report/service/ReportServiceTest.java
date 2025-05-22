@@ -2,9 +2,10 @@ package id.ac.ui.cs.advprog.everest.modules.report.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
-import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
-import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.repository.ReportRepository;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,57 +31,109 @@ class ReportServiceTest {
     @InjectMocks
     private ReportServiceImpl reportService;
 
-    private Report sampleReport;
-    private UUID sampleReportId;
-    private AuthenticatedUser mockUser;
+    private UUID reportId;
+    private UUID userRequestId;
+    private UUID technicianId;
+    private UUID customerId;
+    private AuthenticatedUser technician;
+    private AuthenticatedUser customer;
+    private CreateTechnicianReportDraft mockCreateRequest;
+    private TechnicianReport mockTechnicianReport;
+    private UserRequest mockUserRequest;
 
     @BeforeEach
     void setUp() {
-        sampleReportId = UUID.randomUUID();
-        mockUser = new AuthenticatedUser(
-                UUID.randomUUID(),
-                "tech@example.com",
-                "Technician",
+        reportId = UUID.randomUUID();
+        userRequestId = UUID.randomUUID();
+        technicianId = UUID.randomUUID();
+        customerId = UUID.randomUUID();
+
+        technician = new AuthenticatedUser(
+                technicianId,
+                "technician@example.com",
+                "Test Technician",
                 UserRole.TECHNICIAN,
-                "555-4321",
+                "1234567890",
                 Instant.now(),
                 Instant.now(),
-                "Bandung",
+                "Jakarta",
                 null,
                 0,
                 0L
         );
 
-        sampleReport = Report.builder()
-                .id(sampleReportId)
-                .technicianName("John Doe")
-                .repairDetails("Fixed broken screen")
-                .repairDate(LocalDate.now())
-                .status(ReportStatus.COMPLETED)
+        customer = new AuthenticatedUser(
+                customerId,
+                "customer@example.com",
+                "Test Customer",
+                UserRole.CUSTOMER,
+                "0987654321",
+                Instant.now(),
+                Instant.now(),
+                "Jakarta",
+                null,
+                0,
+                0L
+        );
+
+        mockCreateRequest = new CreateTechnicianReportDraft();
+        mockCreateRequest.setUserRequestId(userRequestId.toString());
+        mockCreateRequest.setDiagnosis("Test diagnosis");
+        mockCreateRequest.setActionPlan("Test action plan");
+        mockCreateRequest.setEstimatedCost(new BigDecimal("100.00"));
+        mockCreateRequest.setEstimatedTimeSeconds(3600L);
+
+        mockUserRequest = new UserRequest();
+        mockUserRequest.setRequestId(userRequestId);
+        mockUserRequest.setUserId(customerId);
+        mockUserRequest.setUserDescription("Test user request");
+
+        mockTechnicianReport = TechnicianReport.builder()
+                .reportId(reportId)
+                .userRequest(mockUserRequest)
+                .technicianId(technicianId)
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTime(Duration.ofSeconds(3600L))
+                .build();
+        mockTechnicianReport.setStatus("COMPLETED");
+    }
+
+    private ReportResponse mapToReportResponse(TechnicianReport report) {
+        return ReportResponse.builder()
+                .id(report.getReportId())
+                .technicianId(report.getTechnicianId())
+                .diagnosis(report.getDiagnosis())
+                .actionPlan(report.getActionPlan())
+                .estimatedCost(report.getEstimatedCost())
+                .estimatedTimeSeconds(report.getEstimatedTimeSeconds())
+                .status(report.getStatus())
+                .lastUpdatedAt(report.getLastUpdatedAt())
                 .build();
     }
 
     @Test
     void testGetAllReports() {
-        when(reportRepository.findAll()).thenReturn(List.of(sampleReport));
+        when(reportRepository.findByStatus("COMPLETED")).thenReturn(List.of(mockTechnicianReport));
 
-        List<ReportResponse> result = reportService.getAllReports(mockUser);
+        List<ReportResponse> result = reportService.getAllReports(technician);
 
         assertEquals(1, result.size());
-        assertEquals(sampleReport.getTechnicianName(), result.get(0).getTechnicianName());
-        verify(reportRepository).findAll();
+        assertEquals(mockTechnicianReport.getTechnicianId(), result.get(0).getTechnicianId());
+        verify(reportRepository).findByStatus("COMPLETED");
     }
 
     @Test
     void testGetReportById() {
-        when(reportRepository.findById(sampleReportId)).thenReturn(Optional.of(sampleReport));
+        when(reportRepository.findById(reportId)).thenReturn(Optional.of(mockTechnicianReport));
 
-        ReportResponse result = reportService.getReportById(sampleReportId, mockUser);
+        ReportResponse result = reportService.getReportById(reportId, technician);
 
         assertNotNull(result);
-        assertEquals(sampleReportId.toString(), result.getId().toString());
-        assertEquals(sampleReport.getRepairDetails(), result.getRepairDetails());
-        verify(reportRepository).findById(sampleReportId);
+        assertEquals(reportId, result.getId());
+        assertEquals(mockTechnicianReport.getDiagnosis(), result.getDiagnosis());
+        verify(reportRepository).findById(reportId);
     }
 
     @Test
@@ -88,142 +142,94 @@ class ReportServiceTest {
         when(reportRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () ->
-                reportService.getReportById(nonExistentId, mockUser)
+                reportService.getReportById(nonExistentId, technician)
         );
         verify(reportRepository).findById(nonExistentId);
     }
 
     @Test
-    void testGetReportsByTechnician() {
-        when(reportRepository.findByTechnicianNameContainingIgnoreCase("John"))
-                .thenReturn(List.of(sampleReport));
-
-        List<ReportResponse> result = reportService.getReportsByTechnician("John", mockUser);
-
-        assertEquals(1, result.size());
-        assertEquals("John Doe", result.get(0).getTechnicianName());
-        verify(reportRepository).findByTechnicianNameContainingIgnoreCase("John");
-    }
-
-    @Test
-    void testGetReportsByTechnician_NoMatch() {
-        when(reportRepository.findByTechnicianNameContainingIgnoreCase("Unknown"))
-                .thenReturn(Collections.emptyList());
-
-        List<ReportResponse> result = reportService.getReportsByTechnician("Unknown", mockUser);
-        assertTrue(result.isEmpty(), "Should return empty list for unknown technician");
-    }
-
-    @Test
-    void testGetReportsByTechnician_NullInput() {
-        when(reportRepository.findByTechnicianNameContainingIgnoreCase(null))
-                .thenReturn(Collections.emptyList());
-
-        List<ReportResponse> result = reportService.getReportsByTechnician(null, mockUser);
-        assertTrue(result.isEmpty(), "Should handle null technician name");
-    }
-
-    @Test
     void testGetReportsByStatus() {
-        when(reportRepository.findByStatus(ReportStatus.COMPLETED))
-                .thenReturn(List.of(sampleReport));
+        when(reportRepository.findByStatus("COMPLETED"))
+                .thenReturn(List.of(mockTechnicianReport));
 
-        List<ReportResponse> result = reportService.getReportsByStatus(
-                ReportStatus.COMPLETED,
-                mockUser
-        );
+        List<ReportResponse> result = reportService.getReportsByStatus("COMPLETED", technician);
 
         assertEquals(1, result.size());
         assertEquals("COMPLETED", result.get(0).getStatus());
-        verify(reportRepository).findByStatus(ReportStatus.COMPLETED);
+        verify(reportRepository).findByStatus("COMPLETED");
     }
 
     @Test
-    void testGetReportsByStatus_NoReportsReturned() {
-        when(reportRepository.findByStatus(ReportStatus.CANCELLED))
-                .thenReturn(Collections.emptyList());
-
-        List<ReportResponse> result = reportService.getReportsByStatus(
-                ReportStatus.CANCELLED,
-                mockUser
-        );
-
-        assertTrue(result.isEmpty(), "Should return empty list for cancelled status");
+    void testGetReportsByStatus_NotCompleted() {
+        List<ReportResponse> result = reportService.getReportsByStatus("CANCELLED", technician);
+        assertTrue(result.isEmpty());
+        verify(reportRepository, never()).findByStatus(any());
     }
 
     @Test
-    void testGetReportsByStatus_NullStatus() {
-        when(reportRepository.findByStatus(null))
-                .thenReturn(Collections.emptyList());
+    void testGetReportsByDiagnosis() {
+        when(reportRepository.findByDiagnosisContainingIgnoreCaseAndStatus("screen", "COMPLETED"))
+                .thenReturn(List.of(mockTechnicianReport));
 
-        List<ReportResponse> result = reportService.getReportsByStatus(null, mockUser);
-        assertTrue(result.isEmpty(), "Should handle null status");
-    }
-
-    @Test
-    void testGetReportsByTechnicianAndStatus() {
-        when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(
-                "John",
-                ReportStatus.COMPLETED
-        )).thenReturn(List.of(sampleReport));
-
-        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus(
-                "John",
-                ReportStatus.COMPLETED,
-                mockUser
-        );
+        List<ReportResponse> result = reportService.getReportsByDiagnosis("screen", technician);
 
         assertEquals(1, result.size());
-        verify(reportRepository).findByTechnicianNameContainingIgnoreCaseAndStatus(
-                "John",
-                ReportStatus.COMPLETED
-        );
+        assertEquals(mockTechnicianReport.getDiagnosis(), result.get(0).getDiagnosis());
+        verify(reportRepository).findByDiagnosisContainingIgnoreCaseAndStatus("screen", "COMPLETED");
     }
 
     @Test
-    void testGetReportsByTechnicianAndStatus_PartialMatch() {
-        Report anotherReport = Report.builder()
-                .technicianName("Johnny Cash")
-                .status(ReportStatus.COMPLETED)
-                .build();
+    void testGetReportsByActionPlan() {
+        when(reportRepository.findByActionPlanContainingIgnoreCaseAndStatus("replace", "COMPLETED"))
+                .thenReturn(List.of(mockTechnicianReport));
 
-        when(reportRepository.findByTechnicianNameContainingIgnoreCaseAndStatus(
-                "john",
-                ReportStatus.COMPLETED
-        )).thenReturn(List.of(sampleReport, anotherReport));
+        List<ReportResponse> result = reportService.getReportsByActionPlan("replace", technician);
 
-        List<ReportResponse> result = reportService.getReportsByTechnicianAndStatus(
-                "john",
-                ReportStatus.COMPLETED,
-                mockUser
-        );
-
-        assertEquals(2, result.size());
-        assertEquals("John Doe", result.get(0).getTechnicianName());
-        assertEquals("Johnny Cash", result.get(1).getTechnicianName());
+        assertEquals(1, result.size());
+        assertEquals(mockTechnicianReport.getActionPlan(), result.get(0).getActionPlan());
+        verify(reportRepository).findByActionPlanContainingIgnoreCaseAndStatus("replace", "COMPLETED");
     }
 
     @Test
-    void testEmptyReportList() {
-        when(reportRepository.findAll()).thenReturn(Collections.emptyList());
+    void testGetReportsByTechnicianId() {
+        UUID techId = mockTechnicianReport.getTechnicianId();
+        when(reportRepository.findByTechnicianIdAndStatus(techId, "COMPLETED"))
+                .thenReturn(List.of(mockTechnicianReport));
 
-        List<ReportResponse> result = reportService.getAllReports(mockUser);
+        List<ReportResponse> result = reportService.getReportsByTechnicianId(techId, technician);
+
+        assertEquals(1, result.size());
+        assertEquals(techId, result.get(0).getTechnicianId());
+        verify(reportRepository).findByTechnicianIdAndStatus(techId, "COMPLETED");
+    }
+
+    @Test
+    void testGetAllReports_Empty() {
+        when(reportRepository.findByStatus("COMPLETED")).thenReturn(Collections.emptyList());
+
+        List<ReportResponse> result = reportService.getAllReports(technician);
         assertTrue(result.isEmpty(), "Should handle empty repository");
     }
 
     @Test
-    void testSpecialCharactersInTechnicianName() {
-        Report weirdNameReport = Report.builder()
-                .technicianName("Jóhn Dôe")
-                .status(ReportStatus.COMPLETED)
+    void testGetReportById_NotCompletedStatus() {
+        TechnicianReport notCompletedReport = TechnicianReport.builder()
+                .reportId(reportId)
+                .userRequest(mockUserRequest)
+                .technicianId(technicianId)
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTime(Duration.ofSeconds(3600L))
                 .build();
+        notCompletedReport.setStatus("IN_PROGRESS");
 
-        when(reportRepository.findByTechnicianNameContainingIgnoreCase("john"))
-                .thenReturn(List.of(weirdNameReport));
+        when(reportRepository.findById(reportId)).thenReturn(Optional.of(notCompletedReport));
 
-        List<ReportResponse> result = reportService.getReportsByTechnician("john", mockUser);
-
-        assertEquals(1, result.size());
-        assertEquals("Jóhn Dôe", result.get(0).getTechnicianName());
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                reportService.getReportById(reportId, technician)
+        );
+        assertEquals("Report is not completed", exception.getMessage());
+        verify(reportRepository).findById(reportId);
     }
 }
