@@ -39,4 +39,11 @@ public abstract class AbstractReportState implements ReportState {
     public boolean customerCanSee() {
         return true;
     }
+
+    @Override
+    public void readPermissions(TechnicianReport context) {
+        if (!customerCanSee()) {
+            throw new IllegalAccessTechnicianReport("Customer", "see report in draft state");
+        }
+    }
 }

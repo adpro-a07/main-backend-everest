@@ -12,6 +12,7 @@ import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReport
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.*;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.TechnicianReportRepository;
+import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
@@ -294,6 +295,11 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             if (!"IN_PROGRESS".equals(technicianReport.getStatus())) {
                 throw new InvalidTechnicianReportStateException("Only reports in progress can be completed");
             }
+
+            technicianReport.complete();
+            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
+            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
+
             RepairOrderCompletedEvent repairOrderCompletedEvent = RepairOrderCompletedEvent.builder()
                     .repairOrderId(technicianReport.getReportId())
                     .technicianId(technicianReport.getTechnicianId())
@@ -304,9 +310,6 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReport.getRepairOrder().setStatus(RepairOrderStatus.COMPLETED);
             repairEventPublisher.publishRepairCompleted(repairOrderCompletedEvent);
 
-            technicianReport.complete();
-            TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
-            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
             return new GenericResponse<>(true, "Technician report draft completed successfully", response);
         } catch (Exception ex) {
             return handleException(ex);
@@ -348,6 +351,29 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                     .toList();
             return new GenericResponse<>(true, "Technician report submissions retrieved successfully", response);
         } catch (DataAccessException ex) {
+            return handleException(ex);
+        }
+    }
+
+    @Override
+    public GenericResponse<TechnicianReportDraftResponse> getTechnicianReportById(String technicianReportId, AuthenticatedUser user) {
+        try {
+            if (technicianReportId == null)
+                throw new InvalidDataTechnicianReport("Report data cannot be null");
+
+            TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportId))
+                    .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
+
+            if (user.role() == UserRole.CUSTOMER) technicianReport.getState().readPermissions(technicianReport);
+            else if (user.role() == UserRole.TECHNICIAN) {
+                if (!technicianReport.getTechnicianId().equals(user.id())) {
+                    throw new InvalidTechnicianReportStateException("You are not authorized to view this report");
+                }
+            }
+
+            TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(technicianReport);
+            return new GenericResponse<>(true, "Technician report retrieved successfully", response);
+        } catch (Exception ex) {
             return handleException(ex);
         }
     }
