@@ -217,4 +217,43 @@ class TechnicianReportControllerTest {
 
         when(technicianReportService.deleteTechnicianReportDraft(reportId, technician)).thenReturn(response);
     }
+
+    @Test
+    void getTechnicianReportById_HappyPath() {
+        String reportId = draftResponse.getReportId().toString();
+        GenericResponse<TechnicianReportDraftResponse> response = new GenericResponse<>(true, "OK", draftResponse);
+
+        when(technicianReportService.getTechnicianReportById(reportId, technician)).thenReturn(response);
+
+        ResponseEntity<?> result = controller.getTechnicianReportById(reportId, technician);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
+
+    @Test
+    void getTechnicianReportById_Failed_NotFound() {
+        String reportId = draftResponse.getReportId().toString();
+        GenericResponse<TechnicianReportDraftResponse> response = new GenericResponse<>(false, "Not found", null);
+
+        when(technicianReportService.getTechnicianReportById(reportId, technician)).thenReturn(response);
+
+        ResponseEntity<?> result = controller.getTechnicianReportById(reportId, technician);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
+
+    @Test
+    void getTechnicianReportById_Failed_Unauthorized() {
+        String reportId = draftResponse.getReportId().toString();
+        GenericResponse<TechnicianReportDraftResponse> response = new GenericResponse<>(false, "Unauthorized", null);
+
+        when(technicianReportService.getTechnicianReportById(reportId, customer)).thenReturn(response);
+
+        ResponseEntity<?> result = controller.getTechnicianReportById(reportId, customer);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
 }

@@ -133,4 +133,15 @@ public class TechnicianReportController {
                 .submitTechnicianReportDraft(reportId, technician);
         return ResponseEntity.ok(response);
     }
+
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'CUSTOMER')")
+    @GetMapping("/{reportId}")
+    public ResponseEntity<?> getTechnicianReportById(
+            @PathVariable String reportId,
+            @CurrentUser AuthenticatedUser user
+    ) {
+        GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
+                .getTechnicianReportById(reportId, user);
+        return ResponseEntity.ok(response);
+    }
 }
