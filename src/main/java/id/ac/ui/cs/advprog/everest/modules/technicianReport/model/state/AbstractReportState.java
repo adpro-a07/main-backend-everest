@@ -39,15 +39,4 @@ public abstract class AbstractReportState implements ReportState {
     public boolean customerCanSee() {
         return true;
     }
-
-    @Override
-    public void validateState() {
-        if (!customerCanSee()) {
-            throw new IllegalAccessTechnicianReport("Customer", "view this report");
-        }
-
-        if (!technicianCanModify()) {
-            throw new IllegalAccessTechnicianReport("Technician", "modify/delete this report");
-        }
-    }
 }

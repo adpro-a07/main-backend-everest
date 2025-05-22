@@ -47,7 +47,7 @@ class TechnicianReportControllerTest {
                 .technicianId(technician.id())
                 .diagnosis("Diagnosis")
                 .actionPlan("Action")
-                .estimatedCost(BigDecimal.TEN)
+                .estimatedCost(10L)
                 .estimatedTimeSeconds(1000L)
                 .build();
     }

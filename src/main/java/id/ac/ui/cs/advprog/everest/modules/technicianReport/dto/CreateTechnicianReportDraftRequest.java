@@ -15,7 +15,7 @@ public class CreateTechnicianReportDraftRequest {
     private String repairOrderId;
     private String diagnosis;
     private String actionPlan;
-    private BigDecimal estimatedCost;
+    private Long estimatedCost;
     private Long estimatedTimeSeconds;
 
 
@@ -29,7 +29,7 @@ public class CreateTechnicianReportDraftRequest {
         if (actionPlan == null || actionPlan.isBlank()) {
             throw new InvalidDataTechnicianReport("actionPlan cannot be null or blank");
         }
-        if (estimatedCost == null || estimatedCost.compareTo(BigDecimal.ZERO) < 0) {
+        if (estimatedCost == null || estimatedCost < 0) {
             throw new InvalidDataTechnicianReport("estimatedCost cannot be null or negative");
         }
         if (estimatedTimeSeconds == null || estimatedTimeSeconds <= 0) {

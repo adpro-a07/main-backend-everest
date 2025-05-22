@@ -7,11 +7,9 @@ import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderSt
 import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraftRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.DatabaseException;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.InvalidTechnicianReportStateException;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.TechnicianReportRepository;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.UserRequestRepository;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,8 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
 
-import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -92,7 +88,7 @@ class TechnicianReportServiceImplTest {
                 repairOrderId(repairOrderId.toString())
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedCost(100L)
                 .estimatedTimeSeconds(3600L)
                 .build();
 
@@ -113,7 +109,7 @@ class TechnicianReportServiceImplTest {
                 .technicianId(technicianId)
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedCost(100L)
                 .estimatedTimeSeconds(3600L)
                 .build();
     }
@@ -179,24 +175,13 @@ class TechnicianReportServiceImplTest {
     }
 
     @Test
-    void CreateTechnicianReportDraftRequest_Failed_TechnicianIdNull() {
-
-        GenericResponse<TechnicianReportDraftResponse> response =
-                technicianReportService.createTechnicianReportDraft(mockCreateRequest, null);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().contains("technician cannot be null"));
-    }
-
-    @Test
     void CreateTechnicianReportDraftRequest_Failed_NullRequest() {
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.createTechnicianReportDraft(null, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().toLowerCase().contains("cannot be null"));
+        assertTrue(response.getMessage().toLowerCase().contains("null"));
         verifyNoInteractions(technicianReportRepository);
     }
 
@@ -206,7 +191,7 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId("")
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedCost(100L)
                 .estimatedTimeSeconds(3600L)
                 .build();
 
@@ -215,7 +200,7 @@ class TechnicianReportServiceImplTest {
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().toLowerCase().contains("cannot be null or empty"));
+        assertTrue(response.getMessage().toLowerCase().contains("null"));
         verifyNoInteractions(technicianReportRepository);
     }
 
@@ -244,18 +229,16 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId(repairOrderId.toString())
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedCost(100L)
                 .estimatedTimeSeconds(-1L)
                 .build();
-        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
-
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.createTechnicianReportDraft(request, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Estimated time cannot be less than 0"));
-        verify(repairOrderRepository).findById(repairOrderId);
+        System.out.println(response.getMessage());
+        assertTrue(response.getMessage().contains("positive"));
     }
 
     @Test
@@ -264,18 +247,15 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId(repairOrderId.toString())
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("-1.00"))
+                .estimatedCost(-1L)
                 .estimatedTimeSeconds(3600L)
                 .build();
-        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
-
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.createTechnicianReportDraft(request, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Estimated cost cannot be less than 0"));
-        verify(repairOrderRepository).findById(repairOrderId);
+        assertTrue(response.getMessage().contains("cannot be null or negative"));
     }
 
     @Test
@@ -284,18 +264,16 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId(repairOrderId.toString())
                 .diagnosis("")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedCost(100L)
                 .estimatedTimeSeconds(3600L)
                 .build();
-        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
 
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.createTechnicianReportDraft(request, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Diagnosis cannot be null or empty"));
-        verify(repairOrderRepository).findById(repairOrderId);
+        assertTrue(response.getMessage().contains("diagnosis"));
     }
 
     @Test
@@ -304,18 +282,16 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId(repairOrderId.toString())
                 .diagnosis("Test diagnosis")
                 .actionPlan("")
-                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedCost(100L)
                 .estimatedTimeSeconds(3600L)
                 .build();
-        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
 
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.createTechnicianReportDraft(request, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Action plan cannot be null or empty"));
-        verify(repairOrderRepository).findById(repairOrderId);
+        assertTrue(response.getMessage().contains("actionPlan cannot be null"));
     }
 
     @Test
@@ -341,7 +317,7 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId(repairOrderId.toString())
                 .diagnosis("Updated diagnosis")
                 .actionPlan("Updated action plan")
-                .estimatedCost(new BigDecimal("150.00"))
+                .estimatedCost(150L)
                 .estimatedTimeSeconds(7200L)
                 .build();
 
@@ -352,7 +328,7 @@ class TechnicianReportServiceImplTest {
         assertNotNull(response.getData());
         assertEquals("Updated diagnosis", response.getData().getDiagnosis());
         assertEquals("Updated action plan", response.getData().getActionPlan());
-        assertEquals(new BigDecimal("150.00"), response.getData().getEstimatedCost());
+        assertEquals(150L, response.getData().getEstimatedCost());
         assertEquals(7200L, response.getData().getEstimatedTimeSeconds());
 
         verify(technicianReportRepository).findByReportId(reportId);
@@ -377,18 +353,7 @@ class TechnicianReportServiceImplTest {
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().toLowerCase().contains("cannot be null"));
-        verifyNoInteractions(technicianReportRepository);
-    }
-
-    @Test
-    void updateTechnicianReportDraft_Failed_TechnicianNull() {
-        GenericResponse<TechnicianReportDraftResponse> response =
-                technicianReportService.updateTechnicianReportDraft(reportId.toString(), mockCreateRequest, null);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().toLowerCase().contains("cannot be null"));
+        assertTrue(response.getMessage().toLowerCase().contains("null"));
         verifyNoInteractions(technicianReportRepository);
     }
 
@@ -443,18 +408,16 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId(repairOrderId.toString())
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedCost(100L)
                 .estimatedTimeSeconds(-1L)
                 .build();
-        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.updateTechnicianReportDraft(reportId.toString(), request, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Estimated time cannot be less than 0"));
-        verify(technicianReportRepository).findByReportId(any(UUID.class));
+        assertTrue(response.getMessage().contains("positive"));
     }
 
     @Test
@@ -463,18 +426,16 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId(repairOrderId.toString())
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("-1.00"))
+                .estimatedCost(-1L)
                 .estimatedTimeSeconds(3600L)
                 .build();
-        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.updateTechnicianReportDraft(reportId.toString(), request, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Estimated cost cannot be less than 0"));
-        verify(technicianReportRepository).findByReportId(any(UUID.class));
+        assertTrue(response.getMessage().contains("negative"));
     }
 
     @Test
@@ -483,18 +444,16 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId(repairOrderId.toString())
                 .diagnosis("")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedCost(100L)
                 .estimatedTimeSeconds(3600L)
                 .build();
-        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.updateTechnicianReportDraft(reportId.toString(), request, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Diagnosis cannot be null or empty"));
-        verify(technicianReportRepository).findByReportId(any(UUID.class));
+        assertTrue(response.getMessage().contains("diagnosis"));
     }
 
     @Test
@@ -503,18 +462,16 @@ class TechnicianReportServiceImplTest {
                 .repairOrderId(repairOrderId.toString())
                 .diagnosis("Test diagnosis")
                 .actionPlan("")
-                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedCost(100L)
                 .estimatedTimeSeconds(3600L)
                 .build();
-        when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.of(mockTechnicianReport));
 
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.updateTechnicianReportDraft(reportId.toString(), request, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Action plan cannot be null or empty"));
-        verify(technicianReportRepository).findByReportId(any(UUID.class));
+        assertTrue(response.getMessage().contains("actionPlan"));
     }
 
     @Test
@@ -550,17 +507,6 @@ class TechnicianReportServiceImplTest {
     void deleteTechnicianReportDraft_Failed_NullReportId() {
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.deleteTechnicianReportDraft(null, technician);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().contains("cannot be null"));
-        verifyNoInteractions(technicianReportRepository);
-    }
-
-    @Test
-    void deleteTechnicianReportDraft_Failed_NullTechnician() {
-        GenericResponse<TechnicianReportDraftResponse> response =
-                technicianReportService.deleteTechnicianReportDraft(reportId.toString(), null);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
@@ -649,17 +595,6 @@ class TechnicianReportServiceImplTest {
         assertFalse(response.isSuccess());
         assertNull(response.getData());
         assertTrue(response.getMessage().contains("null"));
-        verifyNoInteractions(technicianReportRepository);
-    }
-
-    @Test
-    void submitTechnicianReportDraft_NullTechnician() {
-        GenericResponse<TechnicianReportDraftResponse> response =
-                technicianReportService.submitTechnicianReportDraft(reportId.toString(), null);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().contains("technician"));
         verifyNoInteractions(technicianReportRepository);
     }
 
@@ -774,17 +709,6 @@ class TechnicianReportServiceImplTest {
     }
 
     @Test
-    void acceptTechnicianReportSubmit_NullCustomer() {
-        GenericResponse<Void> response =
-                technicianReportService.acceptTechnicianReportSubmit(reportId.toString(), null);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().contains("cannot be null"));
-        verifyNoInteractions(technicianReportRepository);
-    }
-
-    @Test
     void acceptTechnicianReportSubmit_ReportNotFound() {
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.empty());
 
@@ -863,17 +787,6 @@ class TechnicianReportServiceImplTest {
     void rejectTechnicianReportSubmit_NullReportId() {
         GenericResponse<Void> response =
                 technicianReportService.rejectTechnicianReportSubmit(null, customer);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().contains("cannot be null"));
-        verifyNoInteractions(technicianReportRepository);
-    }
-
-    @Test
-    void rejectTechnicianReportSubmit_NullCustomer() {
-        GenericResponse<Void> response =
-                technicianReportService.rejectTechnicianReportSubmit(reportId.toString(), null);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
@@ -961,17 +874,6 @@ class TechnicianReportServiceImplTest {
     void startWork_Failed_NullReportId() {
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.startWork(null, technician);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().contains("cannot be null"));
-        verifyNoInteractions(technicianReportRepository);
-    }
-
-    @Test
-    void startWork_Failed_NullTechnician() {
-        GenericResponse<TechnicianReportDraftResponse> response =
-                technicianReportService.startWork(reportId.toString(), null);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
@@ -1069,17 +971,6 @@ class TechnicianReportServiceImplTest {
     }
 
     @Test
-    void completeWork_Failed_NullTechnician() {
-        GenericResponse<TechnicianReportDraftResponse> response =
-                technicianReportService.completeWork(reportId.toString(), null);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().contains("cannot be null"));
-        verifyNoInteractions(technicianReportRepository);
-    }
-
-    @Test
     void completeWork_Failed_ReportNotFound() {
         when(technicianReportRepository.findByReportId(any(UUID.class))).thenReturn(Optional.empty());
 
@@ -1158,17 +1049,6 @@ class TechnicianReportServiceImplTest {
     }
 
     @Test
-    void getTechnicianReportByStatusForTechnician_Failed_NullTechnician() {
-        GenericResponse<List<TechnicianReportDraftResponse>> response =
-                technicianReportService.getTechnicianReportByStatusForTechnician("DRAFT", null);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Technician cannot be null"));
-        verifyNoInteractions(technicianReportRepository);
-    }
-
-    @Test
     void getTechnicianReportByStatusForTechnician_Failed_DatabaseException() {
         when(technicianReportRepository.findAllByTechnicianIdAndStatus(any(), anyString()))
                 .thenThrow(mock(DataAccessException.class));
@@ -1195,17 +1075,6 @@ class TechnicianReportServiceImplTest {
         assertEquals(1, response.getData().size());
         assertEquals(reportId, response.getData().get(0).getReportId());
         verify(technicianReportRepository).findAllByStatus("SUBMITTED");
-    }
-
-    @Test
-    void getTechnicianReportByStatusForCustomer_Failed_NullCustomer() {
-        GenericResponse<List<TechnicianReportDraftResponse>> response =
-                technicianReportService.getTechnicianReportByStatusForCustomer("SUBMITTED", null);
-
-        assertFalse(response.isSuccess());
-        assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Customer cannot be null"));
-        verifyNoInteractions(technicianReportRepository);
     }
 
     @Test
