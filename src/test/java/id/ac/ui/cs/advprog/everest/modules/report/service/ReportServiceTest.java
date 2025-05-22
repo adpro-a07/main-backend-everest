@@ -85,19 +85,6 @@ class ReportServiceTest {
         mockTechnicianReport.setStatus("COMPLETED");
     }
 
-    private ReportResponse mapToReportResponse(TechnicianReport report) {
-        return ReportResponse.builder()
-                .id(report.getReportId())
-                .technicianId(report.getTechnicianId())
-                .diagnosis(report.getDiagnosis())
-                .actionPlan(report.getActionPlan())
-                .estimatedCost(report.getEstimatedCost())
-                .estimatedTimeSeconds(report.getEstimatedTimeSeconds())
-                .status(report.getStatus())
-                .lastUpdatedAt(report.getLastUpdatedAt())
-                .build();
-    }
-
     @Test
     void testGetAllReports() {
         when(reportRepository.findByStatus("COMPLETED")).thenReturn(List.of(mockTechnicianReport));

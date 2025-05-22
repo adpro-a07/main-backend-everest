@@ -1,11 +1,9 @@
 package id.ac.ui.cs.advprog.everest.modules.report.repository;
 
-import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.UserRequestRepository;
-import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
