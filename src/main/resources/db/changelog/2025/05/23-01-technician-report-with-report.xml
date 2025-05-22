@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1747939852805-4" author="dannielang">
+        <dropForeignKeyConstraint baseTableName="technician_reports" constraintName="fk_technician_reports_on_request"/>
+    </changeSet>
+    <changeSet id="1747939852805-1" author="dannielang">
+        <addColumn tableName="technician_reports">
+            <column name="repair_orders" type="UUID"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1747939852805-2" author="dannielang">
+        <addNotNullConstraint columnName="repair_orders" tableName="technician_reports"/>
+    </changeSet>
+    <changeSet id="1747939852805-3" author="dannielang">
+        <addForeignKeyConstraint baseColumnNames="repair_orders" baseTableName="technician_reports"
+                                 constraintName="FK_TECHNICIAN_REPORTS_ON_REPAIR_ORDERS" referencedColumnNames="id"
+                                 referencedTableName="repair_orders"/>
+    </changeSet>
+    <changeSet id="1747939852805-5" author="dannielang">
+        <dropColumn columnName="request_id" tableName="technician_reports"/>
+    </changeSet>
+
+</databaseChangeLog>
