@@ -40,8 +40,6 @@ class ReportRepositoryTest {
     private UUID userRequestId;
     private UUID technicianId;
     private UUID customerId;
-    private AuthenticatedUser technician;
-    private AuthenticatedUser customer;
     private CreateTechnicianReportDraft mockCreateRequest;
     private UserRequest mockUserRequest;
 
@@ -51,34 +49,6 @@ class ReportRepositoryTest {
         userRequestId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
         customerId = UUID.randomUUID();
-
-        technician = new AuthenticatedUser(
-                technicianId,
-                "technician@example.com",
-                "Test Technician",
-                UserRole.TECHNICIAN,
-                "1234567890",
-                Instant.now(),
-                Instant.now(),
-                "Jakarta",
-                null,
-                0,
-                0L
-        );
-
-        customer = new AuthenticatedUser(
-                customerId,
-                "customer@example.com",
-                "Test Customer",
-                UserRole.CUSTOMER,
-                "0987654321",
-                Instant.now(),
-                Instant.now(),
-                "Jakarta",
-                null,
-                0,
-                0L
-        );
 
         mockCreateRequest = new CreateTechnicianReportDraft();
         mockCreateRequest.setUserRequestId(userRequestId.toString());

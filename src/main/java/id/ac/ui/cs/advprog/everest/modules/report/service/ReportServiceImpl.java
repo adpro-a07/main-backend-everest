@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.everest.modules.report.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
+import id.ac.ui.cs.advprog.everest.common.exception.ResourceNotFoundException;
+import id.ac.ui.cs.advprog.everest.common.exception.ValidationException;
 import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
 import id.ac.ui.cs.advprog.everest.modules.report.repository.ReportRepository;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
@@ -32,9 +34,9 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ReportResponse getReportById(UUID id, AuthenticatedUser user) {
         TechnicianReport report = reportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Report not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found with id: " + id));
         if (!COMPLETED_STATUS.equals(report.getStatus())) {
-            throw new RuntimeException("Report is not completed");
+            throw new ValidationException("Report is not completed");
         }
         return mapToReportResponse(report);
     }

@@ -36,7 +36,6 @@ class ReportServiceTest {
     private UUID technicianId;
     private UUID customerId;
     private AuthenticatedUser technician;
-    private AuthenticatedUser customer;
     private CreateTechnicianReportDraft mockCreateRequest;
     private TechnicianReport mockTechnicianReport;
     private UserRequest mockUserRequest;
@@ -54,20 +53,6 @@ class ReportServiceTest {
                 "Test Technician",
                 UserRole.TECHNICIAN,
                 "1234567890",
-                Instant.now(),
-                Instant.now(),
-                "Jakarta",
-                null,
-                0,
-                0L
-        );
-
-        customer = new AuthenticatedUser(
-                customerId,
-                "customer@example.com",
-                "Test Customer",
-                UserRole.CUSTOMER,
-                "0987654321",
                 Instant.now(),
                 Instant.now(),
                 "Jakarta",
