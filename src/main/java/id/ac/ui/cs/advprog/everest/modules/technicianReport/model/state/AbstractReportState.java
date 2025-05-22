@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianReport.model.state;
 
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.IllegalAccessTechnicianReport;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.IllegalStateTransitionException;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
 
@@ -37,5 +38,16 @@ public abstract class AbstractReportState implements ReportState {
     @Override
     public boolean customerCanSee() {
         return true;
+    }
+
+    @Override
+    public void validateState() {
+        if (!customerCanSee()) {
+            throw new IllegalAccessTechnicianReport("Customer", "view this report");
+        }
+
+        if (!technicianCanModify()) {
+            throw new IllegalAccessTechnicianReport("Technician", "modify/delete this report");
+        }
     }
 }

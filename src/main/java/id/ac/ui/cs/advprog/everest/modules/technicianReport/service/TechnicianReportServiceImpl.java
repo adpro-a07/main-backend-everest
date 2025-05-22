@@ -42,8 +42,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             AuthenticatedUser technician) {
 
         try {
-            if (createTechnicianReportDraft == null || technician == null)
-                throw new InvalidDataTechnicianReport("Report data or technician cannot be null");
+            createTechnicianReportDraft.validate();
 
             String repairOrderId = createTechnicianReportDraft.getRepairOrderId();
             if (repairOrderId == null || repairOrderId.isEmpty())
@@ -53,27 +52,11 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                     .orElseThrow(() -> new InvalidTechnicianReportStateException("Repair order not found"));
 
             if (!repairOrder.getTechnicianId().toString().equals(technician.id().toString())){
-                throw new IllegalAccessTechnicianReport("Technician is not authorized to this repair order");
+                throw new IllegalAccessTechnicianReport("Technician", "create a report based on this repair order");
             }
 
             if (repairOrder.getStatus() != RepairOrderStatus.PENDING_CONFIRMATION) {
                 throw new InvalidTechnicianReportStateException("Repair order is not in progress");
-            }
-
-            if (createTechnicianReportDraft.getEstimatedTimeSeconds() == null || createTechnicianReportDraft.getEstimatedTimeSeconds() < 0) {
-                throw new InvalidDataTechnicianReport("Estimated time cannot be less than 0");
-            }
-
-            if (createTechnicianReportDraft.getEstimatedCost() == null || createTechnicianReportDraft.getEstimatedCost().compareTo(BigDecimal.ZERO) < 0) {
-                throw new InvalidDataTechnicianReport("Estimated cost cannot be less than 0");
-            }
-
-            if (createTechnicianReportDraft.getDiagnosis() == null || createTechnicianReportDraft.getDiagnosis().isEmpty()) {
-                throw new InvalidDataTechnicianReport("Diagnosis cannot be null or empty");
-            }
-
-            if (createTechnicianReportDraft.getActionPlan() == null || createTechnicianReportDraft.getActionPlan().isEmpty()) {
-                throw new InvalidDataTechnicianReport("Action plan cannot be null or empty");
             }
 
             // TODO: Please refactor this code to use a more appropriate method for checking if a report already exists
@@ -112,36 +95,19 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             AuthenticatedUser technician) {
 
         try {
-            if (technicianReportDraftId == null || createTechnicianReportDraft == null || technician == null)
-                throw new InvalidDataTechnicianReport("Report data or technician cannot be null");
+            createTechnicianReportDraft.validate();
+            if (technicianReportDraftId == null)
+                throw new InvalidDataTechnicianReport("Report data cannot be null");
 
             TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
                     .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
 
             if (!technicianReport.getTechnicianId().equals(technician.id())) {
-                throw new IllegalAccessTechnicianReport("You are not authorized to update this report");
+                throw new IllegalAccessTechnicianReport("Technician","update this report");
             }
 
             if (!"DRAFT".equals(technicianReport.getStatus())) {
                 throw new InvalidTechnicianReportStateException("Only report drafts can be updated");
-            }
-
-            Long estimatedTimeSeconds = createTechnicianReportDraft.getEstimatedTimeSeconds();
-            if (estimatedTimeSeconds == null || estimatedTimeSeconds < 0) {
-                throw new InvalidDataTechnicianReport("Estimated time cannot be less than 0");
-            }
-
-            BigDecimal estimatedCost = createTechnicianReportDraft.getEstimatedCost();
-            if (estimatedCost == null || estimatedCost.compareTo(BigDecimal.ZERO) < 0) {
-                throw new InvalidDataTechnicianReport("Estimated cost cannot be less than 0");
-            }
-
-            if (createTechnicianReportDraft.getDiagnosis() == null || createTechnicianReportDraft.getDiagnosis().isEmpty()) {
-                throw new InvalidDataTechnicianReport("Diagnosis cannot be null or empty");
-            }
-
-            if (createTechnicianReportDraft.getActionPlan() == null || createTechnicianReportDraft.getActionPlan().isEmpty()) {
-                throw new InvalidDataTechnicianReport("Action plan cannot be null or empty");
             }
 
             technicianReport.setDiagnosis(createTechnicianReportDraft.getDiagnosis());
@@ -164,16 +130,15 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             String technicianReportDraftId,
             AuthenticatedUser technician) {
 
-        if (technicianReportDraftId == null || technician == null) {
-            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-        }
-
         try {
+            if (technicianReportDraftId == null)
+                throw new InvalidDataTechnicianReport("Report data cannot be null");
+
             TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
                     .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
 
             if (!technicianReport.getTechnicianId().equals(technician.id())) {
-                throw new IllegalAccessTechnicianReport("You are not authorized to delete this report");
+                throw new IllegalAccessTechnicianReport("Technician" ,"delete this report");
             }
 
             if (!"DRAFT".equals(technicianReport.getStatus())) {
@@ -195,16 +160,15 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             String technicianReportDraftId,
             AuthenticatedUser technician) {
 
-        if (technicianReportDraftId == null || technician == null) {
-            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-        }
-
         try {
+            if (technicianReportDraftId == null)
+                throw new InvalidDataTechnicianReport("Report data cannot be null");
+
             TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
                     .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
 
-            if (!technicianReport.getTechnicianId().equals(technician.id())) {
-                throw new IllegalAccessTechnicianReport("You are not authorized to submit this report");
+            if (!technicianReport.getTechnicianId().toString().equals(technician.id().toString())) {
+                throw new IllegalAccessTechnicianReport("Technician" ,"submit this report");
             }
 
             if (!"DRAFT".equals(technicianReport.getStatus())) {
@@ -225,11 +189,10 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             String technicianReportDraftId,
             AuthenticatedUser customer) {
 
-        if (technicianReportDraftId == null || customer == null) {
-            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-        }
-
         try {
+            if (technicianReportDraftId == null)
+                throw new InvalidDataTechnicianReport("Report data cannot be null");
+
             TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
                     .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report draft not found"));
 
@@ -256,17 +219,16 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             String technicianReportDraftId,
             AuthenticatedUser customer) {
 
-        if (technicianReportDraftId == null || customer == null) {
-            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-        }
-
         try {
+            if (technicianReportDraftId == null)
+                throw new InvalidDataTechnicianReport("Report data cannot be null");
+
             TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
                     .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report draft not found"));
 
             RepairOrder repairOrder = technicianReport.getRepairOrder();
             if (!repairOrder.getCustomerId().equals(customer.id())) {
-                throw new IllegalAccessTechnicianReport("You are not authorized to reject this report");
+                throw new IllegalAccessTechnicianReport("Customer", "reject this report");
             }
 
             if (!"SUBMITTED".equals(technicianReport.getStatus())) {
@@ -287,11 +249,10 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             String technicianReportDraftId,
             AuthenticatedUser technician) {
 
-        if (technicianReportDraftId == null || technician == null) {
-            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-        }
-
         try {
+            if (technicianReportDraftId == null)
+                throw new InvalidDataTechnicianReport("Report data cannot be null");
+
             TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
                     .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
 
@@ -309,9 +270,8 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
             return new GenericResponse<>(true, "Technician report draft started successfully", response);
-        } catch (IllegalArgumentException | DataAccessException | InvalidTechnicianReportStateException |
-                 IllegalStateTransitionException ex) {
-            return new GenericResponse<>(false, ex.getMessage(), null);
+        } catch (Exception ex) {
+           return handleException(ex);
         }
     }
 
@@ -320,11 +280,10 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             String technicianReportDraftId,
             AuthenticatedUser technician) {
 
-        if (technicianReportDraftId == null || technician == null) {
-            return new GenericResponse<>(false, "Report data or technician cannot be null", null);
-        }
-
         try {
+            if (technicianReportDraftId == null)
+                throw new InvalidDataTechnicianReport("Report data cannot be null");
+
             TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportDraftId))
                     .orElseThrow(() -> new InvalidTechnicianReportStateException("Technician report not found"));
 
@@ -336,8 +295,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                 throw new InvalidTechnicianReportStateException("Only reports in progress can be completed");
             }
 
-            // TODO: Uncomment this line if you want to update the repair order status to COMPLETED
-            // technicianReport.getRepairOrder().setStatus(RepairOrderStatus.COMPLETED);
+             technicianReport.getRepairOrder().setStatus(RepairOrderStatus.COMPLETED);
 
             technicianReport.complete();
             TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
@@ -350,10 +308,6 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
 
     @Override
     public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(String status, AuthenticatedUser technician) {
-        if (technician == null) {
-            return new GenericResponse<>(false, "Technician cannot be null", null);
-        }
-
         try {
             List<TechnicianReport> reports = technicianReportRepository.findAllByTechnicianIdAndStatus(technician.id(), upperCase(status));
             List<TechnicianReportDraftResponse> response = reports.stream()
@@ -367,12 +321,9 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
 
     @Override
     public GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForCustomer(String status, AuthenticatedUser customer) {
-        if (customer == null) {
-            return new GenericResponse<>(false, "Customer cannot be null", null);
-        }
 
         try {
-            if ("DRAFT".equals(status)) {
+            if (status.equals("DRAFT")) {
                 throw new InvalidTechnicianReportStateException("Only report above Draft can be seen by Customer");
             }
 
