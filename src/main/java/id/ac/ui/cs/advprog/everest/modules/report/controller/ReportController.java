@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/admins/reports")
+@RequestMapping("/api/v1/admin/reports")
 public class ReportController {
 
     private final ReportService reportService;
