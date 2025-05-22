@@ -1,14 +1,21 @@
 package id.ac.ui.cs.advprog.everest.modules.report.repository;
 
-import id.ac.ui.cs.advprog.everest.modules.report.model.Report;
-import id.ac.ui.cs.advprog.everest.modules.report.model.enums.ReportStatus;
+import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.UserRequestRepository;
+import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,197 +31,233 @@ class ReportRepositoryTest {
     @Autowired
     private ReportRepository reportRepository;
 
-    private Report sampleReport;
+    @Autowired
+    private UserRequestRepository userRequestRepository;
+
+    private TechnicianReport sampleReport;
+
+    private UUID reportId;
+    private UUID userRequestId;
+    private UUID technicianId;
+    private UUID customerId;
+    private AuthenticatedUser technician;
+    private AuthenticatedUser customer;
+    private CreateTechnicianReportDraft mockCreateRequest;
+    private UserRequest mockUserRequest;
 
     @BeforeEach
     void setUp() {
-        reportRepository.deleteAll();
-        sampleReport = Report.builder()
-                .technicianName("John Doe")
-                .repairDetails("Fixed broken screen")
-                .repairDate(LocalDate.now())
-                .status(ReportStatus.COMPLETED)
+        reportId = UUID.randomUUID();
+        userRequestId = UUID.randomUUID();
+        technicianId = UUID.randomUUID();
+        customerId = UUID.randomUUID();
+
+        technician = new AuthenticatedUser(
+                technicianId,
+                "technician@example.com",
+                "Test Technician",
+                UserRole.TECHNICIAN,
+                "1234567890",
+                Instant.now(),
+                Instant.now(),
+                "Jakarta",
+                null,
+                0,
+                0L
+        );
+
+        customer = new AuthenticatedUser(
+                customerId,
+                "customer@example.com",
+                "Test Customer",
+                UserRole.CUSTOMER,
+                "0987654321",
+                Instant.now(),
+                Instant.now(),
+                "Jakarta",
+                null,
+                0,
+                0L
+        );
+
+        mockCreateRequest = new CreateTechnicianReportDraft();
+        mockCreateRequest.setUserRequestId(userRequestId.toString());
+        mockCreateRequest.setDiagnosis("Test diagnosis");
+        mockCreateRequest.setActionPlan("Test action plan");
+        mockCreateRequest.setEstimatedCost(new BigDecimal("100.00"));
+        mockCreateRequest.setEstimatedTimeSeconds(3600L);
+
+        mockUserRequest = new UserRequest();
+        mockUserRequest.setRequestId(userRequestId);
+        mockUserRequest.setUserId(customerId);
+        mockUserRequest.setUserDescription("Test user request");
+
+        sampleReport = TechnicianReport.builder()
+                .reportId(reportId)
+                .userRequest(mockUserRequest)
+                .technicianId(technicianId)
+                .diagnosis("Test diagnosis")
+                .actionPlan("Test action plan")
+                .estimatedCost(new BigDecimal("100.00"))
+                .estimatedTime(Duration.ofSeconds(3600L))
                 .build();
+        sampleReport.setStatus("COMPLETED");
+        userRequestRepository.save(mockUserRequest);
     }
 
     @Test
     void testSaveNewReport() {
-        Report saved = reportRepository.save(sampleReport);
+        TechnicianReport saved = reportRepository.save(sampleReport);
 
         assertThat(saved).isNotNull();
-        assertThat(saved.getId()).isNotNull();
-        assertThat(saved.getTechnicianName()).isEqualTo(sampleReport.getTechnicianName());
+        assertThat(saved.getReportId()).isNotNull();
+        assertThat(saved.getDiagnosis()).isEqualTo(sampleReport.getDiagnosis());
 
-        List<Report> all = reportRepository.findAll();
+        List<TechnicianReport> all = reportRepository.findAll();
         assertThat(all).hasSize(1);
     }
 
     @Test
     void testFindById() {
-        Report saved = reportRepository.save(sampleReport);
-        UUID id = saved.getId();
+        TechnicianReport saved = reportRepository.save(sampleReport);
+        UUID id = saved.getReportId();
 
-        Optional<Report> found = reportRepository.findById(id);
+        Optional<TechnicianReport> found = reportRepository.findById(id);
         assertThat(found).isPresent();
-        assertThat(found.get().getId()).isEqualTo(id);
-        assertThat(found.get().getTechnicianName()).isEqualTo(sampleReport.getTechnicianName());
+        assertThat(found.get().getReportId()).isEqualTo(id);
+        assertThat(found.get().getDiagnosis()).isEqualTo(sampleReport.getDiagnosis());
     }
 
     @Test
     void testFindByIdWithNonExistentId() {
-        Optional<Report> found = reportRepository.findById(UUID.randomUUID());
+        Optional<TechnicianReport> found = reportRepository.findById(UUID.randomUUID());
         assertThat(found).isNotPresent();
     }
 
     @Test
     void testUpdateExistingReport() {
-        Report saved = reportRepository.save(sampleReport);
-        saved.setRepairDetails("Updated details");
-        saved.setStatus(ReportStatus.COMPLETED);
+        TechnicianReport saved = reportRepository.save(sampleReport);
+        saved.setDiagnosis("Updated diagnosis");
+        saved.setStatus("COMPLETED");
 
-        Report updated = reportRepository.save(saved);
-        assertThat(updated.getRepairDetails()).isEqualTo("Updated details");
-        assertThat(updated.getStatus()).isEqualTo(ReportStatus.COMPLETED);
+        TechnicianReport updated = reportRepository.save(saved);
+        assertThat(updated.getDiagnosis()).isEqualTo("Updated diagnosis");
+        assertThat(updated.getStatus()).isEqualTo("COMPLETED");
 
-        List<Report> all = reportRepository.findAll();
+        List<TechnicianReport> all = reportRepository.findAll();
         assertThat(all).hasSize(1);
-    }
-
-    @Test
-    void testFindByTechnicianNameContainingIgnoreCase() {
-        reportRepository.save(sampleReport);
-        Report other = Report.builder()
-                .technicianName("Alice Johnson")
-                .repairDetails("Replaced motherboard")
-                .repairDate(LocalDate.now())
-                .status(ReportStatus.PENDING_CONFIRMATION)
-                .build();
-        reportRepository.save(other);
-
-        List<Report> johnDoe = reportRepository.findByTechnicianNameContainingIgnoreCase("John Doe");
-        assertThat(johnDoe).hasSize(1);
-
-        List<Report> joh = reportRepository.findByTechnicianNameContainingIgnoreCase("joh");
-        assertThat(joh).hasSize(2);
-
-        List<Report> none = reportRepository.findByTechnicianNameContainingIgnoreCase("Bob");
-        assertThat(none).isEmpty();
     }
 
     @Test
     void testFindByStatus() {
         reportRepository.save(sampleReport);
-        Report pending = Report.builder()
-                .technicianName("Alice")
-                .repairDetails("Test")
-                .repairDate(LocalDate.now())
-                .status(ReportStatus.PENDING_CONFIRMATION)
+        TechnicianReport pending = TechnicianReport.builder()
+                .reportId(UUID.randomUUID())
+                .userRequest(mockUserRequest)
+                .technicianId(UUID.randomUUID())
+                .diagnosis("Other")
+                .actionPlan("Test")
+                .estimatedCost(new BigDecimal("50.00"))
+                .estimatedTime(Duration.ofHours(1))
                 .build();
+        pending.setStatus("IN_PROGRESS");
+        pending.setLastUpdatedAt(LocalDateTime.now());
         reportRepository.save(pending);
 
-        List<Report> completed = reportRepository.findByStatus(ReportStatus.COMPLETED);
+        List<TechnicianReport> completed = reportRepository.findByStatus("COMPLETED");
         assertThat(completed).hasSize(1);
 
-        List<Report> canceled = reportRepository.findByStatus(ReportStatus.CANCELLED);
+        List<TechnicianReport> inProgress = reportRepository.findByStatus("IN_PROGRESS");
+        assertThat(inProgress).hasSize(1);
+
+        List<TechnicianReport> canceled = reportRepository.findByStatus("CANCELLED");
         assertThat(canceled).isEmpty();
     }
 
     @Test
-    void testFindByTechnicianNameAndStatus() {
+    void testFindByDiagnosisContainingIgnoreCaseAndStatus() {
+        // Set sampleReport's diagnosis to include "screen"
+        sampleReport.setDiagnosis("Screen issue");
         reportRepository.save(sampleReport);
-        Report inProgress = Report.builder()
-                .technicianName("John Doe")
-                .repairDetails("Something else")
-                .repairDate(LocalDate.now())
-                .status(ReportStatus.PENDING_CONFIRMATION)
+        TechnicianReport other = TechnicianReport.builder()
+                .reportId(UUID.randomUUID())
+                .userRequest(mockUserRequest)
+                .technicianId(UUID.randomUUID())
+                .diagnosis("Battery issue")
+                .actionPlan("Replace battery")
+                .estimatedCost(new BigDecimal("80.00"))
+                .estimatedTime(Duration.ofHours(1))
                 .build();
-        reportRepository.save(inProgress);
-        Report other = Report.builder()
-                .technicianName("Jane")
-                .repairDetails("More")
-                .repairDate(LocalDate.now())
-                .status(ReportStatus.COMPLETED)
-                .build();
+        other.setStatus("COMPLETED");
+        other.setLastUpdatedAt(LocalDateTime.now());
         reportRepository.save(other);
 
-        List<Report> johnCompleted = reportRepository
-                .findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.COMPLETED);
-        assertThat(johnCompleted).hasSize(1);
+        List<TechnicianReport> found = reportRepository.findByDiagnosisContainingIgnoreCaseAndStatus("screen", "COMPLETED");
+        assertThat(found).hasSize(1);
 
-        List<Report> johnPending = reportRepository
-                .findByTechnicianNameContainingIgnoreCaseAndStatus("John", ReportStatus.PENDING_CONFIRMATION);
-        assertThat(johnPending).hasSize(1);
+        List<TechnicianReport> found2 = reportRepository.findByDiagnosisContainingIgnoreCaseAndStatus("battery", "COMPLETED");
+        assertThat(found2).hasSize(1);
 
-        List<Report> none = reportRepository
-                .findByTechnicianNameContainingIgnoreCaseAndStatus("Bob", ReportStatus.CANCELLED);
+        List<TechnicianReport> none = reportRepository.findByDiagnosisContainingIgnoreCaseAndStatus("motherboard", "COMPLETED");
         assertThat(none).isEmpty();
     }
 
     @Test
-    void testSearchByTechnicianAndStatusQuery() {
+    void testFindByActionPlanContainingIgnoreCaseAndStatus() {
+        // Set sampleReport's action plan to include "replace"
+        sampleReport.setActionPlan("Replace screen");
         reportRepository.save(sampleReport);
-        Report other = Report.builder()
-                .technicianName("Johnathan Doe")
-                .repairDetails("Other")
-                .repairDate(LocalDate.now())
-                .status(ReportStatus.COMPLETED)
+        TechnicianReport other = TechnicianReport.builder()
+                .reportId(UUID.randomUUID())
+                .userRequest(mockUserRequest)
+                .technicianId(UUID.randomUUID())
+                .diagnosis("Other")
+                .actionPlan("Replace battery")
+                .estimatedCost(new BigDecimal("80.00"))
+                .estimatedTime(Duration.ofHours(1))
                 .build();
+        other.setStatus("COMPLETED");
+        other.setLastUpdatedAt(LocalDateTime.now());
         reportRepository.save(other);
 
-        List<Report> res = reportRepository.searchByTechnicianAndStatus("john", ReportStatus.COMPLETED);
-        assertThat(res).hasSize(2);
-    }
+        List<TechnicianReport> found = reportRepository.findByActionPlanContainingIgnoreCaseAndStatus("replace", "COMPLETED");
+        assertThat(found).hasSize(2);
 
-    @Test
-    void testFindByRepairDate() {
-        reportRepository.save(sampleReport);
-        Report yesterday = Report.builder()
-                .technicianName("Jane")
-                .repairDetails("Fix")
-                .repairDate(LocalDate.now().minusDays(1))
-                .status(ReportStatus.COMPLETED)
-                .build();
-        reportRepository.save(yesterday);
-
-        List<Report> today = reportRepository.findByRepairDate(LocalDate.now());
-        assertThat(today).hasSize(1);
-
-        List<Report> yest = reportRepository.findByRepairDate(LocalDate.now().minusDays(1));
-        assertThat(yest).hasSize(1);
-
-        List<Report> none = reportRepository.findByRepairDate(LocalDate.now().minusDays(2));
+        List<TechnicianReport> none = reportRepository.findByActionPlanContainingIgnoreCaseAndStatus("install", "COMPLETED");
         assertThat(none).isEmpty();
     }
 
     @Test
-    void testFindByRepairDateBetween() {
-        Report today = sampleReport;
-        reportRepository.save(today);
-        Report yesterday = Report.builder()
-                .technicianName("Jane")
-                .repairDetails("Fix")
-                .repairDate(LocalDate.now().minusDays(1))
-                .status(ReportStatus.COMPLETED)
+    void testSearchByTechnicianIdCompleted() {
+        UUID techId = UUID.randomUUID();
+        TechnicianReport report1 = TechnicianReport.builder()
+                .reportId(UUID.randomUUID())
+                .userRequest(mockUserRequest)
+                .technicianId(techId)
+                .diagnosis("A")
+                .actionPlan("B")
+                .estimatedCost(new BigDecimal("10.00"))
+                .estimatedTime(Duration.ofMinutes(30))
                 .build();
-        reportRepository.save(yesterday);
-        Report lastWeek = Report.builder()
-                .technicianName("Bob")
-                .repairDetails("Fix")
-                .repairDate(LocalDate.now().minusDays(7))
-                .status(ReportStatus.COMPLETED)
+        report1.setStatus("COMPLETED");
+        report1.setLastUpdatedAt(LocalDateTime.now());
+        reportRepository.save(report1);
+
+        TechnicianReport report2 = TechnicianReport.builder()
+                .reportId(UUID.randomUUID())
+                .userRequest(mockUserRequest)
+                .technicianId(techId)
+                .diagnosis("C")
+                .actionPlan("D")
+                .estimatedCost(new BigDecimal("20.00"))
+                .estimatedTime(Duration.ofMinutes(60))
                 .build();
-        reportRepository.save(lastWeek);
+        report2.setStatus("IN_PROGRESS");
+        report2.setLastUpdatedAt(LocalDateTime.now());
+        reportRepository.save(report2);
 
-        List<Report> recent = reportRepository.findByRepairDateBetween(
-                LocalDate.now().minusDays(1), LocalDate.now());
-        assertThat(recent).hasSize(2);
-
-        List<Report> allWeek = reportRepository.findByRepairDateBetween(
-                LocalDate.now().minusDays(7), LocalDate.now());
-        assertThat(allWeek).hasSize(3);
-
-        List<Report> none = reportRepository.findByRepairDateBetween(
-                LocalDate.now().minusDays(14), LocalDate.now().minusDays(8));
-        assertThat(none).isEmpty();
+        List<TechnicianReport> completed = reportRepository.searchByTechnicianIdCompleted(techId);
+        assertThat(completed).hasSize(1);
+        assertThat(completed.get(0).getStatus()).isEqualTo("COMPLETED");
     }
 }
