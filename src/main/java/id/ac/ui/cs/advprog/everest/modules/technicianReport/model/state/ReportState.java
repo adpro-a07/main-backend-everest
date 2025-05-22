@@ -9,5 +9,6 @@ public interface ReportState {
     ReportState reject(TechnicianReport context);
     ReportState startWork(TechnicianReport context);
     ReportState complete(TechnicianReport context);
-    boolean canEdit();
+    boolean technicianCanModify();
+    boolean customerCanSee();
 }

@@ -30,7 +30,12 @@ public abstract class AbstractReportState implements ReportState {
     }
 
     @Override
-    public boolean canEdit() {
+    public boolean technicianCanModify() {
         return false;
+    }
+
+    @Override
+    public boolean customerCanSee() {
+        return true;
     }
 }
