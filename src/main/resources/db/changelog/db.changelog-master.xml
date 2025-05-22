@@ -20,4 +20,6 @@
     <include file="db/changelog/2025/05/19-01-add-payment-method-reference-to-repair-orders.xml"/>
     <include file="db/changelog/2025/05/19-01-add-coupon-reference-to-repair-orders.xml"/>
     <include file="db/changelog/2025/05/23-01-technician-report-with-report.xml"/>
+    <include file="db/changelog/2025/05/23-01-changing-cost-type-to-long.xml"/>
+    <include file="db/changelog/2025/05/23-01-drop-user-request.xml"/>
 </databaseChangeLog>

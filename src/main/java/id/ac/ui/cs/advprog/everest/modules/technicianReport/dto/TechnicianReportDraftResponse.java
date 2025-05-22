@@ -17,7 +17,7 @@ public class TechnicianReportDraftResponse {
     private UUID technicianId;
     private String diagnosis;
     private String actionPlan;
-    private BigDecimal estimatedCost;
+    private Long estimatedCost;
     private Long estimatedTimeSeconds;
     private String status;
 }

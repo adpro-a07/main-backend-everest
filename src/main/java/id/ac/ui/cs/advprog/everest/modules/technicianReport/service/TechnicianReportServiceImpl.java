@@ -9,15 +9,10 @@ import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnician
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.exception.*;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.TechnicianReportRepository;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.repository.UserRequestRepository;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 

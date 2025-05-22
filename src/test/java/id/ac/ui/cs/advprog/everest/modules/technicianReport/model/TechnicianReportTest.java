@@ -38,7 +38,7 @@ class TechnicianReportTest {
                 .technicianId(technicianId)
                 .diagnosis("Compressor issue")
                 .actionPlan("Replace compressor")
-                .estimatedCost(new BigDecimal("300.00"))
+                .estimatedCost(300L)
                 .estimatedTimeSeconds(3600L)
                 .build();
     }
@@ -46,14 +46,14 @@ class TechnicianReportTest {
     @Test
     void testInitialStateIsDraft() {
         assertEquals("DRAFT", report.getStatus());
-        assertTrue(report.canEdit());
+        assertTrue(report.technicianCanModify());
     }
 
     @Test
     void testSubmitTransition() {
         report.submit();
         assertEquals("SUBMITTED", report.getStatus());
-        assertFalse(report.canEdit());
+        assertFalse(report.technicianCanModify());
     }
 
     @Test

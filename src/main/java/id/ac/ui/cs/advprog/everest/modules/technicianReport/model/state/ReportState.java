@@ -11,6 +11,4 @@ public interface ReportState {
     ReportState complete(TechnicianReport context);
     boolean technicianCanModify();
     boolean customerCanSee();
-
-    void validateState();
 }

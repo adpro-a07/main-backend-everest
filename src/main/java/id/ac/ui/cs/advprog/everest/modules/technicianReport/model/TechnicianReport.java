@@ -36,7 +36,7 @@ public class TechnicianReport {
     private String actionPlan;
 
     @Column(name = "estimated_cost", precision = 10, scale = 2)
-    private BigDecimal estimatedCost;
+    private Long estimatedCost;
 
     @Column(name = "estimated_time_seconds")
     private Long estimatedTimeSeconds;
