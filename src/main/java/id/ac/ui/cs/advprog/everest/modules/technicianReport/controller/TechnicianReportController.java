@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.everest.modules.technicianReport.controller;
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.authentication.CurrentUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.dto.ViewRepairOrderResponse;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraftRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.service.TechnicianReportService;
@@ -142,6 +143,16 @@ public class TechnicianReportController {
     ) {
         GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
                 .getTechnicianReportById(reportId, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    @GetMapping("/incoming-repair-orders")
+    public ResponseEntity<?> getRepairOrderByTechnicianId(
+            @CurrentUser AuthenticatedUser user
+    ) {
+        GenericResponse<List<ViewRepairOrderResponse>> response = technicianReportService
+                .getRepairOrderByTechnicianId(user);
         return ResponseEntity.ok(response);
     }
 }
