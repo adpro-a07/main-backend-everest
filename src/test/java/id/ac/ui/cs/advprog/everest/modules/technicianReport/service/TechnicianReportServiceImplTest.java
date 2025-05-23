@@ -32,6 +32,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TechnicianReportServiceImplTest {
 
+    @Mock(lenient = true)
+    private TechnicianReportAuditLogger auditLogger;
+
     @Mock
     private TechnicianReportRepository technicianReportRepository;
 
@@ -53,10 +56,11 @@ class TechnicianReportServiceImplTest {
     private CreateTechnicianReportDraftRequest mockCreateRequest;
     private TechnicianReport mockTechnicianReport;
     private RepairOrder mockRepairOrder;
-    private RepairOrderCompletedEvent mockRepairOrderCompletedEvent;
 
     @BeforeEach
     void setUp() {
+        doNothing().when(auditLogger).logReportAction(anyString(), anyString(), anyString());
+
         reportId = UUID.randomUUID();
         repairOrderId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
@@ -118,13 +122,6 @@ class TechnicianReportServiceImplTest {
                 .estimatedCost(100L)
                 .estimatedTimeSeconds(3600L)
                 .build();
-
-        mockRepairOrderCompletedEvent = RepairOrderCompletedEvent.builder()
-                .repairOrderId(repairOrderId)
-                .technicianId(technicianId)
-                .amount(100L)
-                .build();
-
     }
 
     @Test
