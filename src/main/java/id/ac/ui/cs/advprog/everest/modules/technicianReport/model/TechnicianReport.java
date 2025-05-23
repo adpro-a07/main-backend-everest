@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianReport.model;
 
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.state.*;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,17 +12,19 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "technician_reports")
+@Builder
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
 public class TechnicianReport {
     @Id
     @Column(name = "report_id", nullable = false, updatable = false)
     private UUID reportId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id", nullable = false)
-    private UserRequest userRequest;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "repair_orders", nullable = false)
+    private RepairOrder repairOrder;
 
     @Column(name = "technician_id", nullable = false)
     private UUID technicianId;
@@ -33,34 +36,21 @@ public class TechnicianReport {
     private String actionPlan;
 
     @Column(name = "estimated_cost", precision = 10, scale = 2)
-    private BigDecimal estimatedCost;
+    private Long estimatedCost;
 
     @Column(name = "estimated_time_seconds")
     private Long estimatedTimeSeconds;
 
+    @Builder.Default
     @Column(name = "status")
     private String status = "DRAFT";
-
 
     @Column(name = "last_updated_at")
     private LocalDateTime lastUpdatedAt;
 
+    @Builder.Default
     @Transient
     private ReportState state = new DraftState();
-
-    public TechnicianReport(UUID reportId, UserRequest userRequest, UUID technicianId,
-                            String diagnosis, String actionPlan,
-                            BigDecimal estimatedCost, Duration estimatedTime) {
-        this.reportId = reportId;
-        this.userRequest = userRequest;
-        this.technicianId = technicianId;
-        this.diagnosis = diagnosis;
-        this.actionPlan = actionPlan;
-        this.estimatedCost = estimatedCost;
-        this.estimatedTimeSeconds = estimatedTime != null ? estimatedTime.getSeconds() : null;
-        this.status = "DRAFT";
-        this.state = new DraftState();
-    }
 
     public Duration getEstimatedTime() {
         return estimatedTimeSeconds != null ? Duration.ofSeconds(estimatedTimeSeconds) : null;
@@ -115,66 +105,12 @@ public class TechnicianReport {
         };
     }
 
-    public boolean canEdit() {
-        return state.canEdit();
+    public boolean technicianCanModify() {
+        return state.technicianCanModify();
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private UUID reportId;
-        private UserRequest userRequest;
-        private UUID technicianId;
-        private String diagnosis;
-        private String actionPlan;
-        private BigDecimal estimatedCost;
-        private Duration estimatedTime;
-
-        public Builder reportId(UUID reportId) {
-            this.reportId = reportId;
-            return this;
-        }
-
-        public Builder userRequest(UserRequest userRequest) {
-            this.userRequest = userRequest;
-            return this;
-        }
-
-//        public Builder UserRequest(UserRequest userRequest) {
-//            return userRequest(userRequest);
-//        }
-
-        public Builder technicianId(UUID technicianId) {
-            this.technicianId = technicianId;
-            return this;
-        }
-
-        public Builder diagnosis(String diagnosis) {
-            this.diagnosis = diagnosis;
-            return this;
-        }
-
-        public Builder actionPlan(String actionPlan) {
-            this.actionPlan = actionPlan;
-            return this;
-        }
-
-        public Builder estimatedCost(BigDecimal estimatedCost) {
-            this.estimatedCost = estimatedCost;
-            return this;
-        }
-
-        public Builder estimatedTime(Duration estimatedTime) {
-            this.estimatedTime = estimatedTime;
-            return this;
-        }
-
-        public TechnicianReport build() {
-            return new TechnicianReport(reportId, userRequest, technicianId,
-                    diagnosis, actionPlan, estimatedCost, estimatedTime);
-        }
+    public boolean customerCanSee() {
+        return state.customerCanSee();
     }
 
     @PrePersist

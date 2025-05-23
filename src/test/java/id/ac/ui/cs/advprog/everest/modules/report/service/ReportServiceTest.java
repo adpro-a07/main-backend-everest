@@ -1,11 +1,11 @@
 package id.ac.ui.cs.advprog.everest.modules.report.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.RepairOrder;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
 import id.ac.ui.cs.advprog.everest.modules.report.repository.ReportRepository;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.UserRequest;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,9 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,18 +31,17 @@ class ReportServiceTest {
     private ReportServiceImpl reportService;
 
     private UUID reportId;
-    private UUID userRequestId;
     private UUID technicianId;
     private UUID customerId;
+    private UUID repairOrderId;
     private AuthenticatedUser technician;
-    private CreateTechnicianReportDraft mockCreateRequest;
     private TechnicianReport mockTechnicianReport;
-    private UserRequest mockUserRequest;
+    private RepairOrder mockRepairOrder;
 
     @BeforeEach
     void setUp() {
         reportId = UUID.randomUUID();
-        userRequestId = UUID.randomUUID();
+        repairOrderId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
         customerId = UUID.randomUUID();
 
@@ -61,28 +59,28 @@ class ReportServiceTest {
                 0L
         );
 
-        mockCreateRequest = new CreateTechnicianReportDraft();
-        mockCreateRequest.setUserRequestId(userRequestId.toString());
-        mockCreateRequest.setDiagnosis("Test diagnosis");
-        mockCreateRequest.setActionPlan("Test action plan");
-        mockCreateRequest.setEstimatedCost(new BigDecimal("100.00"));
-        mockCreateRequest.setEstimatedTimeSeconds(3600L);
 
-        mockUserRequest = new UserRequest();
-        mockUserRequest.setRequestId(userRequestId);
-        mockUserRequest.setUserId(customerId);
-        mockUserRequest.setUserDescription("Test user request");
+        mockRepairOrder = RepairOrder.builder()
+                .id(repairOrderId)
+                .customerId(customerId)
+                .technicianId(technicianId)
+                .itemName("Test item")
+                .itemCondition("Test condition")
+                .issueDescription("Test issue")
+                .createdAt(LocalDateTime.now())
+                .status(RepairOrderStatus.PENDING_CONFIRMATION)
+                .build();
 
         mockTechnicianReport = TechnicianReport.builder()
                 .reportId(reportId)
-                .userRequest(mockUserRequest)
+                .repairOrder(mockRepairOrder)
                 .technicianId(technicianId)
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("100.00"))
-                .estimatedTime(Duration.ofSeconds(3600L))
+                .estimatedCost(100L)
+                .estimatedTimeSeconds(3600L)
+                .status("COMPLETED")
                 .build();
-        mockTechnicianReport.setStatus("COMPLETED");
     }
 
     @Test
@@ -187,12 +185,11 @@ class ReportServiceTest {
     void testGetReportById_NotCompletedStatus() {
         TechnicianReport notCompletedReport = TechnicianReport.builder()
                 .reportId(reportId)
-                .userRequest(mockUserRequest)
                 .technicianId(technicianId)
                 .diagnosis("Test diagnosis")
                 .actionPlan("Test action plan")
-                .estimatedCost(new BigDecimal("100.00"))
-                .estimatedTime(Duration.ofSeconds(3600L))
+                .estimatedCost(100L)
+                .estimatedTimeSeconds(3600L)
                 .build();
         notCompletedReport.setStatus("IN_PROGRESS");
 

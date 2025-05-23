@@ -3,7 +3,6 @@ package id.ac.ui.cs.advprog.everest.modules.report.dto;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,7 +13,7 @@ public class ReportResponse {
     private UUID technicianId;
     private String diagnosis;
     private String actionPlan;
-    private BigDecimal estimatedCost;
+    private Long estimatedCost;
     private Long estimatedTimeSeconds;
     private String status;
     private LocalDateTime lastUpdatedAt;

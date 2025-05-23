@@ -3,7 +3,7 @@ package id.ac.ui.cs.advprog.everest.modules.technicianReport.controller;
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.authentication.CurrentUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraftRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.service.TechnicianReportService;
 import jakarta.validation.Valid;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/technician-reports")
 public class TechnicianReportController {
     private final TechnicianReportService technicianReportService;
 
@@ -24,20 +24,20 @@ public class TechnicianReportController {
     }
 
     @PreAuthorize("hasRole('TECHNICIAN')")
-    @GetMapping("/technician-reports")
-    public ResponseEntity<?> getTechnicianReportByStatus(
+    @GetMapping
+    public ResponseEntity<?> getTechnicianReportByStatusForTechnician(
             @RequestParam(value = "status", required = false) String status,
             @CurrentUser AuthenticatedUser user
     ) {
         GenericResponse<List<TechnicianReportDraftResponse>> response = technicianReportService
-                .getTechnicianReportByStatus(status, user);
+                .getTechnicianReportByStatusForTechnician(status, user);
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasRole('TECHNICIAN')")
-    @PostMapping("/technician-reports")
+    @PostMapping
     public ResponseEntity<?> createTechnicianReportDraft(
-            @Valid @RequestBody CreateTechnicianReportDraft createTechnicianReportDraft,
+            @Valid @RequestBody CreateTechnicianReportDraftRequest createTechnicianReportDraft,
             @CurrentUser AuthenticatedUser user
     ) {
         GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
@@ -46,10 +46,10 @@ public class TechnicianReportController {
     }
 
     @PreAuthorize("hasRole('TECHNICIAN')")
-    @PutMapping("/technician-reports/{reportId}")
+    @PutMapping("/{reportId}")
     public ResponseEntity<?> updateTechnicianReportDraft(
             @PathVariable String reportId,
-            @Valid @RequestBody CreateTechnicianReportDraft createTechnicianReportDraft,
+            @Valid @RequestBody CreateTechnicianReportDraftRequest createTechnicianReportDraft,
             @CurrentUser AuthenticatedUser user
     ) {
         GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
@@ -58,7 +58,7 @@ public class TechnicianReportController {
     }
 
     @PreAuthorize("hasRole('TECHNICIAN')")
-    @DeleteMapping("/technician-reports/{reportId}")
+    @DeleteMapping("/{reportId}")
     public ResponseEntity<?> deleteTechnicianReportDraft(
             @PathVariable String reportId,
             @CurrentUser AuthenticatedUser user
@@ -69,7 +69,7 @@ public class TechnicianReportController {
     }
 
     @PreAuthorize("hasRole('TECHNICIAN')")
-    @PostMapping("/technician-reports/{reportId}/start")
+    @PostMapping("/{reportId}/start")
     public ResponseEntity<?> startWork(
             @PathVariable String reportId,
             @CurrentUser AuthenticatedUser user
@@ -80,7 +80,7 @@ public class TechnicianReportController {
     }
 
     @PreAuthorize("hasRole('TECHNICIAN')")
-    @PostMapping("/technician-reports/{reportId}/complete")
+    @PostMapping("/{reportId}/complete")
     public ResponseEntity<?> completeWork(
             @PathVariable String reportId,
             @CurrentUser AuthenticatedUser user
@@ -91,19 +91,19 @@ public class TechnicianReportController {
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
-    @GetMapping("/technician-reports/submissions")
-    public ResponseEntity<?> getTechnicianReportSubmissions(
+    @GetMapping("/for-customer")
+    public ResponseEntity<?> getTechnicianReportByStatusForCustomer(
             @RequestParam(value = "status", required = false) String status,
             @CurrentUser AuthenticatedUser user
     ) {
         GenericResponse<List<TechnicianReportDraftResponse>> response = technicianReportService
-                .getTechnicianReportSubmissions(status, user);
+                .getTechnicianReportByStatusForCustomer(status, user);
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
-    @PostMapping("/technician-reports/{reportId}/accept")
-    public ResponseEntity<?> acceptTechnicianReportDraft(
+    @PostMapping("/{reportId}/accept")
+    public ResponseEntity<?> acceptTechnicianReportSubmit(
             @PathVariable String reportId,
             @CurrentUser AuthenticatedUser user
     ) {
@@ -113,8 +113,8 @@ public class TechnicianReportController {
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
-    @PostMapping("/technician-reports/{reportId}/reject")
-    public ResponseEntity<?> rejectTechnicianReportDraft(
+    @PostMapping("/{reportId}/reject")
+    public ResponseEntity<?> rejectTechnicianReportSubmit(
             @PathVariable String reportId,
             @CurrentUser AuthenticatedUser user
     ) {
@@ -124,13 +124,24 @@ public class TechnicianReportController {
     }
 
     @PreAuthorize("hasRole('TECHNICIAN')")
-    @PostMapping("/technician-reports/{reportId}/submit")
+    @PostMapping("/{reportId}/submit")
     public ResponseEntity<?> submitTechnicianReportDraft(
             @PathVariable String reportId,
             @CurrentUser AuthenticatedUser technician
     ) {
         GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
                 .submitTechnicianReportDraft(reportId, technician);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'CUSTOMER')")
+    @GetMapping("/{reportId}")
+    public ResponseEntity<?> getTechnicianReportById(
+            @PathVariable String reportId,
+            @CurrentUser AuthenticatedUser user
+    ) {
+        GenericResponse<TechnicianReportDraftResponse> response = technicianReportService
+                .getTechnicianReportById(reportId, user);
         return ResponseEntity.ok(response);
     }
 }
