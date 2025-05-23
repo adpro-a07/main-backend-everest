@@ -42,6 +42,16 @@ public class RepairOrderController {
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/repair-orders/{repairOrderId}")
+    public ResponseEntity<?> getRepairOrderById(
+            @PathVariable String repairOrderId,
+            @CurrentUser AuthenticatedUser user
+    ) {
+        GenericResponse<ViewRepairOrderResponse> response = repairOrderService.getRepairOrderById(repairOrderId, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/repair-orders/{repairOrderId}")
     public ResponseEntity<?> updateRepairOrder(
             @PathVariable String repairOrderId,
