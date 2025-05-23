@@ -10,6 +10,7 @@ import id.ac.ui.cs.advprog.everest.modules.rating.strategy.UserDeleteStrategy;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.RepairOrder;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -81,6 +82,7 @@ public class RatingServiceImpl implements RatingService {
         return ratingRepository.save(rating);
     }
 
+    @Async
     @Override
     public void deleteRating(UUID ratingId, AuthenticatedUser customer, boolean isAdmin) {
         RatingDeleteStrategy strategy = isAdmin
