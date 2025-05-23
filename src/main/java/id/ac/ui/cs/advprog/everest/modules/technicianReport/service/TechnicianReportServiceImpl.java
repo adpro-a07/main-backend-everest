@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
 import id.ac.ui.cs.advprog.everest.messaging.RepairEventPublisher;
 import id.ac.ui.cs.advprog.everest.messaging.events.RepairOrderCompletedEvent;
+import id.ac.ui.cs.advprog.everest.modules.repairorder.dto.ViewRepairOrderResponse;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.RepairOrder;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.upperCase;
 
@@ -392,6 +394,31 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         }
     }
 
+    @Override
+    public GenericResponse<List<ViewRepairOrderResponse>> getRepairOrderByTechnicianId(AuthenticatedUser user) {
+        try {
+            List<ViewRepairOrderResponse> repairOrders = repairOrderRepository.findByTechnicianId(user.id()).stream()
+                    .filter(repairOrder -> repairOrder.getStatus() == RepairOrderStatus.PENDING_CONFIRMATION)
+                    .map(ro -> ViewRepairOrderResponse.builder()
+                            .id(ro.getId())
+                            .customerId(ro.getCustomerId())
+                            .technicianId(ro.getTechnicianId())
+                            .status(ro.getStatus())
+                            .itemName(ro.getItemName())
+                            .itemCondition(ro.getItemCondition())
+                            .issueDescription(ro.getIssueDescription())
+                            .desiredServiceDate(ro.getDesiredServiceDate())
+                            .createdAt(ro.getCreatedAt())
+                            .updatedAt(ro.getUpdatedAt())
+                            .build())
+                    .collect(Collectors.toList());
+
+            return new GenericResponse<>(true, "Repair orders retrieved successfully", repairOrders);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
+
     private TechnicianReportDraftResponse buildTechnicianReportDraftResponse(TechnicianReport report) {
         return TechnicianReportDraftResponse.builder()
                 .reportId(report.getReportId())
@@ -403,18 +430,6 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                 .estimatedTimeSeconds(report.getEstimatedTimeSeconds())
                 .status(report.getStatus())
                 .build();
-    }
-
-    public List<TechnicianReport> getDraftReportsForTechnician(AuthenticatedUser technician) {
-        if (technician == null) {
-            throw new InvalidTechnicianReportStateException("Technician cannot be null");
-        }
-
-        try {
-            return technicianReportRepository.findAllByTechnicianIdAndStatus(technician.id(), "DRAFT");
-        } catch (DataAccessException ex) {
-            throw new DatabaseException("Failed to retrieve technician reports", ex);
-        }
     }
 
     private <T> GenericResponse<T> handleException(Exception ex) {
