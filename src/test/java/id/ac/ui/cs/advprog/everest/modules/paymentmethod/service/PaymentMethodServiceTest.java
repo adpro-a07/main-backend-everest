@@ -35,7 +35,6 @@ public class PaymentMethodServiceTest {
 
         id = UUID.randomUUID();
         request = new CreateAndUpdatePaymentMethodRequest();
-        request.setName("Transfer BCA");
         request.setType(PaymentType.BANK_TRANSFER);
         request.setProvider("BCA");
         request.setAccountNumber("1234567890");
