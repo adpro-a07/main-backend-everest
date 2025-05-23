@@ -19,4 +19,5 @@
     <include file="db/changelog/2025/05/12-01-init-technician-report.xml"/>
     <include file="db/changelog/2025/05/19-01-add-payment-method-reference-to-repair-orders.xml"/>
     <include file="db/changelog/2025/05/19-01-add-coupon-reference-to-repair-orders.xml"/>
+    <include file="db/changelog/2025/05/23-01-changelog.xml"/>
 </databaseChangeLog>
