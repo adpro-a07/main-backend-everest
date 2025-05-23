@@ -24,7 +24,7 @@ public class PaymentMethodController {
         this.paymentMethodService = paymentMethodService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<GenericResponse<PaymentMethodDetailDto>> createPaymentMethod(
             @Valid @RequestBody CreateAndUpdatePaymentMethodRequest request
@@ -33,7 +33,7 @@ public class PaymentMethodController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<GenericResponse<List<PaymentMethodSummaryDto>>> getAllPaymentMethods() {
         GenericResponse<List<PaymentMethodSummaryDto>> response = paymentMethodService.getAllPaymentMethods();

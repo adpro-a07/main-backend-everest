@@ -13,10 +13,6 @@ import jakarta.validation.constraints.Pattern;
 @Setter
 public class CreateAndUpdatePaymentMethodRequest {
 
-    @NotBlank
-    @Size(max = 100)
-    private String name;
-
     @NotNull
     private PaymentType type;
 
