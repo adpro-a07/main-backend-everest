@@ -130,6 +130,31 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     }
 
     @Override
+    public GenericResponse<ViewRepairOrderResponse> getRepairOrderById(String repairOrderId, AuthenticatedUser customer) {
+        if (repairOrderId == null || customer == null) {
+            throw new InvalidRepairOrderStateException("Repair order ID or customer cannot be null");
+        }
+
+        try {
+            RepairOrder repairOrder = repairOrderRepository.findById(UUID.fromString(repairOrderId))
+                    .orElseThrow(() -> new InvalidRepairOrderStateException("Repair order not found"));
+
+            if (!repairOrder.getCustomerId().equals(customer.id())) {
+                throw new InvalidRepairOrderStateException("You are not authorized to view this repair order");
+            }
+
+            ViewRepairOrderResponse responseView = getViewRepairOrderResponse(repairOrder);
+
+            return new GenericResponse<>(true, "Repair order retrieved successfully", responseView);
+
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            throw new InvalidRepairOrderStateException("Invalid repair order ID", ex);
+        } catch (DataAccessException ex) {
+            throw new DatabaseException("Failed to retrieve repair order", ex);
+        }
+    }
+
+    @Override
     public GenericResponse<ViewRepairOrderResponse> updateRepairOrder(
             String repairOrderId,
             CreateAndUpdateRepairOrderRequest request,
