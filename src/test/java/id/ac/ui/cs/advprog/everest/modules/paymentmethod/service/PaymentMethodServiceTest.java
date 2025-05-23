@@ -43,7 +43,6 @@ public class PaymentMethodServiceTest {
 
         entity = PaymentMethod.builder()
                 .id(id)
-                .name(request.getName())
                 .type(request.getType())
                 .provider(request.getProvider())
                 .accountNumber(request.getAccountNumber())
@@ -60,7 +59,7 @@ public class PaymentMethodServiceTest {
         GenericResponse<PaymentMethodDetailDto> response = service.create(request);
 
         assertTrue(response.isSuccess());
-        assertEquals("Transfer BCA", response.getData().getName());
+        assertEquals(PaymentType.BANK_TRANSFER, response.getData().getType());
         verify(repository).save(any());
     }
 
@@ -82,7 +81,7 @@ public class PaymentMethodServiceTest {
 
         assertTrue(response.isSuccess());
         assertEquals(1, response.getData().size());
-        assertEquals("Transfer BCA", response.getData().getFirst().getName());
+        assertEquals(PaymentType.BANK_TRANSFER, response.getData().getFirst().getType());
     }
 
     @Test
@@ -92,7 +91,7 @@ public class PaymentMethodServiceTest {
         GenericResponse<PaymentMethodDetailDto> response = service.readDetails(id);
 
         assertTrue(response.isSuccess());
-        assertEquals("Transfer BCA", response.getData().getName());
+        assertEquals(PaymentType.BANK_TRANSFER, response.getData().getType());
         verify(repository).findById(id);
     }
 
@@ -109,7 +108,6 @@ public class PaymentMethodServiceTest {
     @Test
     void testUpdatePaymentMethod_Success() {
         CreateAndUpdatePaymentMethodRequest newRequest = new CreateAndUpdatePaymentMethodRequest();
-        newRequest.setName("Dana");
         newRequest.setType(PaymentType.E_WALLET);
         newRequest.setProvider("Dana");
         newRequest.setAccountNumber("9876543210");
@@ -121,7 +119,7 @@ public class PaymentMethodServiceTest {
         GenericResponse<PaymentMethodDetailDto> response = service.update(id, newRequest);
 
         assertTrue(response.isSuccess());
-        assertEquals("Dana", response.getData().getName());
+        assertEquals("Dana", response.getData().getProvider());
         verify(repository).save(any());
     }
 
