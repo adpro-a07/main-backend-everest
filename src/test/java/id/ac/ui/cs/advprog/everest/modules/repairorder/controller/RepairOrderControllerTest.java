@@ -97,6 +97,56 @@ public class RepairOrderControllerTest {
         assertEquals("Forbidden", ex.getMessage());
     }
 
+    // Java
+    @Test
+    void whenGetRepairOrderById_withValidId_shouldReturnOrder() {
+        String repairOrderId = "order123";
+        GenericResponse<ViewRepairOrderResponse> expectedResponse = new GenericResponse<>(
+                true,
+                "Repair order retrieved successfully",
+                ViewRepairOrderResponse.builder().build()
+        );
+        when(repairOrderService.getRepairOrderById(repairOrderId, user)).thenReturn(expectedResponse);
+
+        ResponseEntity<?> response = controller.getRepairOrderById(repairOrderId, user);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(expectedResponse, response.getBody());
+    }
+
+    @Test
+    void whenGetRepairOrderById_notFound_shouldThrow() {
+        String repairOrderId = "notfound";
+        when(repairOrderService.getRepairOrderById(repairOrderId, user))
+                .thenThrow(new IllegalArgumentException("Repair order not found"));
+
+        Exception ex = assertThrows(IllegalArgumentException.class,
+                () -> controller.getRepairOrderById(repairOrderId, user));
+        assertEquals("Repair order not found", ex.getMessage());
+    }
+
+    @Test
+    void whenGetRepairOrderById_unauthorized_shouldThrowAccessDenied() {
+        String repairOrderId = "unauthorized";
+        when(repairOrderService.getRepairOrderById(repairOrderId, user))
+                .thenThrow(new AccessDeniedException("Not allowed"));
+
+        AccessDeniedException ex = assertThrows(AccessDeniedException.class,
+                () -> controller.getRepairOrderById(repairOrderId, user));
+        assertEquals("Not allowed", ex.getMessage());
+    }
+
+    @Test
+    void whenGetRepairOrderById_serviceThrowsGeneric_shouldThrow() {
+        String repairOrderId = "error";
+        when(repairOrderService.getRepairOrderById(repairOrderId, user))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> controller.getRepairOrderById(repairOrderId, user));
+        assertEquals("Unexpected error", ex.getMessage());
+    }
+
     @Test
     void whenUpdateRepairOrder_shouldReturnUpdatedOrder() {
         String repairOrderId = "order123";

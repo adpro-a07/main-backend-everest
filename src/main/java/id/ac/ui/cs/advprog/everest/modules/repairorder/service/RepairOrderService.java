@@ -15,6 +15,11 @@ public interface RepairOrderService {
 
     GenericResponse<List<ViewRepairOrderResponse>> getRepairOrders(AuthenticatedUser customer);
 
+    GenericResponse<ViewRepairOrderResponse> getRepairOrderById(
+            String repairOrderId,
+            AuthenticatedUser customer
+    );
+
     GenericResponse<ViewRepairOrderResponse> updateRepairOrder(
             String repairOrderId,
             CreateAndUpdateRepairOrderRequest createAndUpdateRepairOrderRequest,

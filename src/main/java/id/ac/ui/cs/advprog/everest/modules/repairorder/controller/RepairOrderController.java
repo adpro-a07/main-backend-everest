@@ -25,7 +25,7 @@ public class RepairOrderController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/repair-orders")
-    public ResponseEntity<?> createRepairOrder(
+    public ResponseEntity<GenericResponse<ViewRepairOrderResponse>> createRepairOrder(
             @Valid @RequestBody CreateAndUpdateRepairOrderRequest createAndUpdateRepairOrderRequest,
             @CurrentUser AuthenticatedUser user
     ) {
@@ -36,14 +36,24 @@ public class RepairOrderController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/repair-orders")
-    public ResponseEntity<?> getRepairOrders(@CurrentUser AuthenticatedUser user) {
+    public ResponseEntity<GenericResponse<List<ViewRepairOrderResponse>>> getRepairOrders(@CurrentUser AuthenticatedUser user) {
         GenericResponse<List<ViewRepairOrderResponse>> response = repairOrderService.getRepairOrders(user);
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/repair-orders/{repairOrderId}")
+    public ResponseEntity<GenericResponse<ViewRepairOrderResponse>> getRepairOrderById(
+            @PathVariable String repairOrderId,
+            @CurrentUser AuthenticatedUser user
+    ) {
+        GenericResponse<ViewRepairOrderResponse> response = repairOrderService.getRepairOrderById(repairOrderId, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/repair-orders/{repairOrderId}")
-    public ResponseEntity<?> updateRepairOrder(
+    public ResponseEntity<GenericResponse<ViewRepairOrderResponse>> updateRepairOrder(
             @PathVariable String repairOrderId,
             @Valid @RequestBody CreateAndUpdateRepairOrderRequest createAndUpdateRepairOrderRequest,
             @CurrentUser AuthenticatedUser user
@@ -55,7 +65,7 @@ public class RepairOrderController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/repair-orders/{repairOrderId}")
-    public ResponseEntity<?> deleteRepairOrder(
+    public ResponseEntity<GenericResponse<Void>> deleteRepairOrder(
             @PathVariable String repairOrderId,
             @CurrentUser AuthenticatedUser user
     ) {
