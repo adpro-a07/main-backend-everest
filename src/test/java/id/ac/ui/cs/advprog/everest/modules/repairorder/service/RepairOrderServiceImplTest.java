@@ -304,6 +304,56 @@ class RepairOrderServiceImplTest {
         verify(repairOrderRepository).save(any(RepairOrder.class));
     }
 
+    @Test
+    void createRepairOrder_NullPointerInPaymentMethod_ThrowsException() {
+        // Arrange
+        when(userServiceGrpcClient.getRandomTechnician()).thenReturn(randomTechnicianResponse);
+        when(paymentMethodRepository.findById(paymentMethodId)).thenThrow(new NullPointerException());
+
+        // Act & Assert
+        assertThrows(InvalidRepairOrderStateException.class, () ->
+                repairOrderService.createRepairOrder(validRequest, customer)
+        );
+        verify(userServiceGrpcClient).getRandomTechnician();
+        verify(paymentMethodRepository).findById(paymentMethodId);
+        verifyNoInteractions(couponRepository);
+        verifyNoInteractions(repairOrderRepository);
+    }
+
+    @Test
+    void createRepairOrder_NullPointerInCoupon_ThrowsException() {
+        // Arrange
+        when(userServiceGrpcClient.getRandomTechnician()).thenReturn(randomTechnicianResponse);
+        when(paymentMethodRepository.findById(paymentMethodId)).thenReturn(Optional.of(paymentMethod));
+        when(couponRepository.findById(couponId)).thenThrow(new NullPointerException());
+
+        // Act & Assert
+        assertThrows(InvalidRepairOrderStateException.class, () ->
+                repairOrderService.createRepairOrder(validRequest, customer)
+        );
+        verify(userServiceGrpcClient).getRandomTechnician();
+        verify(paymentMethodRepository).findById(paymentMethodId);
+        verify(couponRepository).findById(couponId);
+        verifyNoInteractions(repairOrderRepository);
+    }
+
+    @Test
+    void createRepairOrder_IllegalArgumentInCoupon_ThrowsException() {
+        // Arrange
+        when(userServiceGrpcClient.getRandomTechnician()).thenReturn(randomTechnicianResponse);
+        when(paymentMethodRepository.findById(paymentMethodId)).thenReturn(Optional.of(paymentMethod));
+        when(couponRepository.findById(couponId)).thenThrow(new IllegalArgumentException());
+
+        // Act & Assert
+        assertThrows(InvalidRepairOrderStateException.class, () ->
+                repairOrderService.createRepairOrder(validRequest, customer)
+        );
+        verify(userServiceGrpcClient).getRandomTechnician();
+        verify(paymentMethodRepository).findById(paymentMethodId);
+        verify(couponRepository).findById(couponId);
+        verifyNoInteractions(repairOrderRepository);
+    }
+
     // GET REPAIR ORDERS TESTS
     @Test
     void getRepairOrders_Success() {
@@ -364,6 +414,95 @@ class RepairOrderServiceImplTest {
         );
 
         verify(repairOrderRepository).findByCustomerId(customerId);
+    }
+
+    @Test
+    void getRepairOrderById_Success() {
+        String repairOrderId = sampleRepairOrder.getId().toString();
+        when(repairOrderRepository.findById(sampleRepairOrder.getId())).thenReturn(Optional.of(sampleRepairOrder));
+
+        GenericResponse<ViewRepairOrderResponse> response = repairOrderService.getRepairOrderById(repairOrderId, customer);
+
+        assertTrue(response.isSuccess());
+        assertEquals("Repair order retrieved successfully", response.getMessage());
+        assertNotNull(response.getData());
+        assertEquals(sampleRepairOrder.getId(), response.getData().getId());
+        assertEquals(customerId, response.getData().getCustomerId());
+
+        verify(repairOrderRepository).findById(sampleRepairOrder.getId());
+    }
+
+    @Test
+    void getRepairOrderById_NullId_ThrowsException() {
+        assertThrows(InvalidRepairOrderStateException.class, () ->
+                repairOrderService.getRepairOrderById(null, customer)
+        );
+        verifyNoInteractions(repairOrderRepository);
+    }
+
+    @Test
+    void getRepairOrderById_NullCustomer_ThrowsException() {
+        String repairOrderId = sampleRepairOrder.getId().toString();
+        assertThrows(InvalidRepairOrderStateException.class, () ->
+                repairOrderService.getRepairOrderById(repairOrderId, null)
+        );
+        verifyNoInteractions(repairOrderRepository);
+    }
+
+    @Test
+    void getRepairOrderById_InvalidUUID_ThrowsException() {
+        String invalidId = "not-a-uuid";
+        assertThrows(InvalidRepairOrderStateException.class, () ->
+                repairOrderService.getRepairOrderById(invalidId, customer)
+        );
+        verifyNoInteractions(repairOrderRepository);
+    }
+
+    @Test
+    void getRepairOrderById_OrderNotFound_ThrowsException() {
+        String repairOrderId = UUID.randomUUID().toString();
+        when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        assertThrows(InvalidRepairOrderStateException.class, () ->
+                repairOrderService.getRepairOrderById(repairOrderId, customer)
+        );
+        verify(repairOrderRepository).findById(any(UUID.class));
+    }
+
+    @Test
+    void getRepairOrderById_UnauthorizedCustomer_ThrowsException() {
+        String repairOrderId = sampleRepairOrder.getId().toString();
+        UUID differentCustomerId = UUID.randomUUID();
+        AuthenticatedUser differentCustomer = new AuthenticatedUser(
+                differentCustomerId,
+                "other@example.com",
+                "Other",
+                UserRole.CUSTOMER,
+                "1234567890",
+                Instant.now(),
+                Instant.now(),
+                "Jakarta",
+                null,
+                0,
+                0L
+        );
+        when(repairOrderRepository.findById(sampleRepairOrder.getId())).thenReturn(Optional.of(sampleRepairOrder));
+
+        assertThrows(InvalidRepairOrderStateException.class, () ->
+                repairOrderService.getRepairOrderById(repairOrderId, differentCustomer)
+        );
+        verify(repairOrderRepository).findById(sampleRepairOrder.getId());
+    }
+
+    @Test
+    void getRepairOrderById_DatabaseException_ThrowsException() {
+        String repairOrderId = sampleRepairOrder.getId().toString();
+        when(repairOrderRepository.findById(sampleRepairOrder.getId())).thenThrow(mock(DataAccessException.class));
+
+        assertThrows(DatabaseException.class, () ->
+                repairOrderService.getRepairOrderById(repairOrderId, customer)
+        );
+        verify(repairOrderRepository).findById(sampleRepairOrder.getId());
     }
 
     // UPDATE REPAIR ORDER TESTS
