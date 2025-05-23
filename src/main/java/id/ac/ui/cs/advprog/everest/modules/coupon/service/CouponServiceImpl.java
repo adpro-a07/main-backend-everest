@@ -38,7 +38,6 @@ public class CouponServiceImpl implements CouponService {
         // Convert DTO ke Entity
         Coupon coupon = convertToEntity(couponRequest);
 
-
         // Validasi unik code
         if (!isValidCoupon(coupon)) {
             throw new IllegalArgumentException("Invalid coupon data");
