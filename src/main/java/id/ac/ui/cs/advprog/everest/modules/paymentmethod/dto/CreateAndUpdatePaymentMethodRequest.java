@@ -6,14 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.validation.constraints.Pattern;
+
 
 @Getter
 @Setter
 public class CreateAndUpdatePaymentMethodRequest {
-
-    @NotBlank
-    @Size(max = 100)
-    private String name;
 
     @NotNull
     private PaymentType type;
@@ -24,6 +22,7 @@ public class CreateAndUpdatePaymentMethodRequest {
 
     @NotBlank
     @Size(min = 10, max = 30)
+    @Pattern(regexp = "\\d+", message = "Account number must contain only digits")
     private String accountNumber;
 
     @NotBlank

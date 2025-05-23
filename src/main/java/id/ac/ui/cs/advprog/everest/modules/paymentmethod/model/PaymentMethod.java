@@ -26,11 +26,6 @@ public class PaymentMethod {
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @NotBlank
-    @Size(max = 100)
-    @Column(nullable = false, unique = true)
-    private String name;
-
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
