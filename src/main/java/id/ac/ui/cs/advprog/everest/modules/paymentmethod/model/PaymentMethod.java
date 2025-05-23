@@ -26,12 +26,6 @@ public class PaymentMethod {
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    //TODO: nama gaperlu
-    @NotBlank
-    @Size(max = 100)
-    @Column(nullable = false, unique = true)
-    private String name;
-
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -41,7 +35,7 @@ public class PaymentMethod {
     @Size(max = 100)
     @Column(nullable = false)
     private String provider;
-//TODO: Acc Num masihh bisa huruf
+
     @NotBlank
     @Size(max = 30)
     @Column(nullable = false)

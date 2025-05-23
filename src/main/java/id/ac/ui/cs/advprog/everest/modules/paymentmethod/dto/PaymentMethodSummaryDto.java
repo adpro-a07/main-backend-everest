@@ -12,7 +12,6 @@ import java.util.UUID;
 @Builder
 public class PaymentMethodSummaryDto {
     private UUID id;
-    private String name;
     private PaymentType type;
     private String provider;
 }
