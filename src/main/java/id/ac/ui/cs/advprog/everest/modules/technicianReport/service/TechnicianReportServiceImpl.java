@@ -28,13 +28,18 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
     private final TechnicianReportRepository technicianReportRepository;
     private final RepairOrderRepository repairOrderRepository;
     private final RepairEventPublisher repairEventPublisher;
+    private final TechnicianReportAuditLogger auditLogger;
 
     public TechnicianReportServiceImpl(
             TechnicianReportRepository technicianReportRepository,
-            RepairOrderRepository repairOrderRepository, RepairEventPublisher repairEventPublisher) {
+            RepairOrderRepository repairOrderRepository,
+            RepairEventPublisher repairEventPublisher,
+            TechnicianReportAuditLogger auditLogger
+    ) {
         this.technicianReportRepository = technicianReportRepository;
         this.repairOrderRepository = repairOrderRepository;
         this.repairEventPublisher = repairEventPublisher;
+        this.auditLogger = auditLogger;
     }
 
     @Override
@@ -82,7 +87,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             TechnicianReport savedReport = technicianReportRepository.save(technicianReport);
 
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(savedReport);
-
+            auditLogger.logReportAction("CREATE_DRAFT", savedReport.getReportId().toString(), technician.id().toString());
             return new GenericResponse<>(true, "Technician report draft created successfully", response);
         } catch (Exception ex) {
             return handleException(ex);
@@ -119,7 +124,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
 
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
-
+            auditLogger.logReportAction("UPDATE_DRAFT", updatedReport.getReportId().toString(), technician.id().toString());
             return new GenericResponse<>(true, "Technician report draft updated successfully", response);
         } catch (Exception ex) {
             return handleException(ex);
@@ -149,7 +154,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(technicianReport);
 
             technicianReportRepository.delete(technicianReport);
-
+            auditLogger.logReportAction("DELETE_DRAFT", technicianReport.getReportId().toString(), technician.id().toString());
             return new GenericResponse<>(true, "Technician report draft deleted successfully", response);
         } catch (Exception ex) {
             return handleException(ex);
@@ -179,6 +184,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReport.submit();
             TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
+            auditLogger.logReportAction("SUBMIT_DRAFT", updatedReport.getReportId().toString(), technician.id().toString());
             return new GenericResponse<>(true, "Technician report draft submitted successfully", response);
         } catch (Exception ex) {
             return handleException(ex);
@@ -209,6 +215,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReport.approve();
             technicianReportRepository.save(technicianReport);
 
+            auditLogger.logReportAction("ACCEPT_SUBMIT", technicianReport.getReportId().toString(), customer.id().toString());
             return new GenericResponse<>(true, "Technician report draft accepted successfully", null);
         } catch (Exception ex) {
             return handleException(ex);
@@ -239,6 +246,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReport.reject();
             technicianReportRepository.save(technicianReport);
 
+            auditLogger.logReportAction("REJECT_SUBMIT", technicianReport.getReportId().toString(), customer.id().toString());
             return new GenericResponse<>(true, "Technician report draft rejected successfully", null);
         } catch (Exception ex) {
             return handleException(ex);
@@ -270,6 +278,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReport.startWork();
             TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
+            auditLogger.logReportAction("START_WORK", updatedReport.getReportId().toString(), technician.id().toString());
             return new GenericResponse<>(true, "Technician report draft started successfully", response);
         } catch (Exception ex) {
            return handleException(ex);
@@ -310,6 +319,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             technicianReport.getRepairOrder().setStatus(RepairOrderStatus.COMPLETED);
             repairEventPublisher.publishRepairCompleted(repairOrderCompletedEvent);
 
+            auditLogger.logReportAction("COMPLETE_WORK", updatedReport.getReportId().toString(), technician.id().toString());
             return new GenericResponse<>(true, "Technician report draft completed successfully", response);
         } catch (Exception ex) {
             return handleException(ex);
@@ -323,6 +333,8 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             List<TechnicianReportDraftResponse> response = reports.stream()
                     .map(this::buildTechnicianReportDraftResponse)
                     .toList();
+
+            reports.forEach(report -> auditLogger.logReportAction("GET_BY_STATUS_TECHNICIAN", report.getReportId().toString(), technician.id().toString()));
             return new GenericResponse<>(true, "Technician reports retrieved successfully", response);
         } catch (DataAccessException ex) {
             return handleException(ex);
@@ -349,6 +361,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             List<TechnicianReportDraftResponse> response = reports.stream()
                     .map(this::buildTechnicianReportDraftResponse)
                     .toList();
+            reports.forEach(report -> auditLogger.logReportAction("GET_BY_STATUS_CUSTOMER", report.getReportId().toString(), customer.id().toString()));
             return new GenericResponse<>(true, "Technician report submissions retrieved successfully", response);
         } catch (DataAccessException ex) {
             return handleException(ex);
@@ -372,6 +385,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             }
 
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(technicianReport);
+            auditLogger.logReportAction("GET_BY_ID", technicianReport.getReportId().toString(), user.id().toString());
             return new GenericResponse<>(true, "Technician report retrieved successfully", response);
         } catch (Exception ex) {
             return handleException(ex);
