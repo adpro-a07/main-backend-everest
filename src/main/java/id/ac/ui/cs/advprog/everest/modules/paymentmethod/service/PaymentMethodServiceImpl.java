@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class PaymentMethodServiceImpl implements PaymentMethodService {
@@ -61,7 +60,6 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
             PaymentMethod existing = repository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException(NOT_FOUND_MESSAGE));
 
-            existing.setName(request.getName());
             existing.setType(request.getType());
             existing.setProvider(request.getProvider());
             existing.setAccountNumber(request.getAccountNumber());
@@ -85,7 +83,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     }
 
     private void validate(PaymentMethod method) {
-        if (method.getName() == null || method.getType() == null ||
+        if (method.getType() == null ||
                 method.getProvider() == null || method.getAccountNumber() == null ||
                 method.getAccountName() == null) {
             throw new IllegalArgumentException("All fields must be non-null");
@@ -105,7 +103,6 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     private PaymentMethod fromRequest(CreateAndUpdatePaymentMethodRequest request) {
         return PaymentMethod.builder()
-                .name(request.getName())
                 .type(request.getType())
                 .provider(request.getProvider())
                 .accountNumber(request.getAccountNumber())
@@ -116,7 +113,6 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     private PaymentMethodDetailDto toDetailDto(PaymentMethod method) {
         return PaymentMethodDetailDto.builder()
                 .id(method.getId())
-                .name(method.getName())
                 .type(method.getType())
                 .provider(method.getProvider())
                 .accountNumber(method.getAccountNumber())
@@ -129,7 +125,6 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     private PaymentMethodSummaryDto toSummaryDto(PaymentMethod method) {
         return PaymentMethodSummaryDto.builder()
                 .id(method.getId())
-                .name(method.getName())
                 .type(method.getType())
                 .provider(method.getProvider())
                 .build();

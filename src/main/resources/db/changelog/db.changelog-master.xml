@@ -23,4 +23,5 @@
     <include file="db/changelog/2025/05/23-01-technician-report-with-report.xml"/>
     <include file="db/changelog/2025/05/23-01-changing-cost-type-to-long.xml"/>
     <include file="db/changelog/2025/05/23-01-drop-user-request.xml"/>
+    <include file="db/changelog/2025/05/23-01-changelog.xml"/>
 </databaseChangeLog>
