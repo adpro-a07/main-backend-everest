@@ -17,9 +17,13 @@ import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderSt
 import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.GetRandomTechnicianResponse;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserData;
+import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +38,6 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     // --- Constants for reused messages ---
     private static final String ERR_NULL_REQUEST_OR_CUSTOMER = "Request or customer cannot be null";
     private static final String ERR_INVALID_PAYMENT_METHOD = "Invalid payment method";
-    private static final String ERR_INVALID_COUPON = "Invalid coupon";
     private static final String ERR_INVALID_TECHNICIAN_ID = "Invalid technician ID or malformed data";
     private static final String ERR_SAVE_FAILED = "Failed to save repair order";
     private static final String MSG_CREATE_SUCCESS = "Repair order created successfully";
@@ -76,6 +79,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     }
 
     @Override
+    @Transactional
     public GenericResponse<ViewRepairOrderResponse> createRepairOrder(CreateAndUpdateRepairOrderRequest request,
                                                                       AuthenticatedUser customer) {
         if (request == null || customer == null) {
@@ -95,9 +99,15 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                     .orElseThrow(() -> new InvalidRepairOrderStateException(ERR_INVALID_PAYMENT_METHOD));
 
             Coupon coupon = null;
-            if (request.getCouponId() != null) {
-                coupon = couponRepository.findById(request.getCouponId())
-                        .orElseThrow(() -> new InvalidRepairOrderStateException(ERR_INVALID_COUPON));
+            if (request.getCouponCode() != null) {
+                coupon = getAndValidateCoupon(request);
+
+                try {
+                    coupon.setUsageCount(coupon.getUsageCount() + 1);
+                    couponRepository.saveAndFlush(coupon);
+                } catch (OptimisticLockingFailureException e) {
+                    throw new InvalidRepairOrderStateException("Coupon usage conflict, please try again", e);
+                }
             }
 
             RepairOrder repairOrder = RepairOrder.builder()
@@ -122,6 +132,22 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         } catch (DataAccessException ex) {
             throw new DatabaseException(ERR_SAVE_FAILED, ex);
         }
+    }
+
+    @NotNull
+    private Coupon getAndValidateCoupon(CreateAndUpdateRepairOrderRequest request) {
+        Coupon coupon;
+        coupon = couponRepository.findByCode(request.getCouponCode())
+                .orElseThrow(() -> new InvalidRepairOrderStateException("Coupon not found"));
+
+        if (coupon.getValidUntil() != null && coupon.getValidUntil().isBefore(LocalDate.now())) {
+            throw new InvalidRepairOrderStateException("Coupon has expired");
+        }
+
+        if (coupon.getUsageCount() >= coupon.getMaxUsage()) {
+            throw new InvalidRepairOrderStateException("Coupon has reached its maximum usage limit");
+        }
+        return coupon;
     }
 
     @Override
@@ -170,6 +196,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     }
 
     @Override
+    @Transactional
     public GenericResponse<ViewRepairOrderResponse> updateRepairOrder(
             String repairOrderId,
             CreateAndUpdateRepairOrderRequest request,
@@ -185,10 +212,31 @@ public class RepairOrderServiceImpl implements RepairOrderService {
             PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())
                     .orElseThrow(() -> new InvalidRepairOrderStateException(ERR_INVALID_PAYMENT_METHOD));
 
-            Coupon coupon = null;
-            if (request.getCouponId() != null) {
-                coupon = couponRepository.findById(request.getCouponId())
-                        .orElseThrow(() -> new InvalidRepairOrderStateException(ERR_INVALID_COUPON));
+            Coupon oldCoupon = repairOrder.getCoupon();
+            Coupon newCoupon = null;
+
+            if (request.getCouponCode() != null) {
+                newCoupon = getAndValidateCoupon(request);
+
+                if (oldCoupon == null || !oldCoupon.getId().equals(newCoupon.getId())) {
+                    try {
+                        newCoupon.setUsageCount(newCoupon.getUsageCount() + 1);
+                        couponRepository.saveAndFlush(newCoupon);
+
+                        if (oldCoupon != null) {
+                            int newUsage = Math.max(0, oldCoupon.getUsageCount() - 1);
+                            oldCoupon.setUsageCount(newUsage);
+                            couponRepository.saveAndFlush(oldCoupon);
+                        }
+                    } catch (OptimisticLockingFailureException e) {
+                        throw new InvalidRepairOrderStateException("Coupon usage conflict, please try again", e);
+                    }
+                }
+            } else if (oldCoupon != null) {
+                // Coupon removed
+                int newUsage = Math.max(0, oldCoupon.getUsageCount() - 1);
+                oldCoupon.setUsageCount(newUsage);
+                couponRepository.saveAndFlush(oldCoupon);
             }
 
             repairOrder.setItemName(request.getItemName());
@@ -196,7 +244,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
             repairOrder.setIssueDescription(request.getIssueDescription());
             repairOrder.setDesiredServiceDate(request.getDesiredServiceDate());
             repairOrder.setPaymentMethod(paymentMethod);
-            repairOrder.setCoupon(coupon);
+            repairOrder.setCoupon(newCoupon);
 
             RepairOrder updatedRepairOrder = repairOrderRepository.save(repairOrder);
 
@@ -226,6 +274,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     }
 
     @Override
+    @Transactional
     public GenericResponse<Void> deleteRepairOrder(String repairOrderId, AuthenticatedUser customer) {
         if (repairOrderId == null || customer == null) {
             throw new InvalidRepairOrderStateException(ERR_NULL_ID_OR_CUSTOMER);
@@ -233,6 +282,17 @@ public class RepairOrderServiceImpl implements RepairOrderService {
 
         try {
             RepairOrder repairOrder = getRepairOrderByIdAndValidateState(repairOrderId, customer, ERR_UNAUTHORIZED_DELETE, ERR_CANNOT_DELETE);
+
+            if (repairOrder.getCoupon() != null) {
+                Coupon coupon = repairOrder.getCoupon();
+                int newUsage = Math.max(0, coupon.getUsageCount() - 1);
+                coupon.setUsageCount(newUsage);
+                try {
+                    couponRepository.saveAndFlush(coupon);
+                } catch (OptimisticLockingFailureException e) {
+                    throw new InvalidRepairOrderStateException("Coupon usage conflict, please try again", e);
+                }
+            }
 
             repairOrderRepository.delete(repairOrder);
 
@@ -244,7 +304,6 @@ public class RepairOrderServiceImpl implements RepairOrderService {
             throw new DatabaseException(ERR_DELETE_FAILED, ex);
         }
     }
-
 
     private ViewRepairOrderResponse getViewRepairOrderResponse(RepairOrder repairOrder) {
         return ViewRepairOrderResponse.builder()

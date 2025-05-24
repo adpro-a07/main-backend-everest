@@ -17,4 +17,6 @@ public interface CouponRepository extends JpaRepository<Coupon, UUID> {
     List<Coupon> findByUsageCountLessThanMaxUsage();
 
     boolean existsByCode(String code);
+
+    Optional<Coupon> findByCode(String code);
 }
