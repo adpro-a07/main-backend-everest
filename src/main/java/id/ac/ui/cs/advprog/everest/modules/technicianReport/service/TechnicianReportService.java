@@ -2,20 +2,20 @@ package id.ac.ui.cs.advprog.everest.modules.technicianReport.service;
 
 import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraft;
+import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.CreateTechnicianReportDraftRequest;
 import id.ac.ui.cs.advprog.everest.modules.technicianReport.dto.TechnicianReportDraftResponse;
 
 import java.util.List;
 
 public interface TechnicianReportService {
     GenericResponse<TechnicianReportDraftResponse> createTechnicianReportDraft(
-            CreateTechnicianReportDraft createTechnicianReportDraft,
+            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
             AuthenticatedUser technician
     );
 
     GenericResponse<TechnicianReportDraftResponse> updateTechnicianReportDraft(
             String technicianReportDraftId,
-            CreateTechnicianReportDraft createTechnicianReportDraft,
+            CreateTechnicianReportDraftRequest createTechnicianReportDraft,
             AuthenticatedUser technician
     );
 
@@ -25,21 +25,6 @@ public interface TechnicianReportService {
     );
 
     GenericResponse<TechnicianReportDraftResponse> submitTechnicianReportDraft(
-            String technicianReportDraftId,
-            AuthenticatedUser technician
-    );
-
-    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatus(
-            String status,
-            AuthenticatedUser technician
-    );
-
-    GenericResponse<TechnicianReportDraftResponse> startWork(
-            String technicianReportDraftId,
-            AuthenticatedUser technician
-    );
-
-    GenericResponse<TechnicianReportDraftResponse> completeWork(
             String technicianReportDraftId,
             AuthenticatedUser technician
     );
@@ -54,8 +39,28 @@ public interface TechnicianReportService {
             AuthenticatedUser customer
     );
 
-    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportSubmissions(
+    GenericResponse<TechnicianReportDraftResponse> startWork(
+            String technicianReportDraftId,
+            AuthenticatedUser technician
+    );
+
+    GenericResponse<TechnicianReportDraftResponse> completeWork(
+            String technicianReportDraftId,
+            AuthenticatedUser technician
+    );
+
+    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForTechnician(
+            String status,
+            AuthenticatedUser technician
+    );
+
+    GenericResponse<List<TechnicianReportDraftResponse>> getTechnicianReportByStatusForCustomer(
             String status,
             AuthenticatedUser customer
+    );
+
+    GenericResponse<TechnicianReportDraftResponse> getTechnicianReportById(
+            String technicianReportDraftId,
+            AuthenticatedUser user
     );
 }
