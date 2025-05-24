@@ -94,7 +94,6 @@ class RepairOrderServiceImplTest {
         // Set up payment method
         paymentMethod = PaymentMethod.builder()
                 .id(paymentMethodId)
-                .name("Credit Card")
                 .type(PaymentType.BANK_TRANSFER)
                 .provider("Bank XYZ")
                 .accountNumber("123456789")
@@ -517,7 +516,6 @@ class RepairOrderServiceImplTest {
 
         PaymentMethod newPaymentMethod = PaymentMethod.builder()
                 .id(newPaymentMethodId)
-                .name("Debit Card")
                 .type(PaymentType.BANK_TRANSFER)
                 .provider("Bank XYZ")
                 .accountNumber("123456789")

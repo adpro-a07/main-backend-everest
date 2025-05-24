@@ -16,7 +16,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/payment-methods")
-@PreAuthorize("hasRole('ADMIN')")
 public class PaymentMethodController {
 
     private final PaymentMethodService paymentMethodService;
@@ -25,7 +24,7 @@ public class PaymentMethodController {
         this.paymentMethodService = paymentMethodService;
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<GenericResponse<PaymentMethodDetailDto>> createPaymentMethod(
             @Valid @RequestBody CreateAndUpdatePaymentMethodRequest request
@@ -34,14 +33,14 @@ public class PaymentMethodController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<GenericResponse<List<PaymentMethodSummaryDto>>> getAllPaymentMethods() {
         GenericResponse<List<PaymentMethodSummaryDto>> response = paymentMethodService.getAllPaymentMethods();
         return ResponseEntity.ok(response);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<GenericResponse<PaymentMethodDetailDto>> readPaymentMethod(@PathVariable UUID id) {
         GenericResponse<PaymentMethodDetailDto> response = paymentMethodService.readDetails(id);
@@ -50,7 +49,7 @@ public class PaymentMethodController {
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<GenericResponse<PaymentMethodDetailDto>> updatePaymentMethod(
             @PathVariable UUID id,
@@ -60,7 +59,7 @@ public class PaymentMethodController {
         return ResponseEntity.ok(response);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<GenericResponse<Void>> deletePaymentMethod(@PathVariable UUID id) {
         GenericResponse<Void> response = paymentMethodService.delete(id);
