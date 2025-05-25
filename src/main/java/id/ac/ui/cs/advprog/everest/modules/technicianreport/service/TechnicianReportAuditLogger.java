@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 public class TechnicianReportAuditLogger {
     @Async
     public void logReportAction(String action, String reportId, String technicianId) {
-        System.out.printf("Audit: %s on report %s by technician %s%n", action, reportId, technicianId);
+        org.slf4j.LoggerFactory.getLogger(TechnicianReportAuditLogger.class)
+                .info("Audit: {} on report {} by technician {}", action, reportId, technicianId);
     }
 }

@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TechnicianReportServiceImplTest {
 
-    @Mock(lenient = true)
+    @Mock
     private TechnicianReportAuditLogger auditLogger;
 
     @Mock
@@ -59,7 +59,7 @@ class TechnicianReportServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        doNothing().when(auditLogger).logReportAction(anyString(), anyString(), anyString());
+        lenient().doNothing().when(auditLogger).logReportAction(anyString(), anyString(), anyString());
 
         reportId = UUID.randomUUID();
         repairOrderId = UUID.randomUUID();

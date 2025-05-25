@@ -154,7 +154,7 @@ class TechnicianReportTest {
         TechnicianReport technicianReport1 = new TechnicianReport();
         technicianReport1.setStatus("INVALID_STATUS");
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> technicianReport1.initializeState());
+        IllegalStateException exception = assertThrows(IllegalStateException.class, technicianReport1::initializeState);
         assertTrue(exception.getMessage().contains("Unknown status: INVALID_STATUS"));
     }
 

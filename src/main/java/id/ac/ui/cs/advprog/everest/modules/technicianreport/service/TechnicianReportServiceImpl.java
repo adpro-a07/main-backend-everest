@@ -78,7 +78,6 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                 throw new InvalidTechnicianReportStateException("Repair order is not in progress");
             }
 
-            // TODO: Please refactor this code to use a more appropriate method for checking if a report already exists
             boolean hasNonRejectedReport = technicianReportRepository
                     .findAllByRepairOrderId(UUID.fromString(repairOrderId))
                     .stream()
