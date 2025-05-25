@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <include file="db/changelog/2025/05/02-01-init-migrations-with-repair-orders.xml"/>
+    <include file="db/changelog/2025/05/06-01-update-repair-order-model-best-practices.xml"/>
+    <include file="db/changelog/2025/05/07-01-add-not-null-constraint-for-issue-desc-and-status.xml"/>
+    <include file="db/changelog/2025/05/09-01-separate-ratings-db.xml"/>
+    <include file="db/changelog/2025/05/09-01-change-user-technician-id-data-types.xml"/>
+    <include file="db/changelog/2025/05/09-01-init-payment-method.xml"/>
+    <include file="db/changelog/2025/05/09-01-init-coupons-report-table.xml"/>
+    <include file="db/changelog/2025/05/09-01-add-notnull-constraint-for-coupon.xml"/>
+    <include file="db/changelog/2025/05/11-01-add-order-id-field-and-change-rating-field-name-to-score.xml"/>
+    <include file="db/changelog/2025/05/11-01-remove-unnecessary-constraint.xml"/>
+    <include file="db/changelog/2025/05/12-01-init-user-request.xml"/>
+    <include file="db/changelog/2025/05/12-01-init-technician-report.xml"/>
+    <include file="db/changelog/2025/05/19-01-add-payment-method-reference-to-repair-orders.xml"/>
+    <include file="db/changelog/2025/05/19-01-add-coupon-reference-to-repair-orders.xml"/>
+    <include file="db/changelog/2025/05/22-01-drop-report-table.xml"/>
+    <include file="db/changelog/2025/05/23-01-technician-report-with-report.xml"/>
+    <include file="db/changelog/2025/05/23-01-changing-cost-type-to-long.xml"/>
+    <include file="db/changelog/2025/05/23-01-drop-user-request.xml"/>
+    <include file="db/changelog/2025/05/23-01-changelog.xml"/>
+    <include file="db/changelog/2025/05/25-01-add-version-column-for-coupon.xml"/>
+</databaseChangeLog>

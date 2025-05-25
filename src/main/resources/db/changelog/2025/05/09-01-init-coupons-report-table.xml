@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1746785354607-1" author="mhmmd">
+        <createTable tableName="coupons">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_coupons"/>
+            </column>
+            <column name="code" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_amount" type="INT"/>
+            <column name="max_usage" type="INT"/>
+            <column name="usage_count" type="INT"/>
+            <column name="valid_until" type="DATE"/>
+            <column name="created_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="generated_id" type="UUID"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1746785354607-2" author="mhmmd">
+        <createTable tableName="reports">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_reports"/>
+            </column>
+            <column name="technician_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="repair_details" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="repair_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1746785354607-3" author="mhmmd">
+        <addUniqueConstraint columnNames="code" constraintName="uc_coupons_code" tableName="coupons"/>
+    </changeSet>
+
+</databaseChangeLog>
