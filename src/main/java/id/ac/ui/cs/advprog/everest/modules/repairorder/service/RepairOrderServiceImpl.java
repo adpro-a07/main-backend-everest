@@ -57,6 +57,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     private static final String ERR_CANNOT_DELETE = "Repair order cannot be deleted";
     private static final String ERR_DELETE_FAILED = "Failed to delete repair order";
     private static final String MSG_DELETE_SUCCESS = "Repair order deleted successfully";
+    private static final String ERR_COUPON_USAGE_CONFLICT = "Coupon usage conflict, please try again";
 
     public RepairOrderServiceImpl(
             UserServiceGrpcClient userServiceGrpcClient,
@@ -89,7 +90,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                     .orElseThrow(() -> new InvalidRepairOrderStateException(ERR_INVALID_PAYMENT_METHOD));
 
             Coupon coupon = null;
-            if (request.getCouponCode() != null) {
+            if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
                 coupon = getAndValidateCoupon(request);
                 incrementCouponUsage(coupon);
             }
@@ -121,21 +122,23 @@ public class RepairOrderServiceImpl implements RepairOrderService {
             coupon.setUsageCount(coupon.getUsageCount() + 1);
             couponRepository.saveAndFlush(coupon);
         } catch (OptimisticLockingFailureException e) {
-            throw new InvalidRepairOrderStateException("Coupon usage conflict, please try again", e);
+            throw new InvalidRepairOrderStateException(ERR_COUPON_USAGE_CONFLICT, e);
         }
     }
 
     @NotNull
     private Coupon getAndValidateCoupon(CreateAndUpdateRepairOrderRequest request) {
-        Coupon coupon;
-        coupon = couponRepository.findByCode(request.getCouponCode())
+        Coupon coupon = couponRepository.findByCode(request.getCouponCode())
                 .orElseThrow(() -> new InvalidRepairOrderStateException("Coupon not found"));
+
         if (coupon.getValidUntil() != null && coupon.getValidUntil().isBefore(LocalDate.now())) {
             throw new InvalidRepairOrderStateException("Coupon has expired");
         }
+
         if (coupon.getUsageCount() >= coupon.getMaxUsage()) {
             throw new InvalidRepairOrderStateException("Coupon has reached its maximum usage limit");
         }
+
         return coupon;
     }
 
@@ -197,16 +200,23 @@ public class RepairOrderServiceImpl implements RepairOrderService {
 
             Coupon oldCoupon = repairOrder.getCoupon();
             Coupon newCoupon = null;
-            if (request.getCouponCode() != null) {
+
+            // Handle coupon logic
+            boolean hasCouponCode = request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty();
+
+            if (hasCouponCode) {
                 newCoupon = getAndValidateCoupon(request);
+                // Check if it's a different coupon or no previous coupon
                 if (oldCoupon == null || !oldCoupon.getId().equals(newCoupon.getId())) {
-                    handleCouponUpdate(newCoupon, oldCoupon);
+                    handleCouponChange(newCoupon, oldCoupon);
                 }
+                // If it's the same coupon, no usage count changes needed
             } else if (oldCoupon != null) {
-                // Coupon removed
+                // Coupon was removed - decrement usage of old coupon
                 decrementCouponUsage(oldCoupon);
             }
 
+            // Update repair order fields
             repairOrder.setItemName(request.getItemName());
             repairOrder.setItemCondition(request.getItemCondition());
             repairOrder.setIssueDescription(request.getIssueDescription());
@@ -224,22 +234,28 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         }
     }
 
-    private void handleCouponUpdate(Coupon newCoupon, Coupon oldCoupon) {
+    private void handleCouponChange(Coupon newCoupon, Coupon oldCoupon) {
         try {
-            newCoupon.setUsageCount(newCoupon.getUsageCount() + 1);
-            couponRepository.saveAndFlush(newCoupon);
+            // Increment usage for new coupon
+            incrementCouponUsage(newCoupon);
+
+            // Decrement usage for old coupon if it exists
             if (oldCoupon != null) {
                 decrementCouponUsage(oldCoupon);
             }
         } catch (OptimisticLockingFailureException e) {
-            throw new InvalidRepairOrderStateException("Coupon usage conflict, please try again", e);
+            throw new InvalidRepairOrderStateException(ERR_COUPON_USAGE_CONFLICT, e);
         }
     }
 
     private void decrementCouponUsage(Coupon coupon) {
-        int newUsage = Math.max(0, coupon.getUsageCount() - 1);
-        coupon.setUsageCount(newUsage);
-        couponRepository.saveAndFlush(coupon);
+        try {
+            int newUsage = Math.max(0, coupon.getUsageCount() - 1);
+            coupon.setUsageCount(newUsage);
+            couponRepository.saveAndFlush(coupon);
+        } catch (OptimisticLockingFailureException e) {
+            throw new InvalidRepairOrderStateException(ERR_COUPON_USAGE_CONFLICT, e);
+        }
     }
 
     private RepairOrder getRepairOrderByIdAndValidateState(String repairOrderId, AuthenticatedUser customer, String errUnauthorizedUpdate, String errCannotUpdate) {
@@ -253,6 +269,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         if (repairOrder.getStatus() != RepairOrderStatus.PENDING_CONFIRMATION) {
             throw new InvalidRepairOrderStateException(errCannotUpdate);
         }
+
         return repairOrder;
     }
 
@@ -266,8 +283,9 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         try {
             RepairOrder repairOrder = getRepairOrderByIdAndValidateState(repairOrderId, customer, ERR_UNAUTHORIZED_DELETE, ERR_CANNOT_DELETE);
 
+            // Handle coupon usage decrement before deletion
             if (repairOrder.getCoupon() != null) {
-                handleCouponUsageOnDelete(repairOrder.getCoupon());
+                decrementCouponUsage(repairOrder.getCoupon());
             }
 
             repairOrderRepository.delete(repairOrder);
@@ -276,16 +294,6 @@ public class RepairOrderServiceImpl implements RepairOrderService {
             throw new InvalidRepairOrderStateException(ERR_INVALID_DATA, ex);
         } catch (DataAccessException ex) {
             throw new DatabaseException(ERR_DELETE_FAILED, ex);
-        }
-    }
-
-    private void handleCouponUsageOnDelete(Coupon coupon) {
-        int newUsage = Math.max(0, coupon.getUsageCount() - 1);
-        coupon.setUsageCount(newUsage);
-        try {
-            couponRepository.saveAndFlush(coupon);
-        } catch (OptimisticLockingFailureException e) {
-            throw new InvalidRepairOrderStateException("Coupon usage conflict, please try again", e);
         }
     }
 
