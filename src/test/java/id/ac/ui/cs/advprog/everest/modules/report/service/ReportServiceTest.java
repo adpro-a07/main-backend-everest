@@ -5,7 +5,7 @@ import id.ac.ui.cs.advprog.everest.modules.repairorder.model.RepairOrder;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
 import id.ac.ui.cs.advprog.everest.modules.report.repository.ReportRepository;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
+import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.TechnicianReport;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
