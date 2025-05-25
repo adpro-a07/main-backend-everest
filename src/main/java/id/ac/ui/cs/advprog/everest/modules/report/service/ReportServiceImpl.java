@@ -5,7 +5,7 @@ import id.ac.ui.cs.advprog.everest.common.exception.ResourceNotFoundException;
 import id.ac.ui.cs.advprog.everest.common.exception.ValidationException;
 import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
 import id.ac.ui.cs.advprog.everest.modules.report.repository.ReportRepository;
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
+import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.TechnicianReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
