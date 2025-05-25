@@ -13,4 +13,6 @@ public interface RepairOrderRepository extends JpaRepository<RepairOrder, Long> 
     Optional<RepairOrder> findById(@NotBlank @Size(max=100) UUID id);
 
     List<RepairOrder> findByCustomerId(@NotBlank @Size(max=100) UUID customerId);
+
+    List<RepairOrder> findByTechnicianId(@NotBlank @Size(max=100) UUID technicianId);
 }

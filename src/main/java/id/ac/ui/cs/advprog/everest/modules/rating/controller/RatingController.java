@@ -35,7 +35,7 @@ public class RatingController {
         return ResponseEntity.ok(createdRating);
     }
 
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     @GetMapping("/technicians/{technicianId}/ratings")
     public ResponseEntity<List<Rating>> getRatingsByTechnician(@PathVariable UUID technicianId) {
         return ResponseEntity.ok(ratingService.getRatingsByTechnician(technicianId));

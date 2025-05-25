@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.everest.modules.report.repository;
 
-import id.ac.ui.cs.advprog.everest.modules.technicianReport.model.TechnicianReport;
+import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.TechnicianReport;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
