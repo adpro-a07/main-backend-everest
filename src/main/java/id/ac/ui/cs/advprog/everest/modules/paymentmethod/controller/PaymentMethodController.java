@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/payment-methods")
 public class PaymentMethodController {
 
     private final PaymentMethodService paymentMethodService;
@@ -25,35 +25,33 @@ public class PaymentMethodController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/payment-methods")
-    public ResponseEntity<?> createPaymentMethod(
+    @PostMapping
+    public ResponseEntity<GenericResponse<PaymentMethodDetailDto>> createPaymentMethod(
             @Valid @RequestBody CreateAndUpdatePaymentMethodRequest request
     ) {
         GenericResponse<PaymentMethodDetailDto> response = paymentMethodService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/payment-methods")
-    public ResponseEntity<?> getAllPaymentMethods() {
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping
+    public ResponseEntity<GenericResponse<List<PaymentMethodSummaryDto>>> getAllPaymentMethods() {
         GenericResponse<List<PaymentMethodSummaryDto>> response = paymentMethodService.getAllPaymentMethods();
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/payment-methods/{id}")
-    public ResponseEntity<?> readPaymentMethod(@PathVariable UUID id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<GenericResponse<PaymentMethodDetailDto>> readPaymentMethod(@PathVariable UUID id) {
         GenericResponse<PaymentMethodDetailDto> response = paymentMethodService.readDetails(id);
-        if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
+        return response.isSuccess()
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/payment-methods/{id}")
-    public ResponseEntity<?> updatePaymentMethod(
+    @PutMapping("/{id}")
+    public ResponseEntity<GenericResponse<PaymentMethodDetailDto>> updatePaymentMethod(
             @PathVariable UUID id,
             @Valid @RequestBody CreateAndUpdatePaymentMethodRequest request
     ) {
@@ -62,8 +60,8 @@ public class PaymentMethodController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/payment-methods/{id}")
-    public ResponseEntity<?> deletePaymentMethod(@PathVariable UUID id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<GenericResponse<Void>> deletePaymentMethod(@PathVariable UUID id) {
         GenericResponse<Void> response = paymentMethodService.delete(id);
         return ResponseEntity.ok(response);
     }

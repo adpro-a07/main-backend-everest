@@ -5,7 +5,6 @@ import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.modules.rating.dto.CreateAndUpdateRatingRequest;
 import id.ac.ui.cs.advprog.everest.modules.rating.model.Rating;
 import id.ac.ui.cs.advprog.everest.modules.rating.service.RatingService;
-import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,20 +50,6 @@ class RatingControllerTest {
         technicianId = UUID.randomUUID();
         repairOrderId = UUID.randomUUID();
 
-        AuthenticatedUser customer = new AuthenticatedUser(
-                userId,
-                "sisi@example.com",
-                "sisi",
-                UserRole.CUSTOMER,
-                "0821123123",
-                Instant.now(),
-                Instant.now(),
-                "Depok",
-                null,
-                0,
-                0L
-        );
-
         request = new CreateAndUpdateRatingRequest();
         request.setComment("Great service!");
         request.setScore(5);
@@ -83,8 +67,6 @@ class RatingControllerTest {
 
     @Test
     void testCreateRating_Success() throws Exception {
-        UUID repairOrderId = UUID.randomUUID();
-
         Mockito.when(ratingService.createRating(any(AuthenticatedUser.class), eq(repairOrderId), any()))
                 .thenReturn(expectedRating);
 
@@ -131,7 +113,7 @@ class RatingControllerTest {
     @Test
     void testGetRatingsByTechnician_ReturnsList() throws Exception {
         List<Rating> ratings = List.of(expectedRating);
-        Mockito.when(ratingService.getRatingsByTechnician(eq(technicianId))).thenReturn(ratings);
+        Mockito.when(ratingService.getRatingsByTechnician(technicianId)).thenReturn(ratings);
 
         mockMvc.perform(get("/api/v1/rating/technicians/{technicianId}/ratings", technicianId))
                 .andExpect(status().isOk())

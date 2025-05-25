@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -28,6 +29,8 @@ public class CreateAndUpdateRepairOrderRequest {
     @FutureOrPresent
     private LocalDate desiredServiceDate;
 
-    // TODO: Add chosen payment method column
-    // TODO: Add optional coupon column
+    @NotNull
+    private UUID paymentMethodId;
+
+    private String couponCode;
 }

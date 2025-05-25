@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.everest.modules.coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.repository.CouponRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -36,7 +37,6 @@ public class CouponServiceImpl implements CouponService {
     public Coupon createCoupon(CouponRequest couponRequest) {
         // Convert DTO ke Entity
         Coupon coupon = convertToEntity(couponRequest);
-
 
         // Validasi unik code
         if (!isValidCoupon(coupon)) {
@@ -79,7 +79,7 @@ public class CouponServiceImpl implements CouponService {
         return couponRepository.save(existing);
     }
 
-
+    @Async
     @Override
     public void deleteCoupon(UUID id) {
         getCouponById(id);
