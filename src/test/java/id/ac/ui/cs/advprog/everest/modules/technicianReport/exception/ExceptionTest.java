@@ -25,25 +25,6 @@ class ExceptionTest {
     }
 
     @Test
-    void testInvalidUserRequestStateExceptionWithMessage() {
-        String errorMessage = "Invalid user request state";
-        InvalidUserRequestStateException exception = new InvalidUserRequestStateException(errorMessage);
-
-        assertEquals(errorMessage, exception.getMessage());
-        assertNull(exception.getCause());
-    }
-
-    @Test
-    void testInvalidUserRequestStateExceptionWithMessageAndCause() {
-        String errorMessage = "User request in invalid state";
-        Throwable cause = new RuntimeException("State transition error");
-        InvalidUserRequestStateException exception = new InvalidUserRequestStateException(errorMessage, cause);
-
-        assertEquals(errorMessage, exception.getMessage());
-        assertEquals(cause, exception.getCause());
-    }
-
-    @Test
     void testInvalidTechnicianReportStateExceptionWithMessage() {
         String errorMessage = "Invalid technician report state";
         InvalidTechnicianReportStateException exception = new InvalidTechnicianReportStateException(errorMessage);

@@ -20,7 +20,12 @@ public class DraftState extends AbstractReportState {
     }
 
     @Override
-    public boolean canEdit() {
+    public boolean technicianCanModify() {
         return true;
+    }
+
+    @Override
+    public boolean customerCanSee() {
+        return false;
     }
 }

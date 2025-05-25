@@ -34,7 +34,6 @@ public class PaymentMethodControllerTest {
         id = UUID.randomUUID();
 
         request = new CreateAndUpdatePaymentMethodRequest();
-        request.setName("Transfer BCA");
         request.setType(PaymentType.BANK_TRANSFER);
         request.setProvider("BCA");
         request.setAccountNumber("1234567890");
@@ -42,7 +41,6 @@ public class PaymentMethodControllerTest {
 
         detailDto = PaymentMethodDetailDto.builder()
                 .id(id)
-                .name("Transfer BCA")
                 .type(PaymentType.BANK_TRANSFER)
                 .provider("BCA")
                 .accountNumber("1234567890")
@@ -74,7 +72,6 @@ public class PaymentMethodControllerTest {
     void whenGetAllPaymentMethods_shouldReturn200OK() {
         PaymentMethodSummaryDto summary = PaymentMethodSummaryDto.builder()
                 .id(id)
-                .name("Transfer BCA")
                 .type(PaymentType.BANK_TRANSFER)
                 .provider("BCA")
                 .build();

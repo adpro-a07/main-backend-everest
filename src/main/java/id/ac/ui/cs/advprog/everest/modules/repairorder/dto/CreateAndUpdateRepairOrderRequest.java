@@ -32,5 +32,5 @@ public class CreateAndUpdateRepairOrderRequest {
     @NotNull
     private UUID paymentMethodId;
 
-    private UUID couponId; // Optional coupon
+    private String couponCode;
 }

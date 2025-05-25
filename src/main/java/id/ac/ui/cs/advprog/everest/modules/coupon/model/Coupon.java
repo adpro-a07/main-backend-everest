@@ -39,7 +39,12 @@ public class Coupon {
     @Column(name = "max_usage")
     private Integer maxUsage;
 
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
     @Min(0)
+    @NotNull
     @Column(name = "usage_count")
     private Integer usageCount;
 
