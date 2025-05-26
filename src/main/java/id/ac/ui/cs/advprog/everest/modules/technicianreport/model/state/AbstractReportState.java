@@ -1,34 +1,9 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianreport.model.state;
 
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.exception.IllegalAccessTechnicianReport;
-import id.ac.ui.cs.advprog.everest.modules.technicianreport.exception.IllegalStateTransitionException;
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.TechnicianReport;
 
 public abstract class AbstractReportState implements ReportState {
-    @Override
-    public ReportState submit(TechnicianReport context) {
-        throw new IllegalStateTransitionException(getName(), "submit");
-    }
-
-    @Override
-    public ReportState approve(TechnicianReport context) {
-        throw new IllegalStateTransitionException(getName(), "approve");
-    }
-
-    @Override
-    public ReportState reject(TechnicianReport context) {
-        throw new IllegalStateTransitionException(getName(), "reject");
-    }
-
-    @Override
-    public ReportState startWork(TechnicianReport context) {
-        throw new IllegalStateTransitionException(getName(), "startWork");
-    }
-
-    @Override
-    public ReportState complete(TechnicianReport context) {
-        throw new IllegalStateTransitionException(getName(), "complete");
-    }
 
     @Override
     public boolean technicianCanModify() {
@@ -41,9 +16,9 @@ public abstract class AbstractReportState implements ReportState {
     }
 
     @Override
-    public void readPermissions(TechnicianReport context) {
+    public void validateReadPermissions(TechnicianReport context) {
         if (!customerCanSee()) {
-            throw new IllegalAccessTechnicianReport("Customer", "see report in draft state");
+            throw new IllegalAccessTechnicianReport("Customer", "see report in " + getName().toLowerCase() + " state");
         }
     }
 }

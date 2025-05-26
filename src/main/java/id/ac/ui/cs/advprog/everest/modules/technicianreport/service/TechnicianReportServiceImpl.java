@@ -389,7 +389,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             TechnicianReport technicianReport = technicianReportRepository.findByReportId(UUID.fromString(technicianReportId))
                     .orElseThrow(() -> new InvalidTechnicianReportStateException(TECHNICIAN_REPORT_NOT_FOUND));
 
-            if (user.role() == UserRole.CUSTOMER) technicianReport.getState().readPermissions(technicianReport);
+            if (user.role() == UserRole.CUSTOMER) technicianReport.customerCanSee();
             else if (user.role() == UserRole.TECHNICIAN && !technicianReport.getTechnicianId().equals(user.id())) {
                 throw new InvalidTechnicianReportStateException("You are not authorized to view this report");
             }
