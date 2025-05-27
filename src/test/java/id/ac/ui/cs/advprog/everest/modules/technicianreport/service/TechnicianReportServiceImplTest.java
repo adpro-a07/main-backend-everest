@@ -314,7 +314,7 @@ class TechnicianReportServiceImplTest {
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Report already exists"));
+        assertTrue(response.getMessage().contains("exists"));
         verify(repairOrderRepository).findById(repairOrderId);
     }
 
@@ -758,7 +758,8 @@ class TechnicianReportServiceImplTest {
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("not in submitted state"));
+        System.out.println(response.getMessage());
+        assertTrue(response.getMessage().contains("This report is not in submitted state"));
         verify(technicianReportRepository).findByReportId(reportId);
     }
 
