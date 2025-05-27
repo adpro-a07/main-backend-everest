@@ -136,6 +136,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
 
             TechnicianReportDraftResponse response = buildTechnicianReportDraftResponse(updatedReport);
+
             logAuditAction("SUBMIT_DRAFT", updatedReport.getReportId().toString(), technician.id().toString());
 
             return createSuccessResponse("Technician report draft submitted successfully", response);
@@ -215,6 +216,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
 
             technicianReport.complete();
             updateRepairOrderStatusToCompleted(technicianReport);
+            technicianReport.getRepairOrder().setStatus(RepairOrderStatus.COMPLETED);
             TechnicianReport updatedReport = technicianReportRepository.save(technicianReport);
 
             publishRepairCompletedEvent(updatedReport);
