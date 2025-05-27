@@ -321,12 +321,8 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
     }
 
     private void validateNoExistingNonRejectedReport(String repairOrderId) {
-        boolean hasNonRejectedReport = technicianReportRepository
-                .findAllByRepairOrderId(UUID.fromString(repairOrderId))
-                .stream()
-                .anyMatch(report -> !REJECTED.equals(report.getStatus()));
-
-        if (hasNonRejectedReport) {
+        UUID repairOrderIdUUID = UUID.fromString(repairOrderId);
+        if (technicianReportRepository.existsByRepairOrderIdAndStatusNot(repairOrderIdUUID, REJECTED)) {
             throw new DatabaseException(REPAIR_ORDER_ALREADY_EXISTS);
         }
     }
