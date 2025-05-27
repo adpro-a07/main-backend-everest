@@ -262,9 +262,16 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
             if (reports.isEmpty()) {
                 return new GenericResponse<>(false, "No technician report submissions found", null);
             }
-
             List<TechnicianReportDraftResponse> response = reports.stream()
-                    .map(this::buildTechnicianReportDraftResponse)
+                    .map(report -> {
+                        Long estimatedCost = report.getEstimatedCost();
+                        int discount = report.getRepairOrder().getCoupon().getDiscountAmount();
+                        Long finalCost = (estimatedCost != null) ? Long.valueOf(estimatedCost - discount) : estimatedCost;
+
+                        TechnicianReportDraftResponse resp = buildTechnicianReportDraftResponse(report);
+                        resp.setEstimatedCost(finalCost);
+                        return resp;
+                    })
                     .toList();
 
             logReportsAuditAction(reports, "GET_BY_STATUS_CUSTOMER", customer.id().toString());
