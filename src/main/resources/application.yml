@@ -33,6 +33,9 @@ management:
       exposure:
         include: [ "prometheus" ]
 
+jwt:
+  public-key: ${JWT_PUBLIC_KEY}
+
 auth:
   grpc:
     host: ${AUTH_GRPC_HOST:localhost}
