@@ -4,8 +4,6 @@ import id.ac.ui.cs.advprog.everest.authentication.exception.AuthenticationExcept
 import id.ac.ui.cs.advprog.everest.authentication.interfaces.JwtTokenParser;
 import id.ac.ui.cs.advprog.everest.authentication.interfaces.JwtTokenValidator;
 import io.jsonwebtoken.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -17,9 +15,6 @@ import java.util.function.Function;
 
 @Component
 public class JwtTokenConsumerImpl implements JwtTokenParser, JwtTokenValidator {
-
-    private static final Logger logger = LoggerFactory.getLogger(JwtTokenConsumerImpl.class);
-
     private static final String TOKEN_TYPE_CLAIM = "type";
     private static final String USER_ID_CLAIM = "userId";
 
@@ -94,7 +89,6 @@ public class JwtTokenConsumerImpl implements JwtTokenParser, JwtTokenValidator {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (JwtException e) {
-            logger.error("Failed to parse JWT token", e);
             throw new AuthenticationException("Invalid token", e);
         }
     }
