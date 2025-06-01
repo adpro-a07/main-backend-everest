@@ -4,7 +4,7 @@ import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.state.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ReportStateFactoryTest {
+class ReportStateFactoryTest {
 
     @Test
     void testStateFactoryCreatesDraftState() {

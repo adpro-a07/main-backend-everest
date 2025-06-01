@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TechnicianReportStateTest {
+class TechnicianReportStateTest {
     private UUID reportId;
     private UUID technicianId;
     private RepairOrder repairOrder;
@@ -105,13 +105,13 @@ public class TechnicianReportStateTest {
 
     @Test
     void testInvalidStateTransition_SubmitFromNonDraftState() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("SUBMITTED"); // Already in SUBMITTED state
-        technicianReport.initializeState();
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("SUBMITTED"); // Already in SUBMITTED state
+        technicianReport1.initializeState();
 
         IllegalStateTransitionException exception = assertThrows(
                 IllegalStateTransitionException.class,
-                technicianReport::submit
+                technicianReport1::submit
         );
         System.out.println(exception.getMessage());
         assertTrue(exception.getMessage().contains("Cannot perform SUBMITTED action while in submit state"));
@@ -119,28 +119,27 @@ public class TechnicianReportStateTest {
 
     @Test
     void testInvalidStateTransition_RejectFromNonSubmittedState() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("DRAFT");
-        technicianReport.initializeState();
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("DRAFT");
+        technicianReport1.initializeState();
 
         IllegalStateTransitionException exception = assertThrows(
                 IllegalStateTransitionException.class,
-                technicianReport::reject
+                technicianReport1::reject
         );
 
-        System.out.println(exception.getMessage());
         assertTrue(exception.getMessage().contains("Cannot perform DRAFT action while in reject state"));
     }
 
     @Test
     void testInvalidStateTransition_ApproveFromNonSubmittedState() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("DRAFT");
-        technicianReport.initializeState();
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("DRAFT");
+        technicianReport1.initializeState();
 
         IllegalStateTransitionException exception = assertThrows(
                 IllegalStateTransitionException.class,
-                technicianReport::approve
+                technicianReport1::approve
         );
 
         System.out.println(exception.getMessage());
@@ -149,13 +148,13 @@ public class TechnicianReportStateTest {
 
     @Test
     void testInvalidStateTransition_StartWorkFromNonApprovedState() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("DRAFT");
-        technicianReport.initializeState();
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("DRAFT");
+        technicianReport1.initializeState();
 
         IllegalStateTransitionException exception = assertThrows(
                 IllegalStateTransitionException.class,
-                technicianReport::startWork
+                technicianReport1::startWork
         );
 
         System.out.println(exception.getMessage());
@@ -164,31 +163,30 @@ public class TechnicianReportStateTest {
 
     @Test
     void testInvalidStateTransition_CompleteFromNonInProgressState() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("APPROVED");
-        technicianReport.initializeState();
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("APPROVED");
+        technicianReport1.initializeState();
 
         IllegalStateTransitionException exception = assertThrows(
                 IllegalStateTransitionException.class,
-                technicianReport::complete
+                technicianReport1::complete
         );
 
-        System.out.println(exception.getMessage());
         assertTrue(exception.getMessage().contains("Cannot perform APPROVED action while in complete state"));
     }
 
     @Test
     void testValidationFailure_SubmitWithoutDiagnosis() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("DRAFT");
-        technicianReport.initializeState();
-        technicianReport.setDiagnosis(null);
-        technicianReport.setActionPlan("Valid action plan");
-        technicianReport.setEstimatedCost(100L);
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("DRAFT");
+        technicianReport1.initializeState();
+        technicianReport1.setDiagnosis(null);
+        technicianReport1.setActionPlan("Valid action plan");
+        technicianReport1.setEstimatedCost(100L);
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                technicianReport::submit
+                technicianReport1::submit
         );
 
         assertTrue(exception.getMessage().contains("Diagnosis is required"));
@@ -196,16 +194,16 @@ public class TechnicianReportStateTest {
 
     @Test
     void testValidationFailure_SubmitWithoutActionPlan() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("DRAFT");
-        technicianReport.initializeState();
-        technicianReport.setDiagnosis("Valid diagnosis");
-        technicianReport.setActionPlan(null);
-        technicianReport.setEstimatedCost(100L);
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("DRAFT");
+        technicianReport1.initializeState();
+        technicianReport1.setDiagnosis("Valid diagnosis");
+        technicianReport1.setActionPlan(null);
+        technicianReport1.setEstimatedCost(100L);
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                technicianReport::submit
+                technicianReport1::submit
         );
 
         assertTrue(exception.getMessage().contains("Action plan is required"));
@@ -213,16 +211,16 @@ public class TechnicianReportStateTest {
 
     @Test
     void testValidationFailure_SubmitWithoutEstimatedCost() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("DRAFT");
-        technicianReport.initializeState();
-        technicianReport.setDiagnosis("Valid diagnosis");
-        technicianReport.setActionPlan("Valid action plan");
-        technicianReport.setEstimatedCost(null);
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("DRAFT");
+        technicianReport1.initializeState();
+        technicianReport1.setDiagnosis("Valid diagnosis");
+        technicianReport1.setActionPlan("Valid action plan");
+        technicianReport1.setEstimatedCost(null);
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                technicianReport::submit
+                technicianReport1::submit
         );
 
         assertTrue(exception.getMessage().contains("Estimated cost is required"));
@@ -230,14 +228,14 @@ public class TechnicianReportStateTest {
 
     @Test
     void testValidationFailure_StartWorkWithoutEstimatedTime() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("APPROVED");
-        technicianReport.initializeState();
-        technicianReport.setEstimatedTimeSeconds(null);
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("APPROVED");
+        technicianReport1.initializeState();
+        technicianReport1.setEstimatedTimeSeconds(null);
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                technicianReport::startWork
+                technicianReport1::startWork
         );
 
         assertTrue(exception.getMessage().contains("Estimated time is required"));
@@ -245,10 +243,10 @@ public class TechnicianReportStateTest {
 
     @Test
     void testCustomerCannotSeeDraftReports() {
-        TechnicianReport technicianReport = new TechnicianReport();
-        technicianReport.setStatus("DRAFT");
-        technicianReport.initializeState();
+        TechnicianReport technicianReport1 = new TechnicianReport();
+        technicianReport1.setStatus("DRAFT");
+        technicianReport1.initializeState();
 
-        assertFalse(technicianReport.customerCanSee());
+        assertFalse(technicianReport1.customerCanSee());
     }
 }

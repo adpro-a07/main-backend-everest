@@ -4,6 +4,10 @@ import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.TechnicianRepo
 
 public class ReportValidationService {
 
+    private ReportValidationService() {
+        // Private constructor to prevent instantiation
+    }
+
     public static void validateForSubmission(TechnicianReport report) {
         if (report.getDiagnosis() == null || report.getDiagnosis().trim().isEmpty()) {
             throw new IllegalStateException("Diagnosis is required before submitting");

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ReportValidationServiceTest {
+class ReportValidationServiceTest {
     @Test
     void testValidateForSubmission_HappyPath() {
         TechnicianReport report = new TechnicianReport();

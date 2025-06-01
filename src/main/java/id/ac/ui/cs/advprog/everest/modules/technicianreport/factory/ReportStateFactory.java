@@ -7,6 +7,10 @@ import java.util.function.Supplier;
 
 public class ReportStateFactory {
 
+    private ReportStateFactory() {
+        // Private constructor to prevent instantiation
+    }
+
     private static final Map<String, Supplier<ReportState>> STATE_MAP = Map.of(
             ReportConstants.DRAFT, DraftState::new,
             ReportConstants.SUBMITTED, SubmittedState::new,
