@@ -44,7 +44,6 @@ public class JwtTokenConsumerImpl implements JwtTokenParser, JwtTokenValidator {
             String userId = getAllClaimsFromToken(token).get(USER_ID_CLAIM, String.class);
             return UUID.fromString(userId);
         } catch (IllegalArgumentException e) {
-            logger.error("Invalid user ID format in token", e);
             throw new AuthenticationException("Invalid user ID format in token", e);
         }
     }
@@ -74,7 +73,6 @@ public class JwtTokenConsumerImpl implements JwtTokenParser, JwtTokenValidator {
             Claims claims = getAllClaimsFromToken(token);
             return !isTokenExpired(claims);
         } catch (JwtException | IllegalArgumentException | AuthenticationException e) {
-            logger.warn("Invalid token", e);
             return false;
         }
     }

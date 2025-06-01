@@ -157,10 +157,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                     .build();
 
         } catch (AuthServiceException e) {
-            logger.error("Failed to fetch user data for userId: {}", userId, e);
             throw e; // Re-throw to be handled by the caller
         } catch (Exception e) {
-            logger.error("Unexpected error fetching user data for userId: {}", userId, e);
             throw new AuthServiceException("Failed to fetch user data", e);
         }
     }

@@ -5,7 +5,9 @@ import org.springframework.util.Assert;
 
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Objects;
@@ -35,7 +37,7 @@ public class PublicKeyProviderImpl implements PublicKeyProvider {
         }
     }
 
-    private PublicKey loadPublicKey(String base64Pem) throws Exception {
+    private PublicKey loadPublicKey(String base64Pem) throws NoSuchAlgorithmException, InvalidKeySpecException {
         String pem = new String(Base64.getDecoder().decode(base64Pem));
 
         String publicKeyPEM;

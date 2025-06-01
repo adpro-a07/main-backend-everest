@@ -265,8 +265,7 @@ class AuthenticationInterceptorTest {
         setupValidTokenScenario();
         mockCompleteUserDataFetchWithTimestamps();
 
-        try (MockedStatic<UserContext> userContextMock = mockStatic(UserContext.class);
-             MockedStatic<TimestampUtil> timestampUtilMock = mockStatic(TimestampUtil.class)) {
+        try (MockedStatic<TimestampUtil> timestampUtilMock = mockStatic(TimestampUtil.class)) {
 
             Instant now = Instant.now();
             timestampUtilMock.when(() -> TimestampUtil.toInstant(any(Timestamp.class))).thenReturn(now);
@@ -287,9 +286,9 @@ class AuthenticationInterceptorTest {
         setupValidTokenScenario();
         when(jwtTokenConsumer.getUserIdFromToken(VALID_TOKEN)).thenReturn(TEST_USER_ID);
 
-        UserLookupResponse response = UserLookupResponse.newBuilder()
+        UserLookupResponse lookupResponse = UserLookupResponse.newBuilder()
                 .build();
-        when(authServiceGrpcClient.lookupUserById(TEST_USER_ID.toString())).thenReturn(response);
+        when(authServiceGrpcClient.lookupUserById(TEST_USER_ID.toString())).thenReturn(lookupResponse);
 
         // When
         boolean result = authenticationInterceptor.preHandle(request, this.response, handlerMethod);
@@ -340,14 +339,12 @@ class AuthenticationInterceptorTest {
         setupValidTokenScenario();
         mockAllJwtClaims();
 
-        try (MockedStatic<UserContext> userContextMock = mockStatic(UserContext.class)) {
-            // When
-            boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);
+        // When
+        boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);
 
-            // Then
-            assertTrue(result);
-            verifyAllClaimsExtracted();
-        }
+        // Then
+        assertTrue(result);
+        verifyAllClaimsExtracted();
     }
 
     @Test
@@ -357,14 +354,12 @@ class AuthenticationInterceptorTest {
         setupValidTokenScenario();
         mockJwtClaimsWithMissingRole();
 
-        try (MockedStatic<UserContext> userContextMock = mockStatic(UserContext.class)) {
-            // When
-            boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);
+        // When
+        boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);
 
-            // Then
-            assertTrue(result);
-            verifyDefaultRoleUsed();
-        }
+        // Then
+        assertTrue(result);
+        verifyDefaultRoleUsed();
     }
 
     @Test
@@ -374,14 +369,12 @@ class AuthenticationInterceptorTest {
         setupValidTokenScenario();
         mockJwtClaimsWithInvalidRole();
 
-        try (MockedStatic<UserContext> userContextMock = mockStatic(UserContext.class)) {
-            // When
-            boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);
+        // When
+        boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);
 
-            // Then
-            assertTrue(result);
-            verifyCustomerRoleDefault();
-        }
+        // Then
+        assertTrue(result);
+        verifyCustomerRoleDefault();
     }
 
     @Test
@@ -391,14 +384,12 @@ class AuthenticationInterceptorTest {
         setupValidTokenScenario();
         mockJwtClaimsWithMissingOptionals();
 
-        try (MockedStatic<UserContext> userContextMock = mockStatic(UserContext.class)) {
-            // When
-            boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);
+        // When
+        boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);
 
-            // Then
-            assertTrue(result);
-            verifyOptionalClaimsHandled();
-        }
+        // Then
+        assertTrue(result);
+        verifyOptionalClaimsHandled();
     }
 
     @Test

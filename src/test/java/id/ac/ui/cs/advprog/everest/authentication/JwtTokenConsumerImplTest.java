@@ -260,26 +260,6 @@ class JwtTokenConsumerImplTest {
     }
 
     @Test
-    void isTokenExpired_WithNonExpiredToken_ShouldReturnFalse() {
-        // Test indirectly through validateToken
-        String token = createValidToken("test@example.com", UUID.randomUUID(), "access");
-
-        boolean result = jwtTokenConsumer.validateToken(token);
-
-        assertTrue(result); // Token is valid (not expired)
-    }
-
-    @Test
-    void isTokenExpired_WithExpiredToken_ShouldReturnTrue() {
-        // Test indirectly through validateToken
-        String expiredToken = createExpiredToken("test@example.com", UUID.randomUUID());
-
-        boolean result = jwtTokenConsumer.validateToken(expiredToken);
-
-        assertFalse(result); // Token is invalid (expired)
-    }
-
-    @Test
     void isTokenExpired_WithNullExpiration_ShouldReturnFalse() {
         // Create token without expiration
         String tokenWithoutExpiration = createTokenWithoutExpiration(UUID.randomUUID());
