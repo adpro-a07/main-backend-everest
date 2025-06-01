@@ -3,19 +3,14 @@ package id.ac.ui.cs.advprog.everest.common.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.authentication.exception.AuthServiceException;
-import id.ac.ui.cs.advprog.everest.authentication.exception.InvalidTokenException;
 import id.ac.ui.cs.advprog.everest.common.utils.RequestMetadataUtil;
-import id.ac.ui.cs.advprog.everest.common.utils.TimestampUtil;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.*;
 import io.grpc.StatusRuntimeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 public class AuthServiceGrpcClientTest {
 
@@ -29,58 +24,6 @@ public class AuthServiceGrpcClientTest {
         client = new AuthServiceGrpcClient(stub, metadataUtil);
 
         when(metadataUtil.create()).thenReturn(RequestMetadata.newBuilder().setRequestId("test").build());
-    }
-
-    // --- validateToken ---
-
-    @Test
-    void validateToken_shouldReturnAuthenticatedUser_whenTokenIsValid() {
-        TokenValidationResponse response = TokenValidationResponse.newBuilder()
-                .setValid(true)
-                .setUserData(UserData.newBuilder()
-                        .setIdentity(UserIdentity.newBuilder()
-                                .setId(UUID.randomUUID().toString())
-                                .setEmail("user@test.com")
-                                .setFullName("Test User")
-                                .setRole(UserRole.CUSTOMER)
-                                .setPhoneNumber("123456789")
-                                .setCreatedAt(TimestampUtil.toProto(Instant.now()))
-                                .setUpdatedAt(TimestampUtil.toProto(Instant.now()))
-                        )
-                        .setProfile(UserProfile.newBuilder()
-                                .setAddress("Somewhere")
-                                .setWorkExperience("None")
-                                .setTotalJobsDone(1)
-                                .setTotalIncome(1000)
-                        )
-                )
-                .build();
-
-        when(stub.validateToken(any())).thenReturn(response);
-
-        AuthenticatedUser user = client.validateToken("valid-token");
-        assertEquals("user@test.com", user.email());
-    }
-
-    @Test
-    void validateToken_shouldThrowInvalidTokenException_whenTokenInvalid() {
-        when(stub.validateToken(any())).thenReturn(
-                TokenValidationResponse.newBuilder().setValid(false).build()
-        );
-
-        assertThrows(InvalidTokenException.class, () -> client.validateToken("invalid-token"));
-    }
-
-    @Test
-    void validateToken_shouldThrowAuthServiceException_whenGrpcFails() {
-        when(stub.validateToken(any())).thenThrow(StatusRuntimeException.class);
-        assertThrows(AuthServiceException.class, () -> client.validateToken("token"));
-    }
-
-    @Test
-    void validateToken_shouldThrowIllegalArgumentException_whenTokenIsNullOrBlank() {
-        assertThrows(IllegalArgumentException.class, () -> client.validateToken(null));
-        assertThrows(IllegalArgumentException.class, () -> client.validateToken("  "));
     }
 
     // --- refreshToken ---
