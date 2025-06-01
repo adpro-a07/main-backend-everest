@@ -35,18 +35,17 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public Coupon createCoupon(CouponRequest couponRequest) {
-        // Convert DTO ke Entity
         Coupon coupon = convertToEntity(couponRequest);
 
-        // Validasi unik code
-        if (!isValidCoupon(coupon)) {
-            throw new IllegalArgumentException("Invalid coupon data");
-        }
+        // 1. Check for duplicate code first
         if (couponRepository.existsByCode(coupon.getCode())) {
             throw new IllegalArgumentException("Coupon code already exists");
         }
+        // 2. Then validate coupon data
+        if (!isValidCoupon(coupon)) {
+            throw new IllegalArgumentException("Invalid coupon data");
+        }
 
-        // Set nilai default
         coupon.setUsageCount(0);
         coupon.setCreatedAt(LocalDateTime.now());
 
@@ -91,15 +90,13 @@ public class CouponServiceImpl implements CouponService {
         if (coupon.getDiscountAmount() == null || coupon.getDiscountAmount() <= 0) {
             return false;
         }
-
         if (coupon.getMaxUsage() == null || coupon.getMaxUsage() <= 0) {
             return false;
         }
-
-        if (coupon.getMaxUsage() <= coupon.getUsageCount()) {
+        // Add null check for usageCount
+        if (coupon.getUsageCount() == null || coupon.getMaxUsage() <= coupon.getUsageCount()) {
             return false;
         }
-
         return coupon.getValidUntil() != null && !coupon.getValidUntil().isBefore(LocalDate.now());
     }
 
@@ -107,6 +104,7 @@ public class CouponServiceImpl implements CouponService {
         return Coupon.builder()
                 .code(request.getCode())
                 .discountAmount(request.getDiscountAmount())
+                .usageCount(0) // set initial usage count to 0
                 .maxUsage(request.getMaxUsage())
                 .validUntil(request.getValidUntil())
                 .build();
