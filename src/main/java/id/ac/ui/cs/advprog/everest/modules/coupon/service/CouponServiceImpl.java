@@ -96,6 +96,10 @@ public class CouponServiceImpl implements CouponService {
             return false;
         }
 
+        if (coupon.getMaxUsage() <= coupon.getUsageCount()) {
+            return false;
+        }
+
         return coupon.getValidUntil() != null && !coupon.getValidUntil().isBefore(LocalDate.now());
     }
 
