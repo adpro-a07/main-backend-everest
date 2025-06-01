@@ -1,17 +1,12 @@
 package id.ac.ui.cs.advprog.everest.common.service;
 
-import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.authentication.exception.AuthServiceException;
-import id.ac.ui.cs.advprog.everest.authentication.exception.InvalidTokenException;
 import id.ac.ui.cs.advprog.everest.common.utils.RequestMetadataUtil;
-import id.ac.ui.cs.advprog.everest.common.utils.TimestampUtil;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.AuthServiceGrpc;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.BatchUserLookupRequest;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.BatchUserLookupResponse;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.TokenRefreshRequest;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.TokenRefreshResponse;
-import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.TokenValidationRequest;
-import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.TokenValidationResponse;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserIdentifier;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserLookupRequest;
 import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserLookupResponse;
@@ -20,56 +15,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class AuthServiceGrpcClient {
     private final AuthServiceGrpc.AuthServiceBlockingStub stub;
     private final RequestMetadataUtil metadataUtil;
-
-    /**
-     * Validates a token and returns the authenticated user.
-     *
-     * @param token the token to validate
-     * @return the authenticated user
-     * @throws InvalidTokenException if the token is invalid
-     * @throws AuthServiceException if there's an issue communicating with the auth service
-     */
-    public AuthenticatedUser validateToken(String token) {
-        if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("Token must not be null or blank");
-        }
-        try {
-            TokenValidationResponse response = stub.validateToken(
-                    TokenValidationRequest.newBuilder()
-                            .setMetadata(metadataUtil.create())
-                            .setToken(token)
-                            .setIncludeUserData(true)
-                            .build()
-            );
-            if (!response.getValid()) {
-                throw new InvalidTokenException("Invalid token");
-            }
-            var identity = response.getUserData().getIdentity();
-            var profile = response.getUserData().getProfile();
-            return new AuthenticatedUser(
-                    UUID.fromString(identity.getId()),
-                    identity.getEmail(),
-                    identity.getFullName(),
-                    identity.getRole(),
-                    identity.getPhoneNumber(),
-                    TimestampUtil.toInstant(identity.getCreatedAt()),
-                    TimestampUtil.toInstant(identity.getUpdatedAt()),
-                    profile.getAddress(),
-                    profile.getWorkExperience(),
-                    profile.getTotalJobsDone(),
-                    profile.getTotalIncome()
-            );
-        } catch (StatusRuntimeException e) {
-            throw new AuthServiceException("Failed to communicate with Auth service", e);
-        }
-    }
 
     /**
      * Refreshes an access token.
