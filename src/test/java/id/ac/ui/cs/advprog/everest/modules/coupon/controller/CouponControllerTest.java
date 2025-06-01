@@ -1,16 +1,14 @@
 package id.ac.ui.cs.advprog.everest.modules.coupon.controller;
 
-import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.modules.coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.service.CouponService;
-import id.ac.ui.cs.advprog.kilimanjaro.auth.grpc.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -25,25 +23,11 @@ class CouponControllerTest {
 
     private CouponService couponService;
     private CouponController controller;
-    private AuthenticatedUser adminUser;
 
     @BeforeEach
     void setUp() {
         couponService = mock(CouponService.class);
         controller = new CouponController(couponService);
-        adminUser = new AuthenticatedUser(
-                UUID.randomUUID(),
-                "admin@example.com",
-                "Admin User",
-                UserRole.ADMIN,
-                "555-1234",
-                Instant.now(),
-                Instant.now(),
-                "Jakarta",
-                null,
-                0,
-                0L
-        );
     }
 
     @Test
@@ -60,8 +44,8 @@ class CouponControllerTest {
 
         ResponseEntity<List<Coupon>> resp = controller.getAllCoupons();
         assertEquals(HttpStatus.OK, resp.getStatusCode());
-        assertEquals(1, resp.getBody().size());
-        assertEquals(c1, resp.getBody().get(0));
+        assertEquals(1, Objects.requireNonNull(resp.getBody()).size());
+        assertEquals(c1, resp.getBody().getFirst());
         verify(couponService).getAllCoupons();
     }
 
@@ -110,7 +94,7 @@ class CouponControllerTest {
         created.setId(UUID.randomUUID());
         when(couponService.createCoupon(req)).thenReturn(created);
 
-        ResponseEntity<Coupon> resp = controller.createCoupon(req, adminUser);
+        ResponseEntity<Coupon> resp = controller.createCoupon(req);
         assertEquals(HttpStatus.CREATED, resp.getStatusCode());
         assertEquals(created, resp.getBody());
         assertEquals(URI.create("/api/v1/coupons/" + created.getId()), resp.getHeaders().getLocation());
@@ -136,7 +120,7 @@ class CouponControllerTest {
         updated.setId(id);
         when(couponService.updateCoupon(id, req)).thenReturn(updated);
 
-        ResponseEntity<Coupon> resp = controller.updateCoupon(id, req, adminUser);
+        ResponseEntity<Coupon> resp = controller.updateCoupon(id, req);
         assertEquals(HttpStatus.OK, resp.getStatusCode());
         assertEquals(updated, resp.getBody());
         verify(couponService).updateCoupon(id, req);
@@ -147,7 +131,7 @@ class CouponControllerTest {
         UUID id = UUID.randomUUID();
         doNothing().when(couponService).deleteCoupon(id);
 
-        ResponseEntity<Void> resp = controller.deleteCoupon(id, adminUser);
+        ResponseEntity<Void> resp = controller.deleteCoupon(id);
         assertEquals(HttpStatus.NO_CONTENT, resp.getStatusCode());
         verify(couponService).deleteCoupon(id);
     }

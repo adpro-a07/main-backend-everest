@@ -1,7 +1,5 @@
 package id.ac.ui.cs.advprog.everest.modules.coupon.controller;
 
-import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
-import id.ac.ui.cs.advprog.everest.authentication.CurrentUser;
 import id.ac.ui.cs.advprog.everest.modules.coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.coupon.service.CouponService;
@@ -46,8 +44,7 @@ public class CouponController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Coupon> createCoupon(
-            @Valid @RequestBody CouponRequest couponRequest,
-            @CurrentUser AuthenticatedUser user
+            @Valid @RequestBody CouponRequest couponRequest
     ) {
 
         Coupon created = couponService.createCoupon(couponRequest);
@@ -60,8 +57,7 @@ public class CouponController {
     @PutMapping("/{id}")
     public ResponseEntity<Coupon> updateCoupon(
             @PathVariable UUID id,
-            @Valid @RequestBody CouponRequest couponRequest,
-            @CurrentUser AuthenticatedUser user
+            @Valid @RequestBody CouponRequest couponRequest
     ) {
         Coupon updated = couponService.updateCoupon(id, couponRequest);
         return ResponseEntity.ok(updated);
@@ -70,8 +66,7 @@ public class CouponController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCoupon(
-            @PathVariable UUID id,
-            @CurrentUser AuthenticatedUser user
+            @PathVariable UUID id
     ) {
         couponService.deleteCoupon(id);
         return ResponseEntity.noContent().build();

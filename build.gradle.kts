@@ -42,6 +42,7 @@ val webdrivermanagerVersion = "5.6.3"
 val junitJupiterVersion = "5.9.1"
 val protobufVersion = "4.30.2"
 val grpcVersion = "1.72.0"
+val jjwtVersion = "0.11.5"
 
 dependencies {
     // Springboot Starters
@@ -62,6 +63,11 @@ dependencies {
     implementation("io.grpc:grpc-netty-shaded:$grpcVersion")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
+
+    // JWT (jjwt)
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
     // H2 Database (for testing/dev)
     runtimeOnly("com.h2database:h2")
