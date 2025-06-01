@@ -37,15 +37,14 @@ public class CouponServiceImpl implements CouponService {
     public Coupon createCoupon(CouponRequest couponRequest) {
         Coupon coupon = convertToEntity(couponRequest);
 
-        // 1. Check for duplicate code first
         if (couponRepository.existsByCode(coupon.getCode())) {
             throw new IllegalArgumentException("Coupon code already exists");
         }
-        // 2. Then validate coupon data
         if (!isValidCoupon(coupon)) {
             throw new IllegalArgumentException("Invalid coupon data");
         }
 
+        // set default values
         coupon.setUsageCount(0);
         coupon.setCreatedAt(LocalDateTime.now());
 
