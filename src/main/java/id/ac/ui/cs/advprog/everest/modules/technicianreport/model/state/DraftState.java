@@ -1,21 +1,19 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianreport.model.state;
 
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.TechnicianReport;
+import id.ac.ui.cs.advprog.everest.modules.technicianreport.service.ReportValidationService;
+import id.ac.ui.cs.advprog.everest.modules.technicianreport.constants.ReportConstants;
 
-public class DraftState extends AbstractReportState {
+public class DraftState extends AbstractReportState implements SubmittableState {
+
     @Override
     public String getName() {
-        return "DRAFT";
+        return ReportConstants.DRAFT;
     }
 
     @Override
     public ReportState submit(TechnicianReport context) {
-        if (context.getDiagnosis() == null || context.getDiagnosis().isEmpty()) {
-            throw new IllegalStateException("Diagnosis is required before submitting");
-        }
-        if (context.getEstimatedCost() == null) {
-            throw new IllegalStateException("Estimated cost is required before submitting");
-        }
+        ReportValidationService.validateForSubmission(context);
         return new SubmittedState();
     }
 
