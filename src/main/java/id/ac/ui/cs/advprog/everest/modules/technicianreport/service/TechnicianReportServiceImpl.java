@@ -263,15 +263,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
                 return new GenericResponse<>(false, "No technician report submissions found", null);
             }
             List<TechnicianReportDraftResponse> response = reports.stream()
-                    .map(report -> {
-                        Long estimatedCost = report.getEstimatedCost();
-                        int discount = report.getRepairOrder().getCoupon().getDiscountAmount();
-                        Long finalCost = (estimatedCost != null) ? Long.valueOf(estimatedCost - discount) : estimatedCost;
-
-                        TechnicianReportDraftResponse resp = buildTechnicianReportDraftResponse(report);
-                        resp.setEstimatedCost(finalCost);
-                        return resp;
-                    })
+                    .map(this::buildTechnicianReportDraftResponse)
                     .toList();
 
             logReportsAuditAction(reports, "GET_BY_STATUS_CUSTOMER", customer.id().toString());
@@ -430,6 +422,7 @@ public class TechnicianReportServiceImpl implements TechnicianReportService {
         List<TechnicianReport> reports = technicianReportRepository.findAllByStatus(status);
         return reports.stream()
                 .filter(report -> report.getRepairOrder().getCustomerId().equals(customer.id()))
+//                .filter(report -> report.getStatus().equals(status))
                 .toList();
     }
 

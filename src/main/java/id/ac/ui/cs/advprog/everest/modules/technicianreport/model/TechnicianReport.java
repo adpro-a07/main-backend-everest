@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.everest.modules.technicianreport.model;
 
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.exception.IllegalStateTransitionException;
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.state.*;
-import id.ac.ui.cs.advprog.everest.modules.technicianreport.factory.ReportStateFactory;
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.constants.ReportConstants;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.*;
 import jakarta.persistence.*;
@@ -107,7 +106,7 @@ public class TechnicianReport {
 
     @PostLoad
     void initializeState() {
-        this.state = ReportStateFactory.createState(status);
+        this.state = ReportStateMapper.createState(status);
     }
 
     public boolean technicianCanModify() {

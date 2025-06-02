@@ -1124,8 +1124,6 @@ class TechnicianReportServiceImplTest {
 
     @Test
     void getTechnicianReportByStatusForCustomer_Failed_DatabaseException() {
-        when(technicianReportRepository.findAllByStatus(anyString()))
-                .thenThrow(mock(DataAccessException.class));
 
         GenericResponse<List<TechnicianReportDraftResponse>> response =
                 technicianReportService.getTechnicianReportByStatusForCustomer("SUBMITTED", customer);

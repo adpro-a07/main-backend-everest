@@ -1,13 +1,13 @@
-package id.ac.ui.cs.advprog.everest.modules.technicianreport.factory;
+package id.ac.ui.cs.advprog.everest.modules.technicianreport.model;
 
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.state.*;
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.constants.ReportConstants;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class ReportStateFactory {
+public class ReportStateMapper {
 
-    private ReportStateFactory() {
+    private ReportStateMapper() {
         // Private constructor to prevent instantiation
     }
 
