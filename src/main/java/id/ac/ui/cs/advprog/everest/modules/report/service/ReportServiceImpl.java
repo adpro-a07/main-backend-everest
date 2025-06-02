@@ -17,7 +17,7 @@ import java.util.UUID;
 public class ReportServiceImpl implements ReportService {
 
     private final ReportRepository reportRepository;
-    private static final String COMPLETED_STATUS = new CompletedState().getName();;
+    private static final String COMPLETED_STATUS = new CompletedState().getName();
 
     @Autowired
     public ReportServiceImpl(ReportRepository reportRepository) {
