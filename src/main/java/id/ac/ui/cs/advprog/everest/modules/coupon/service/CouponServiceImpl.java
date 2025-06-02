@@ -35,18 +35,16 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public Coupon createCoupon(CouponRequest couponRequest) {
-        // Convert DTO ke Entity
         Coupon coupon = convertToEntity(couponRequest);
 
-        // Validasi unik code
-        if (!isValidCoupon(coupon)) {
-            throw new IllegalArgumentException("Invalid coupon data");
-        }
         if (couponRepository.existsByCode(coupon.getCode())) {
             throw new IllegalArgumentException("Coupon code already exists");
         }
+        if (!isValidCoupon(coupon)) {
+            throw new IllegalArgumentException("Invalid coupon data");
+        }
 
-        // Set nilai default
+        // set default values
         coupon.setUsageCount(0);
         coupon.setCreatedAt(LocalDateTime.now());
 
@@ -56,6 +54,11 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public Coupon updateCoupon(UUID id, CouponRequest req) {
         Coupon existing = getCouponById(id);
+
+        // Validate existing coupon before updating
+        if (!isValidCoupon(existing)) {
+            throw new IllegalArgumentException("Invalid coupon data");
+        }
 
         String oldCode = existing.getCode();
         String newCode = req.getCode();
@@ -91,11 +94,13 @@ public class CouponServiceImpl implements CouponService {
         if (coupon.getDiscountAmount() == null || coupon.getDiscountAmount() <= 0) {
             return false;
         }
-
         if (coupon.getMaxUsage() == null || coupon.getMaxUsage() <= 0) {
             return false;
         }
-
+        // Add null check for usageCount
+        if (coupon.getUsageCount() == null || coupon.getMaxUsage() <= coupon.getUsageCount()) {
+            return false;
+        }
         return coupon.getValidUntil() != null && !coupon.getValidUntil().isBefore(LocalDate.now());
     }
 
@@ -103,6 +108,7 @@ public class CouponServiceImpl implements CouponService {
         return Coupon.builder()
                 .code(request.getCode())
                 .discountAmount(request.getDiscountAmount())
+                .usageCount(0) // set initial usage count to 0
                 .maxUsage(request.getMaxUsage())
                 .validUntil(request.getValidUntil())
                 .build();
