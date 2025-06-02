@@ -17,4 +17,6 @@ public interface TechnicianReportRepository extends JpaRepository<TechnicianRepo
     List<TechnicianReport> findAllByRepairOrderId(UUID id);
 
     List<TechnicianReport> findAllByTechnicianIdAndStatus(UUID technicianId, String status);
+
+    boolean existsByRepairOrderIdAndStatusNot(UUID repairOrderId, String status);
 }

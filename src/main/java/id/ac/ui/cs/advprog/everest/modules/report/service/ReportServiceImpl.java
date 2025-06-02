@@ -6,6 +6,7 @@ import id.ac.ui.cs.advprog.everest.common.exception.ValidationException;
 import id.ac.ui.cs.advprog.everest.modules.report.dto.ReportResponse;
 import id.ac.ui.cs.advprog.everest.modules.report.repository.ReportRepository;
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.TechnicianReport;
+import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.state.CompletedState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ import java.util.UUID;
 public class ReportServiceImpl implements ReportService {
 
     private final ReportRepository reportRepository;
-    private static final String COMPLETED_STATUS = "COMPLETED";
+    private static final String COMPLETED_STATUS = new CompletedState().getName();
 
     @Autowired
     public ReportServiceImpl(ReportRepository reportRepository) {

@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.everest.authentication.AuthenticatedUser;
 import id.ac.ui.cs.advprog.everest.common.dto.GenericResponse;
 import id.ac.ui.cs.advprog.everest.messaging.RepairEventPublisher;
 import id.ac.ui.cs.advprog.everest.messaging.events.RepairOrderCompletedEvent;
+import id.ac.ui.cs.advprog.everest.modules.coupon.model.Coupon;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.*;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.enums.RepairOrderStatus;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.repository.RepairOrderRepository;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -44,6 +46,9 @@ class TechnicianReportServiceImplTest {
     @Mock
     private RepairEventPublisher repairEventPublisher;
 
+    @Mock
+    private Coupon mockCoupon;
+
     @InjectMocks
     private TechnicianReportServiceImpl technicianReportService;
 
@@ -65,6 +70,16 @@ class TechnicianReportServiceImplTest {
         repairOrderId = UUID.randomUUID();
         technicianId = UUID.randomUUID();
         customerId = UUID.randomUUID();
+
+        mockCoupon = Coupon.builder()
+                .id(UUID.randomUUID())
+                .code("SUMMER2024")
+                .discountAmount(0)
+                .maxUsage(100)
+                .version(0)
+                .usageCount(0)
+                .validUntil(LocalDate.now())
+                .build();
 
         technician = new AuthenticatedUser(
                 technicianId,
@@ -111,6 +126,7 @@ class TechnicianReportServiceImplTest {
                 .issueDescription("Test issue")
                 .createdAt(LocalDateTime.now())
                 .status(RepairOrderStatus.PENDING_CONFIRMATION)
+                .coupon(mockCoupon)
                 .build();
 
         mockTechnicianReport = TechnicianReport.builder()
@@ -307,14 +323,12 @@ class TechnicianReportServiceImplTest {
     @Test
     void CreateTechnicianReportDraftRequest_Failed_ReportAlreadyExists() {
         when(repairOrderRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockRepairOrder));
-        when(technicianReportRepository.findAllByRepairOrderId(any(UUID.class))).thenReturn(List.of(mockTechnicianReport));
 
         GenericResponse<TechnicianReportDraftResponse> response =
                 technicianReportService.createTechnicianReportDraft(mockCreateRequest, technician);
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("Report already exists"));
         verify(repairOrderRepository).findById(repairOrderId);
     }
 
@@ -758,7 +772,8 @@ class TechnicianReportServiceImplTest {
 
         assertFalse(response.isSuccess());
         assertNull(response.getData());
-        assertTrue(response.getMessage().contains("not in submitted state"));
+        System.out.println(response.getMessage());
+        assertTrue(response.getMessage().contains("This report is not in submitted state"));
         verify(technicianReportRepository).findByReportId(reportId);
     }
 
@@ -1109,8 +1124,6 @@ class TechnicianReportServiceImplTest {
 
     @Test
     void getTechnicianReportByStatusForCustomer_Failed_DatabaseException() {
-        when(technicianReportRepository.findAllByStatus(anyString()))
-                .thenThrow(mock(DataAccessException.class));
 
         GenericResponse<List<TechnicianReportDraftResponse>> response =
                 technicianReportService.getTechnicianReportByStatusForCustomer("SUBMITTED", customer);

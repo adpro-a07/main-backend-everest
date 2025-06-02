@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.everest.modules.technicianreport.model;
 
+import id.ac.ui.cs.advprog.everest.modules.technicianreport.exception.IllegalStateTransitionException;
 import id.ac.ui.cs.advprog.everest.modules.technicianreport.model.state.*;
+import id.ac.ui.cs.advprog.everest.modules.technicianreport.constants.ReportConstants;
 import id.ac.ui.cs.advprog.everest.modules.repairorder.model.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TechnicianReport {
+
     @Id
     @Column(name = "report_id", nullable = false, updatable = false)
     private UUID reportId;
@@ -28,13 +31,13 @@ public class TechnicianReport {
     @Column(name = "technician_id", nullable = false)
     private UUID technicianId;
 
-    @Column(name = "diagnosis", length = 500)
+    @Column(name = "diagnosis", length = ReportConstants.MAX_DIAGNOSIS_LENGTH)
     private String diagnosis;
 
-    @Column(name = "action_plan", length = 500)
+    @Column(name = "action_plan", length = ReportConstants.MAX_ACTION_PLAN_LENGTH)
     private String actionPlan;
 
-    @Column(name = "estimated_cost", precision = 10, scale = 2)
+    @Column(name = "estimated_cost", precision = ReportConstants.COST_PRECISION, scale = ReportConstants.COST_SCALE)
     private Long estimatedCost;
 
     @Column(name = "estimated_time_seconds")
@@ -42,7 +45,7 @@ public class TechnicianReport {
 
     @Builder.Default
     @Column(name = "status")
-    private String status = "DRAFT";
+    private String status = ReportConstants.DRAFT;
 
     @Column(name = "last_updated_at")
     private LocalDateTime lastUpdatedAt;
@@ -56,27 +59,42 @@ public class TechnicianReport {
     }
 
     public void submit() {
-        ReportState newState = state.submit(this);
+        if (!(state instanceof SubmittableState submittableState)) {
+            throw new IllegalStateTransitionException("submit", state.getName());
+        }
+        ReportState newState = submittableState.submit(this);
         updateState(newState);
     }
 
     public void approve() {
-        ReportState newState = state.approve(this);
+        if (!(state instanceof ReviewableState reviewableState)) {
+            throw new IllegalStateTransitionException("approve", state.getName());
+        }
+        ReportState newState = reviewableState.approve(this);
         updateState(newState);
     }
 
     public void reject() {
-        ReportState newState = state.reject(this);
+        if (!(state instanceof ReviewableState reviewableState)) {
+            throw new IllegalStateTransitionException("reject", state.getName());
+        }
+        ReportState newState = reviewableState.reject(this);
         updateState(newState);
     }
 
     public void startWork() {
-        ReportState newState = state.startWork(this);
+        if (!(state instanceof WorkableState workableState)) {
+            throw new IllegalStateTransitionException("start work", state.getName());
+        }
+        ReportState newState = workableState.startWork(this);
         updateState(newState);
     }
 
     public void complete() {
-        ReportState newState = state.complete(this);
+        if (!(state instanceof CompletableState completableState)) {
+            throw new IllegalStateTransitionException("complete", state.getName());
+        }
+        ReportState newState = completableState.complete(this);
         updateState(newState);
     }
 
@@ -88,20 +106,7 @@ public class TechnicianReport {
 
     @PostLoad
     void initializeState() {
-        if (status == null) {
-            this.state = new DraftState();
-            return;
-        }
-
-        this.state = switch (status) {
-            case "DRAFT" -> new DraftState();
-            case "SUBMITTED" -> new SubmittedState();
-            case "APPROVED" -> new ApprovedState();
-            case "REJECTED" -> new RejectedState();
-            case "IN_PROGRESS" -> new InProgressState();
-            case "COMPLETED" -> new CompletedState();
-            default -> throw new IllegalStateException("Unknown status: " + status);
-        };
+        this.state = ReportStateMapper.createState(status);
     }
 
     public boolean technicianCanModify() {
@@ -112,6 +117,10 @@ public class TechnicianReport {
         return state.customerCanSee();
     }
 
+    public void validateReadPermissions() {
+        state.validateReadPermissions(this);
+    }
+
     @PrePersist
     protected void onCreate() {
         if (reportId == null) {
@@ -119,6 +128,9 @@ public class TechnicianReport {
         }
         if (lastUpdatedAt == null) {
             lastUpdatedAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = ReportConstants.DRAFT;
         }
     }
 }
