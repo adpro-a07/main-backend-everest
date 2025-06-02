@@ -216,4 +216,211 @@ class CouponServiceTest {
                 .build();
         assertFalse(couponService.isValidCoupon(bad));
     }
+    @Test
+    void testIsValidCoupon_NullDiscount() {
+        // discountAmount null → harus false
+        Coupon c = Coupon.builder()
+                .code("C_NULL_DISCOUNT")
+                .discountAmount(null)
+                .maxUsage(10)
+                .usageCount(0)
+                .validUntil(LocalDate.now().plusDays(1))
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan discountAmount null harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_ZeroDiscount() {
+        // discountAmount == 0 → harus false
+        Coupon c = Coupon.builder()
+                .code("C_ZERO_DISCOUNT")
+                .discountAmount(0)
+                .maxUsage(10)
+                .usageCount(0)
+                .validUntil(LocalDate.now().plusDays(1))
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan discountAmount 0 harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_NegativeDiscount() {
+        // discountAmount < 0 → harus false
+        Coupon c = Coupon.builder()
+                .code("C_NEG_DISCOUNT")
+                .discountAmount(-100)
+                .maxUsage(10)
+                .usageCount(0)
+                .validUntil(LocalDate.now().plusDays(1))
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan discountAmount negatif harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_NullMaxUsage() {
+        // maxUsage null → harus false
+        Coupon c = Coupon.builder()
+                .code("C_NULL_MAXUSAGE")
+                .discountAmount(1000)
+                .maxUsage(null)
+                .usageCount(0)
+                .validUntil(LocalDate.now().plusDays(1))
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan maxUsage null harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_ZeroMaxUsage() {
+        // maxUsage == 0 → harus false
+        Coupon c = Coupon.builder()
+                .code("C_ZERO_MAXUSAGE")
+                .discountAmount(1000)
+                .maxUsage(0)
+                .usageCount(0)
+                .validUntil(LocalDate.now().plusDays(1))
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan maxUsage 0 harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_UsageCountNull() {
+        // usageCount null → harus false
+        Coupon c = Coupon.builder()
+                .code("C_NULL_USAGECOUNT")
+                .discountAmount(1000)
+                .maxUsage(5)
+                .usageCount(null)
+                .validUntil(LocalDate.now().plusDays(1))
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan usageCount null harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_UsageCountEqualMaxUsage() {
+        // usageCount == maxUsage → harus false
+        Coupon c = Coupon.builder()
+                .code("C_EQUAL_USAGE_MAX")
+                .discountAmount(1000)
+                .maxUsage(5)
+                .usageCount(5)
+                .validUntil(LocalDate.now().plusDays(1))
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan usageCount sama dengan maxUsage harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_UsageCountGreaterThanMaxUsage() {
+        // usageCount > maxUsage → harus false
+        Coupon c = Coupon.builder()
+                .code("C_OVER_USAGE")
+                .discountAmount(1000)
+                .maxUsage(5)
+                .usageCount(6)
+                .validUntil(LocalDate.now().plusDays(1))
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan usageCount lebih besar dari maxUsage harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_ValidUntilNull() {
+        // validUntil null → harus false
+        Coupon c = Coupon.builder()
+                .code("C_NULL_VALIDUNTIL")
+                .discountAmount(1000)
+                .maxUsage(5)
+                .usageCount(0)
+                .validUntil(null)
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan validUntil null harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_ExpiredDate() {
+        // validUntil sebelum hari ini → harus false
+        Coupon c = Coupon.builder()
+                .code("C_EXPIRED")
+                .discountAmount(1000)
+                .maxUsage(5)
+                .usageCount(0)
+                .validUntil(LocalDate.now().minusDays(1))
+                .build();
+
+        assertFalse(couponService.isValidCoupon(c),
+                "Coupon dengan validUntil sebelum tanggal hari ini harus dianggap tidak valid");
+    }
+
+    @Test
+    void testIsValidCoupon_ValidEdgeCase_Today() {
+        // validUntil == hari ini → harus true (tidak before)
+        Coupon c = Coupon.builder()
+                .code("C_VALID_TODAY")
+                .discountAmount(1000)
+                .maxUsage(5)
+                .usageCount(0)
+                .validUntil(LocalDate.now())
+                .build();
+
+        assertTrue(couponService.isValidCoupon(c),
+                "Coupon dengan validUntil sama dengan hari ini harus dianggap valid");
+    }
+
+    @Test
+    void testIsValidCoupon_FullyValidFutureDate() {
+        // Semua syarat valid terpenuhi dengan validUntil di masa depan
+        Coupon c = Coupon.builder()
+                .code("C_VALID_FUTURE")
+                .discountAmount(1500)
+                .maxUsage(5)
+                .usageCount(2)
+                .validUntil(LocalDate.now().plusDays(5))
+                .build();
+
+        assertTrue(couponService.isValidCoupon(c),
+                "Coupon dengan semua properti valid dan validUntil di masa depan harus dianggap valid");
+    }
+
+    @Test
+    void testUpdateCoupon_InvalidExistingCoupon() {
+        Coupon existing = Coupon.builder()
+                .code("INVALID_EXISTING")
+                .discountAmount(null) // Ini membuat isValidCoupon → false
+                .maxUsage(10)
+                .usageCount(0)
+                .validUntil(LocalDate.now().plusDays(5))
+                .build();
+        existing.setId(couponId);
+
+        when(couponRepository.findById(couponId)).thenReturn(Optional.of(existing));
+
+        CouponRequest upd = CouponRequest.builder()
+                .code("NEWCODE")
+                .discountAmount(2000)
+                .maxUsage(20)
+                .validUntil(LocalDate.now().plusDays(10))
+                .build();
+
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class,
+                () -> couponService.updateCoupon(couponId, upd)
+        );
+        assertEquals("Invalid coupon data", thrown.getMessage());
+        verify(couponRepository, never()).save(any());
+    }
 }
