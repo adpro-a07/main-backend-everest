@@ -55,6 +55,11 @@ public class CouponServiceImpl implements CouponService {
     public Coupon updateCoupon(UUID id, CouponRequest req) {
         Coupon existing = getCouponById(id);
 
+        // Validate existing coupon before updating
+        if (!isValidCoupon(existing)) {
+            throw new IllegalArgumentException("Invalid coupon data");
+        }
+
         String oldCode = existing.getCode();
         String newCode = req.getCode();
 
